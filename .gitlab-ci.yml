@@ -17,3 +17,4 @@ esphome-latest:
   image:
     name: esphome/esphome:latest
     entrypoint: [""]
+  script: echo '0'
