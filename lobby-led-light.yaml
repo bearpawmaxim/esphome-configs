@@ -41,8 +41,8 @@ ota:
   password: "8ff11faff19373c6b5a20dd90525edcf"
 
 wifi:
-  ssid: "RT-N56U_2.4G"
-  password: "GoesUpInSky"
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
