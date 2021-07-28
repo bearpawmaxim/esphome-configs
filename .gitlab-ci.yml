@@ -26,4 +26,4 @@ esphome-latest:
   <<: *esphome-deploy
   image:
     name: esphome/esphome:latest
-  entrypoint: [""]
+    entrypoint: [""]
