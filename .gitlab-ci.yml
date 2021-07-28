@@ -8,11 +8,22 @@ stages:
   image:
     name: esphome/esphome:latest
     entrypoint: [""]
-  retry: 2
+  script:
+    - |
+      for file in $(find \
+        ./ \
+        -type f \
+        -name "*.yaml"\
+        -not -name "secrets.yaml"
+        ); do
+        esphome $file compile
+      done
+  tags:
+    - hass
+
 
 esphome-latest:
   <<: *esphome-deploy
   image:
     name: esphome/esphome:latest
-    entrypoint: [""]
-  script: echo '0'
+  entrypoint: [""]
