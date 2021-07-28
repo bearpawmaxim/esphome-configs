@@ -1,0 +1,13 @@
+stages:
+  - deploy
+
+.esphome-deploy: &esphome-deploy
+  stage: deploy
+  variables:
+    PYTHONPATH: "/usr/src/app:$PYTHONPATH"
+  image:
+    name: esphome/esphome:latest
+    entrypoint: [""]
+  retry: 2
+  tags:
+    - hass
