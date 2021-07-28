@@ -9,8 +9,6 @@ stages:
     name: esphome/esphome:latest
     entrypoint: [""]
   retry: 2
-  tags:
-    - hass
 
 esphome-latest:
   <<: *esphome-deploy
