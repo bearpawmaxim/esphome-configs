@@ -11,3 +11,9 @@ stages:
   retry: 2
   tags:
     - hass
+
+esphome-latest:
+  <<: *esphome-deploy
+  image:
+    name: esphome/esphome:latest
+    entrypoint: [""]
