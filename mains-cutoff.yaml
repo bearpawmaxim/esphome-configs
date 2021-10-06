@@ -1,7 +1,8 @@
 esphome:
-  name: sonoff-mains-cutoff
+  name: mains-cutoff
   platform: ESP8266
-  board: esp01_1m
+  board: esp8285
+  esp8266_restore_from_flash: true
 
 # Enable logging
 logger:
@@ -31,16 +32,17 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: true
-    name: "Sonoff Basic Button"
+    id: relay_switch
     on_press:
       - switch.toggle: relay
     internal: true
 
 switch:
   - platform: gpio
-    name: "Sonoff Basic Relay"
+    name: "Cutoff relay"
     pin: GPIO12
     id: relay
+    restore_mode: RESTORE_DEFAULT_OFF
 
 status_led:
   pin:
