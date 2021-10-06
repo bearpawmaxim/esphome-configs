@@ -1,3 +1,25 @@
+globals:
+  - id: intensity_red
+    type: int
+    restore_value: no
+    initial_value: '.28'
+  - id: intensity_green
+    type: int
+    restore_value: no
+    initial_value: '.82'
+  - id: intensity_blue
+    type: int
+    restore_value: no
+    initial_value: '1'
+  - id: target_brightness
+    type: float
+    restore_value: no
+    initial_value: '.8'
+  - id: brightness_step
+    type: float
+    restore_value: no
+    initial_value: '.05'
+
 esphome:
   name: lobby-led-light
   platform: ESP32
@@ -8,28 +30,25 @@ esphome:
       - light.turn_on:
           id: lobbyledlight
           brightness: 1%
-          red: 28%
-          green: 82%
-          blue: 100%
+          red: !lambda |-
+            return id(intensity_red);
+          green: !lambda |-
+            return id(intensity_green);
+          blue: !lambda |-
+            return id(intensity_blue);
           effect: "Fade in"
       - delay: 10s
       - light.turn_on:
           id: lobbyledlight
-          brightness: 80%
-          red: 28%
-          green: 82%
-          blue: 100%
+          brightness: !lambda |-
+            return id(target_brightness);
+          red: !lambda |-
+            return id(intensity_red);
+          green: !lambda |-
+            return id(intensity_green);
+          blue: !lambda |-
+            return id(intensity_blue);
           effect: "Flicker"
-
-globals:
-  - id: target_brightness
-    type: float
-    restore_value: no
-    initial_value: '.8'
-  - id: brightness_step
-    type: float
-    restore_value: no
-    initial_value: '.05'
 
 # Enable logging
 logger:
@@ -43,10 +62,12 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  reboot_timeout: 0s
+  fast_connect: true
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Lobby-Led-Light Fallback Hotspot"
+    ssid: "Lobby-Led-Light"
     password: "OUHtZnl5EiUP"
 
 captive_portal:
@@ -56,7 +77,7 @@ light:
     id: lobbyledlight
     chipset: WS2812B
     pin: GPIO13
-    num_leds: 8
+    num_leds: 300
     rgb_order: GRB
     name: "Lobby Led Light"
     restore_mode: RESTORE_DEFAULT_OFF
@@ -79,3 +100,55 @@ light:
           name: "Flicker"
           alpha: 80%
           intensity: 2.5%
+      - random:
+      - addressable_rainbow:
+      - addressable_color_wipe:
+      - addressable_scan:
+      - addressable_twinkle:
+      - addressable_random_twinkle:
+      - addressable_fireworks:
+      - addressable_flicker:
+
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Kiev
+
+sun:
+  latitude: 50.391968°
+  longitude: 30.557317°
+  on_sunrise:
+    - then:
+      - lambda: |-
+          id(intensity_red) = 1;
+          id(intensity_green) = 1;
+          id(intensity_blue) = 0;
+      - light.turn_on:
+          id: lobbyledlight
+          brightness: !lambda |-
+            return id(target_brightness);
+          red: !lambda |-
+            return id(intensity_red);
+          green: !lambda |-
+            return id(intensity_green);
+          blue: !lambda |-
+            return id(intensity_blue);
+          effect: none
+  on_sunset:
+    - then:
+      - lambda: |-
+          id(intensity_red) = .28;
+          id(intensity_green) = .82;
+          id(intensity_blue) = 1;
+      - light.turn_on:
+          id: lobbyledlight
+          brightness: !lambda |-
+            return id(target_brightness);
+          red: !lambda |-
+            return id(intensity_red);
+          green: !lambda |-
+            return id(intensity_green);
+          blue: !lambda |-
+            return id(intensity_blue);
+          effect: none
