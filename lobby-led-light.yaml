@@ -1,14 +1,14 @@
 globals:
   - id: intensity_red
-    type: int
+    type: float
     restore_value: no
-    initial_value: '.28'
+    initial_value: '1'
   - id: intensity_green
-    type: int
+    type: float
     restore_value: no
-    initial_value: '.82'
+    initial_value: '1'
   - id: intensity_blue
-    type: int
+    type: float
     restore_value: no
     initial_value: '1'
   - id: target_brightness
@@ -37,18 +37,6 @@ esphome:
           blue: !lambda |-
             return id(intensity_blue);
           effect: "Fade in"
-      - delay: 10s
-      - light.turn_on:
-          id: lobbyledlight
-          brightness: !lambda |-
-            return id(target_brightness);
-          red: !lambda |-
-            return id(intensity_red);
-          green: !lambda |-
-            return id(intensity_green);
-          blue: !lambda |-
-            return id(intensity_blue);
-          effect: "Flicker"
 
 # Enable logging
 logger:
@@ -96,19 +84,6 @@ light:
               call.set_save(false);
               call.perform();
             }
-      - flicker:
-          name: "Flicker"
-          alpha: 80%
-          intensity: 2.5%
-      - random:
-      - addressable_rainbow:
-      - addressable_color_wipe:
-      - addressable_scan:
-      - addressable_twinkle:
-      - addressable_random_twinkle:
-      - addressable_fireworks:
-      - addressable_flicker:
-
 
 time:
   - platform: sntp
