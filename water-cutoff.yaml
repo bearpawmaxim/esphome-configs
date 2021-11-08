@@ -1,0 +1,68 @@
+substitutions:
+  device_name: water-cutoff
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp-wrover-kit
+
+external_components:
+  - source: github://dentra/esphome-components
+
+switch:
+  - platform: gpio
+    pin: GPIO21
+    id: "relay_1"
+    name: "Relay 1"
+    internal: true
+  - platform: gpio
+    pin: GPIO19
+    id: "relay_2"
+    name: "Relay 2"
+    internal: true
+  - platform: gpio
+    pin: GPIO18
+    id: "relay_3"
+    name: "Relay 3"
+    internal: true
+  - platform: gpio
+    pin: GPIO05
+    id: "relay_4"
+    name: "Relay 4"
+    internal: true
+  - platform: template
+    id: "water_cutoff"
+    name: "Water cutoff"
+    turn_on_action:
+      - switch.turn_on: relay_1
+      - switch.turn_off: relay_2
+      - delay: 10000ms
+      - switch.turn_off: relay_1
+    turn_off_action:
+      - switch.turn_on: relay_1
+      - switch.turn_on: relay_2
+      - delay: 10000ms
+      - switch.turn_off: relay_1
+      - switch.turn_off: relay_2
+    
+binary_sensor:
+  - platform: miot_sjws01lm
+    # String (Required), device MAC-address.
+    mac_address: "FF:FF:FF:FF:FF:FF"
+    # String, (Optional), device bind key. Will use "xiaomi_account" from "miot" if absent to automaticaly get the bindkey.
+    bindkey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+    # String, (Optional), the name of binary sensor
+    name: "Boiler Leak sensor"
+    on_press:
+      - switch.turn_on: water_cutoff
+    # Sensor (Optional), Battey Level, %
+    battery_level:
+      name: "Boiler Leak sensor battery level"
+
+sensor:
+  - platform: ble_rssi
+    mac_address: "FF:FF:FF:FF:FF:FF"
+    name: "Boiler Leak sensor RSSI"

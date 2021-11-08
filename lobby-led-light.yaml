@@ -20,8 +20,14 @@ globals:
     restore_value: no
     initial_value: '.05'
 
+substitutions:
+  device_name: lobby-led-light
+
+packages:
+  device_common: !include .device_common.yaml
+
 esphome:
-  name: lobby-led-light
+  name: ${device_name}
   platform: ESP32
   board: esp32doit-devkit-v1
   on_boot:
@@ -37,28 +43,6 @@ esphome:
           blue: !lambda |-
             return id(intensity_blue);
           effect: "Fade in"
-
-# Enable logging
-logger:
-
-# Enable Home Assistant API
-api:
-
-ota:
-  password: "8ff11faff19373c6b5a20dd90525edcf"
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  reboot_timeout: 0s
-  fast_connect: true
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Lobby-Led-Light"
-    password: "OUHtZnl5EiUP"
-
-captive_portal:
 
 light:
   - platform: fastled_clockless

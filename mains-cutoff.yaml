@@ -1,30 +1,14 @@
+substitutions:
+  device_name: mains-cutoff
+
+packages:
+  device_common: !include .device_common.yaml
+
 esphome:
   name: mains-cutoff
   platform: ESP8266
   board: esp8285
   esp8266_restore_from_flash: true
-
-# Enable logging
-logger:
-
-# Enable Home Assistant API
-api:
-
-ota:
-  password: "c8af7ccb0dfab328a8c2bc87fe01b1ef"
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  reboot_timeout: 0s
-  fast_connect: true
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Sonoff-Mains-Cutoff"
-    password: "gZMRSFJzL3Z0"
-
-captive_portal:
 
 binary_sensor:
   - platform: gpio

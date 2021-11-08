@@ -1,0 +1,27 @@
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: d1_mini
+  includes:
+    - Haier.h
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Kiev 
+
+climate:
+  - platform: custom
+    lambda: |-
+      auto haier = new Haier();
+      App.register_component(haier);
+      return {haier};
+    climates:
+      - name: ${climate_name}
+
+packages:
+  device_common: !include .device_common.yaml
