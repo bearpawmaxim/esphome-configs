@@ -5,7 +5,7 @@ packages:
   device_common: !include .device_common.yaml
 
 esphome:
-  name: mains-cutoff
+  name: ${device_name} 
   platform: ESP8266
   board: esp8285
   esp8266_restore_from_flash: true

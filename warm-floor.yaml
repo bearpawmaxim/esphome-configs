@@ -1,0 +1,31 @@
+substitutions:
+  device_name: warm-floor
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+  
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+
+tuya:
+
+climate:
+  - platform: tuya
+    name: "Warm floor"
+    switch_datapoint: 1
+    target_temperature_datapoint: 16
+    target_temperature_multiplier: 1.0
+    current_temperature_datapoint: 24
+    current_temperature_multiplier: 10.0
+    
+switch:
+  - platform: "tuya"
+    name: "Warm floor locked"
+    switch_datapoint: 40
