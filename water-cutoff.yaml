@@ -1,6 +1,9 @@
 substitutions:
   device_name: water-cutoff
 
+external_components:
+  - source: github://dentra/esphome-components
+
 packages:
   device_common: !include .device_common.yaml
 
@@ -8,9 +11,6 @@ esphome:
   name: ${device_name}
   platform: ESP32
   board: esp-wrover-kit
-
-external_components:
-  - source: github://dentra/esphome-components
 
 switch:
   - platform: gpio
@@ -47,22 +47,53 @@ switch:
       - delay: 10000ms
       - switch.turn_off: relay_1
       - switch.turn_off: relay_2
-    
+
 binary_sensor:
   - platform: miot_sjws01lm
-    # String (Required), device MAC-address.
-    mac_address: "FF:FF:FF:FF:FF:FF"
-    # String, (Optional), device bind key. Will use "xiaomi_account" from "miot" if absent to automaticaly get the bindkey.
-    bindkey: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-    # String, (Optional), the name of binary sensor
+    mac_address: "54:EF:44:E5:1C:23"
+    bindkey: "135c6a0dfd63105a04851ba36fdd40d3"
     name: "Boiler Leak sensor"
     on_press:
       - switch.turn_on: water_cutoff
-    # Sensor (Optional), Battey Level, %
     battery_level:
       name: "Boiler Leak sensor battery level"
-
-sensor:
-  - platform: ble_rssi
-    mac_address: "FF:FF:FF:FF:FF:FF"
-    name: "Boiler Leak sensor RSSI"
+  - platform: miot_sjws01lm
+    mac_address: "54:EF:44:E5:29:F6"
+    bindkey: "9a3e77be866d5948a53ca692bddfbcdc"
+    name: "Filter Leak sensor"
+    on_press:
+      - switch.turn_on: water_cutoff
+    battery_level:
+      name: "Filter Leak sensor battery level"
+  - platform: miot_sjws01lm
+    mac_address: "54:EF:44:E5:28:CD"
+    bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
+    name: "Shower Leak sensor"
+    on_press:
+      - switch.turn_on: water_cutoff
+    battery_level:
+      name: "Shower Leak sensor battery level"
+  - platform: miot_sjws01lm
+    mac_address: "54:EF:44:E5:12:9A"
+    bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
+    name: "Laundry Leak sensor"
+    on_press:
+      - switch.turn_on: water_cutoff
+    battery_level:
+      name: "Laundry Leak sensor battery level"
+  - platform: miot_sjws01lm
+    mac_address: "54:EF:44:E5:16:16"
+    bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
+    name: "Toilet Leak sensor"
+    on_press:
+      - switch.turn_on: water_cutoff
+    battery_level:
+      name: "Toilet Leak sensor battery level"
+  - platform: miot_sjws01lm
+    mac_address: "54:EF:44:E5:18:4A"
+    bindkey: "b2354449e4782b6d326858011afb0f12"
+    name: "Kitchen Leak sensor"
+    on_press:
+      - switch.turn_on: water_cutoff
+    battery_level:
+      name: "Kitchen Leak sensor battery level"
