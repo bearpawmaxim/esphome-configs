@@ -9,6 +9,13 @@ esphome:
   platform: ESP8266
   board: esp8285
   esp8266_restore_from_flash: true
+  on_boot:
+  - lambda: |-
+      id(my_ota).set_auth_password("{!secret ota_password}");
+
+ota:
+  password: !secret ota_password
+  id: my_ota
 
 binary_sensor:
   - platform: gpio

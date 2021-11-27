@@ -12,6 +12,9 @@ esphome:
   platform: ESP32
   board: esp-wrover-kit
 
+status_led:
+  pin: GPIO25
+
 switch:
   - platform: gpio
     pin: GPIO21
