@@ -89,9 +89,6 @@ script:
           condition:
             sun.is_above_horizon
           then:
-            - logger.log:
-                format: "The sun is above the horizon now. Setting Day colors."
-                level: INFO
             - globals.set:
                 id: intensity_red
                 value: '1.0'
@@ -102,9 +99,6 @@ script:
                 id: intensity_blue
                 value: '.11'
           else:
-            - logger.log:
-                format: "The sun is below the horizon now. Setting Night colors."
-                level: INFO
             - globals.set:
                 id: intensity_red
                 value: '.0'
