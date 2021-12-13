@@ -15,6 +15,11 @@ esphome:
 status_led:
   pin: GPIO25
 
+# CWX CR02 valve pinout:
+# Yellow - common negative - relay_1 NO
+# Red - open positive - relay_2 NO
+# Blue - close positive - relay_2 NC
+
 switch:
   - platform: gpio
     pin: GPIO21
@@ -37,14 +42,21 @@ switch:
     name: "Relay 4"
     internal: true
   - platform: template
-    id: "water_cutoff"
+    id: water_cutoff
     name: "Water cutoff"
+    restore_state: yes
     turn_on_action:
+      - switch.template.publish:
+          id: water_cutoff
+          state: ON
       - switch.turn_on: relay_1
       - switch.turn_off: relay_2
       - delay: 10000ms
       - switch.turn_off: relay_1
     turn_off_action:
+      - switch.template.publish:
+          id: water_cutoff
+          state: OFF
       - switch.turn_on: relay_1
       - switch.turn_on: relay_2
       - delay: 10000ms
@@ -54,7 +66,7 @@ switch:
 binary_sensor:
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:1C:23"
-    bindkey: "135c6a0dfd63105a04851ba36fdd40d3"
+    bindkey: "47b658e2288541239bb8ab4b79d75039"
     name: "Boiler Leak sensor"
     on_press:
       - switch.turn_on: water_cutoff
@@ -62,7 +74,7 @@ binary_sensor:
       name: "Boiler Leak sensor battery level"
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:29:F6"
-    bindkey: "9a3e77be866d5948a53ca692bddfbcdc"
+    bindkey: "0daf32121dbdd402144b0cf33ea70557"
     name: "Filter Leak sensor"
     on_press:
       - switch.turn_on: water_cutoff
