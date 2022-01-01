@@ -5,6 +5,7 @@ logger:
 api:
 
 ota:
+  id: my_ota
   password: !secret ota_password
 
 wifi:
@@ -23,4 +24,23 @@ captive_portal:
 sensor:
   - platform: wifi_signal
     name: "${device_name} WiFi Signal"
+    update_interval: 60s
+  - platform: uptime
+    id: uptime_seconds
+    name: "${device_name} uptime seconds"
+    update_interval: 60s
+
+text_sensor:
+  - platform: template
+    name: "${device_name} uptime"
+    lambda: |-
+      int seconds = (id(uptime_seconds).state);
+      int days = seconds / (24 * 3600);
+      seconds = seconds % (24 * 3600); 
+      int hours = seconds / 3600;
+      seconds = seconds % 3600;
+      int minutes = seconds /  60;
+      seconds = seconds % 60;
+      return { (String(days) +"d " + String(hours) +"h " + String(minutes) +"m "+ String(seconds) +"s").c_str() };
+    icon: mdi:clock-start
     update_interval: 60s

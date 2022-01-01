@@ -1,0 +1,52 @@
+substitutions:
+  device_name: boiler-cutoff
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name} 
+  platform: ESP8266
+  board: esp01_1m
+  esp8266_restore_from_flash: true
+
+logger:
+  baud_rate: 0
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+ 
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    id: relay_switch
+    on_press:
+      - switch.toggle: relay
+    internal: true
+
+switch:
+  - platform: gpio
+    id: relay
+    name: "Cutoff relay"
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_OFF
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes
+   
+sensor:
+  - platform: cse7766
+    current:
+      name: "${device_name} Current (A)"
+    voltage:
+      name: "${device_name} Voltage (V)"
+    power:
+      name: "${device_name} Power (W)"
+    energy:
+      name: "${device_name} Energy (Wh)"

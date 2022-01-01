@@ -42,6 +42,19 @@ light:
           name: flicker
           alpha: 95%
           intensity: 1.5%
+      - addressable_rainbow:
+      - addressable_rainbow:
+          name: Rainbow Effect With Custom Values 1
+          speed: 1
+          width: 50
+      - addressable_rainbow:
+          name: Rainbow Effect With Custom Values 2
+          speed: 100
+          width: 50
+      - addressable_rainbow:
+          name: Rainbow Effect With Custom Values 3
+          speed: 50
+          width: 70
 
 time:
   - platform: sntp

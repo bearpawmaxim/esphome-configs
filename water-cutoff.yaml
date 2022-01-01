@@ -16,44 +16,21 @@ status_led:
   pin: GPIO25
 
 # CWX CR02 valve pinout:
-# Yellow - common negative - relay_1 NO
-# Red - open positive - relay_2 NO
-# Blue - close positive - relay_2 NC
-
-switch:
-  - platform: gpio
-    pin: GPIO21
-    id: "relay_1"
-    name: "Relay 1"
-    internal: true
-  - platform: gpio
-    pin: GPIO19
-    id: "relay_2"
-    name: "Relay 2"
-    internal: true
-  - platform: gpio
-    pin: GPIO18
-    id: "relay_3"
-    name: "Relay 3"
-    internal: true
-  - platform: gpio
-    pin: GPIO05
-    id: "relay_4"
-    name: "Relay 4"
-    internal: true
-  - platform: template
-    id: water_cutoff
-    name: "Water cutoff"
-    restore_state: yes
-    turn_on_action:
+# Yellow (black) - common negative - relay_1 NO
+# Red (red) - open positive - relay_2 NO
+# Blue (white-blue) - close positive - relay_2 NC
+script:
+  - id: open_valve
+    then:
       - switch.template.publish:
           id: water_cutoff
           state: ON
       - switch.turn_on: relay_1
       - switch.turn_off: relay_2
       - delay: 10000ms
-      - switch.turn_off: relay_1
-    turn_off_action:
+      - switch.turn_off: relay_1 
+  - id: close_valve
+    then:
       - switch.template.publish:
           id: water_cutoff
           state: OFF
@@ -63,7 +40,61 @@ switch:
       - switch.turn_off: relay_1
       - switch.turn_off: relay_2
 
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Kiev
+    on_time:
+      - days_of_week: FRI
+        hours: 14
+        minutes: 00
+        seconds: 00
+        then:
+          - if:
+              condition:
+                switch.is_on: water_cutoff
+              then:
+                - script.execute: close_valve
+                - delay: 10000ms
+                - script.execute: open_valve
+
+switch:
+    # Relay 1
+  - platform: gpio
+    pin: GPIO21
+    id: "relay_1"
+    name: "Relay 1"
+    internal: true
+    # Relay 2
+  - platform: gpio
+    pin: GPIO19
+    id: "relay_2"
+    name: "Relay 2"
+    internal: true
+    # Relay 3
+  - platform: gpio
+    pin: GPIO18
+    id: "relay_3"
+    name: "Relay 3"
+    internal: true
+    # Relay 4
+  - platform: gpio
+    pin: GPIO05
+    id: "relay_4"
+    name: "Relay 4"
+    internal: true
+    # valve switch
+  - platform: template
+    id: water_cutoff
+    name: "Water cutoff"
+    restore_state: yes
+    turn_on_action:
+      - script.execute: open_valve
+    turn_off_action:
+      - script.execute: close_valve
+
 binary_sensor:
+    # Boiler leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:1C:23"
     bindkey: "47b658e2288541239bb8ab4b79d75039"
@@ -72,6 +103,7 @@ binary_sensor:
       - switch.turn_on: water_cutoff
     battery_level:
       name: "Boiler Leak sensor battery level"
+    # Filter leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:29:F6"
     bindkey: "0daf32121dbdd402144b0cf33ea70557"
@@ -80,6 +112,7 @@ binary_sensor:
       - switch.turn_on: water_cutoff
     battery_level:
       name: "Filter Leak sensor battery level"
+    # Shower leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:28:CD"
     bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
@@ -88,6 +121,7 @@ binary_sensor:
       - switch.turn_on: water_cutoff
     battery_level:
       name: "Shower Leak sensor battery level"
+    # Laundry leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:12:9A"
     bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
@@ -96,6 +130,7 @@ binary_sensor:
       - switch.turn_on: water_cutoff
     battery_level:
       name: "Laundry Leak sensor battery level"
+    # Toilet leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:16:16"
     bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
@@ -104,6 +139,7 @@ binary_sensor:
       - switch.turn_on: water_cutoff
     battery_level:
       name: "Toilet Leak sensor battery level"
+    # Kitchen leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:18:4A"
     bindkey: "b2354449e4782b6d326858011afb0f12"
