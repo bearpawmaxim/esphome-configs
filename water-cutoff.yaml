@@ -45,7 +45,7 @@ time:
     id: sntp_time
     timezone: Europe/Kiev
     on_time:
-      - days_of_week: FRI
+      - days_of_week: MON
         hours: 14
         minutes: 00
         seconds: 00

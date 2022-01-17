@@ -72,44 +72,28 @@ private:
     byte poll[13] = {255,255,10,0,0,0,0,0,1,1,77,1,90};
     byte on[13] = {255,255,10,0,0,0,0,0,1,1,77,2,91};
 
-
-
 public:
 
     Haier() : PollingComponent(5 * 1000) {
         lastCRC = 0;
     }
 
-
-    
     void setup() override {
-        
         Serial.begin(9600);
-        
-        
     }
 
     void loop() override  {
-
-
         if (Serial.available() > 0) {
-            
-			if (Serial.read() != 255) return;
-			if (Serial.read() != 255) return;
-			
-			data[0] = 255;
-			data[1] = 255;
-
+            if (Serial.read() != 255) return;
+            if (Serial.read() != 255) return;
+            data[0] = 255;
+            data[1] = 255;
             Serial.readBytes(data+2, sizeof(data)-2);
-
             readData();
-
         }
-
     }
 
     void update() override {
-            
         Serial.write(poll, sizeof(poll));
         auto raw = getHex(poll, sizeof(poll));
         ESP_LOGD("Haier", "POLL: %s ", raw.c_str());
@@ -118,12 +102,8 @@ public:
 protected:
     ClimateTraits traits() override {
         auto traits = climate::ClimateTraits();
-
-
         traits.set_supports_action(true);
-
-        traits.set_supported_modes(
-        {
+        traits.set_supported_modes({
             climate::CLIMATE_MODE_OFF,
             climate::CLIMATE_MODE_HEAT_COOL,
             climate::CLIMATE_MODE_COOL,
@@ -132,8 +112,7 @@ protected:
             climate::CLIMATE_MODE_DRY
         });
 
-        traits.set_supported_fan_modes(
-        {
+        traits.set_supported_fan_modes({
             climate::CLIMATE_FAN_AUTO,
             climate::CLIMATE_FAN_LOW,
             climate::CLIMATE_FAN_MEDIUM,
@@ -141,8 +120,7 @@ protected:
             climate::CLIMATE_FAN_MIDDLE,
         });
 
-        traits.set_supported_swing_modes(
-        {
+        traits.set_supported_swing_modes({
             climate::CLIMATE_SWING_OFF,
             climate::CLIMATE_SWING_BOTH,
             climate::CLIMATE_SWING_VERTICAL,
@@ -161,14 +139,9 @@ protected:
 public:
 
     void readData() {
-
-
         auto raw = getHex(data, sizeof(data));
         ESP_LOGD("Haier", "Readed message: %s ", raw.c_str());
-
-
         byte check = data[CRC];
-
         getChecksum(data, sizeof(data));
 
         if (check != data[CRC]) {
@@ -176,9 +149,7 @@ public:
             return;
         }
 
-
         lastCRC = check;
-
         current_temperature = data[TEMPERATURE];
         target_temperature = data[SET_TEMPERATURE] + 16;
 
@@ -188,9 +159,7 @@ public:
             return;
         }
 
-
         if (data[POWER] & ( 1 << POWER_BIT_ON )) {
-
             switch (data[MODE]) {
                 case MODE_COOL:
                     mode = CLIMATE_MODE_COOL;
@@ -230,7 +199,7 @@ public:
             }
 
             switch (data[SWING]) {
-                case SWING_OFF: 
+                case SWING_OFF:
                     if ( data[SWING_POS] & ( 1 << SWING_VERTICAL_BIT )) {
                         swing_mode = CLIMATE_SWING_VERTICAL;
                     } else if ( data[SWING_POS] & ( 1 << SWING_HORIZONTAL_BIT )) {
@@ -243,7 +212,7 @@ public:
                     swing_mode = CLIMATE_SWING_BOTH;
                     break;
 
-            } 
+            }
         } else {
             mode = CLIMATE_MODE_OFF;
             //fan_mode = CLIMATE_FAN_OFF;
@@ -251,7 +220,6 @@ public:
         }
 
         this->publish_state();
-
     }
 
 // Climate control
@@ -368,20 +336,16 @@ public:
 
     }
 
-
     void sendData(byte * message, byte size) {
-
         byte crc = getChecksum(message, size);
         Serial.write(message, size-1);
         Serial.write(crc);
 
         auto raw = getHex(message, size);
         ESP_LOGD("Haier", "Sended message: %s ", raw.c_str());
-
     }
 
     String getHex(byte * message, byte size) {
-
         String raw;
 
         for (int i=0; i < size; i++){
@@ -391,8 +355,6 @@ public:
         raw.toUpperCase();
 
         return raw;
-
-
     }
 
     byte getChecksum(const byte * message, size_t size) {
@@ -403,10 +365,7 @@ public:
             crc += message[i];
 
         return crc;
-
     }
-
-
 
 
 };

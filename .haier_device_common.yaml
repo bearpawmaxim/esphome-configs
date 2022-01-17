@@ -9,6 +9,11 @@ logger:
   level: DEBUG
   baud_rate: 0
 
+status_led:
+  pin:
+    number: GPIO2
+    inverted: yes
+
 time:
   - platform: sntp
     id: sntp_time

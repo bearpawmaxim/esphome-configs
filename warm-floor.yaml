@@ -14,7 +14,13 @@ uart:
   tx_pin: GPIO1
   baud_rate: 9600
 
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Kiev
+
 tuya:
+  time_id: sntp_time
 
 climate:
   - platform: tuya
@@ -27,5 +33,6 @@ climate:
     
 switch:
   - platform: "tuya"
-    name: "Warm floor locked"
+    name: "Warm floor lock"
     switch_datapoint: 40
+
