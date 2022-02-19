@@ -3,7 +3,7 @@ esphome:
   platform: ESP8266
   board: d1_mini
   includes:
-    - includes/Haier.h
+    - includes/HaierV2.h
 
 logger:
   level: DEBUG
