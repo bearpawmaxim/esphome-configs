@@ -63,6 +63,43 @@ using namespace esphome::climate;
 #define MIN_VALID_INTERNAL_TEMP 10
 #define MAX_VALID_INTERNAL_TEMP 50
 
+//class UARTWrapper : public UARTComponent {
+class UARTWrapper {
+
+private:
+    UARTComponent* _uart;
+
+public:
+    UARTWrapper(UARTComponent* uart) {
+        _uart = uart;
+    }
+
+    void begin(uint16_t baudRate) {}
+
+    int available() {
+        return _uart->available();
+    }
+
+    void write(const uint8_t* data, uint8_t len) {
+        _uart->write_array(data, len);
+    }
+
+    void write(const uint8_t data) {
+        _uart->write_byte(data);
+    }
+
+    int read() {
+        uint8_t byte;
+        _uart->read_byte(&byte);
+        return byte;
+    }
+
+    void readBytes(uint8_t* buffer, uint8_t len) {
+        _uart->read_array(buffer, len);
+    }
+
+};
+
 class Haier : public Climate, public PollingComponent {
 
 private:
@@ -71,30 +108,32 @@ private:
     byte data[37];
     byte poll[13] = {255,255,10,0,0,0,0,0,1,1,77,1,90};
     byte on[13] = {255,255,10,0,0,0,0,0,1,1,77,2,91};
+    UARTWrapper* _serial;
 
 public:
 
-    Haier() : PollingComponent(5 * 1000) {
+    Haier(UARTComponent* serial) : PollingComponent(5 * 1000) {
+        _serial = new UARTWrapper(serial);
         lastCRC = 0;
     }
 
     void setup() override {
-        Serial.begin(9600);
+        _serial->begin(9600);
     }
 
-    void loop() override  {
-        if (Serial.available() > 0) {
-            if (Serial.read() != 255) return;
-            if (Serial.read() != 255) return;
+    void loop() override {
+        if (_serial->available() > 0) {
+            if (_serial->read() != 255) return;
+            if (_serial->read() != 255) return;
             data[0] = 255;
             data[1] = 255;
-            Serial.readBytes(data+2, sizeof(data)-2);
+            _serial->readBytes(data + 2, sizeof(data) - 2);
             readData();
         }
     }
 
     void update() override {
-        Serial.write(poll, sizeof(poll));
+        _serial->write(poll, sizeof(poll));
         auto raw = getHex(poll, sizeof(poll));
         ESP_LOGD("Haier", "POLL: %s ", raw.c_str());
     }
@@ -153,13 +192,13 @@ public:
         current_temperature = data[TEMPERATURE];
         target_temperature = data[SET_TEMPERATURE] + 16;
 
-        if(current_temperature < MIN_VALID_INTERNAL_TEMP || current_temperature > MAX_VALID_INTERNAL_TEMP 
-            || target_temperature < MIN_SET_TEMPERATURE || target_temperature > MAX_SET_TEMPERATURE){
+        if (current_temperature < MIN_VALID_INTERNAL_TEMP || current_temperature > MAX_VALID_INTERNAL_TEMP 
+            || target_temperature < MIN_SET_TEMPERATURE || target_temperature > MAX_SET_TEMPERATURE) {
             ESP_LOGW("Haier", "Invalid temperatures");
             return;
         }
 
-        if (data[POWER] & ( 1 << POWER_BIT_ON )) {
+        if (data[POWER] & (1 << POWER_BIT_ON)) {
             switch (data[MODE]) {
                 case MODE_COOL:
                     mode = CLIMATE_MODE_COOL;
@@ -222,7 +261,7 @@ public:
         this->publish_state();
     }
 
-// Climate control
+    // Climate control
     void control(const ClimateCall &call) override {
 
         if (call.get_mode().has_value())
@@ -336,21 +375,20 @@ public:
 
     }
 
-    void sendData(byte * message, byte size) {
+    void sendData(byte* message, byte size) {
         byte crc = getChecksum(message, size);
-        Serial.write(message, size-1);
-        Serial.write(crc);
+        _serial->write(message, size - 1);
+        _serial->write(crc);
 
         auto raw = getHex(message, size);
         ESP_LOGD("Haier", "Sended message: %s ", raw.c_str());
     }
 
-    String getHex(byte * message, byte size) {
+    String getHex(byte* message, byte size) {
         String raw;
 
-        for (int i=0; i < size; i++){
+        for (int i=0; i < size; i++) {
             raw += "\n" + String(i) + "-" + String(message[i]);
-
         }
         raw.toUpperCase();
 
@@ -361,12 +399,12 @@ public:
         byte position = size - 1;
         byte crc = 0;
 
-        for (int i = 2; i < position; i++)
+        for (int i = 2; i < position; i++) {
             crc += message[i];
+        }
 
         return crc;
     }
-
 
 };
 

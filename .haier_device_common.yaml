@@ -3,11 +3,18 @@ esphome:
   platform: ESP8266
   board: d1_mini
   includes:
-    - includes/HaierV2.h
+    - includes/Haier.h
 
 logger:
   level: DEBUG
   baud_rate: 0
+
+uart:
+  id: haier_uart
+  tx_pin: D8
+  rx_pin: D7
+  baud_rate: 9600
+  rx_buffer_size: 50
 
 status_led:
   pin:
@@ -22,7 +29,8 @@ time:
 climate:
   - platform: custom
     lambda: |-
-      auto haier = new Haier();
+      auto uart = id(haier_uart);
+      auto haier = new Haier(uart);
       App.register_component(haier);
       return {haier};
     climates:
