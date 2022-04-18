@@ -63,7 +63,6 @@ using namespace esphome::climate;
 #define MIN_VALID_INTERNAL_TEMP 10
 #define MAX_VALID_INTERNAL_TEMP 50
 
-//class UARTWrapper : public UARTComponent {
 class UARTWrapper {
 
 private:

@@ -3,7 +3,7 @@ esphome:
   platform: ESP8266
   board: d1_mini
   includes:
-    - includes/Haier.h
+    - includes/HaierV2.h
 
 logger:
   level: DEBUG
@@ -11,10 +11,10 @@ logger:
 
 uart:
   id: haier_uart
-  tx_pin: D8
-  rx_pin: D7
+  tx_pin: D6
+  rx_pin: D5
   baud_rate: 9600
-  rx_buffer_size: 50
+  rx_buffer_size: 64
 
 status_led:
   pin:
