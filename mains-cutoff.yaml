@@ -9,9 +9,31 @@ esphome:
   platform: ESP8266
   board: esp8285
   esp8266_restore_from_flash: true
-#  on_boot:
-#  - lambda: |-
-#      id(my_ota).set_auth_password("${!secret ota_password}");
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+uart:
+  rx_pin: GPIO3
+  tx_pin: GPIO1
+  baud_rate: 9600
+
+sensor:
+  - platform: pzemac
+    current:
+      name: "Mains Current"
+    voltage:
+      name: "Mains Voltage"
+    energy:
+      name: "Mains Energy"
+    power:
+      name: "Mains Power"
+    frequency:
+      name: "Mains Frequency"
+    power_factor:
+      name: "Mains Power Factor"
+    update_interval: 60s
 
 ota:
   password: !secret ota_password
