@@ -5,6 +5,9 @@ esphome:
   includes:
     - includes/HaierV2.h
 
+packages:
+  device_common: !include .device_common.yaml
+
 logger:
   level: DEBUG
   baud_rate: 0
@@ -21,11 +24,6 @@ status_led:
     number: GPIO2
     inverted: yes
 
-time:
-  - platform: sntp
-    id: sntp_time
-    timezone: Europe/Kiev 
-
 climate:
   - platform: custom
     lambda: |-
@@ -36,5 +34,3 @@ climate:
     climates:
       - name: ${climate_name}
 
-packages:
-  device_common: !include .device_common.yaml

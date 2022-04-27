@@ -58,8 +58,6 @@ light:
 
 time:
   - platform: sntp
-    id: sntp_time
-    timezone: Europe/Kiev
     on_time_sync:
       then:
         - script.execute: set_daylight_color

@@ -1,5 +1,6 @@
 substitutions:
   device_name: boiler-cutoff
+  device_name_underscore: boiler_cutoff
 
 packages:
   device_common: !include .device_common.yaml
@@ -44,9 +45,22 @@ sensor:
   - platform: cse7766
     current:
       name: "${device_name} Current (A)"
+      id: "${device_name_underscore}_current"
     voltage:
       name: "${device_name} Voltage (V)"
+      id: "${device_name_underscore}_voltage"
     power:
       name: "${device_name} Power (W)"
+      id: "${device_name_underscore}_power"
     energy:
       name: "${device_name} Energy (Wh)"
+      id: "${device_name_underscore}_energy"
+  - platform: total_daily_energy
+    name: "${device_name} Total Daily Energy (kWh)"
+    power_id: "${device_name_underscore}_power"
+    id: "${device_name_underscore}_daily_energy"
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: kWh
+    accuracy_decimals: 2
+    device_class: energy

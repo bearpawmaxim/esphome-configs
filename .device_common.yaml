@@ -21,6 +21,11 @@ wifi:
 
 captive_portal:
 
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Kiev
+
 sensor:
   - platform: wifi_signal
     name: "${device_name} WiFi Signal"

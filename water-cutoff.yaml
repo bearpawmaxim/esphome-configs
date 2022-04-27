@@ -42,8 +42,6 @@ script:
 
 time:
   - platform: sntp
-    id: sntp_time
-    timezone: Europe/Kiev
     on_time:
       - days_of_week: MON
         hours: 14
