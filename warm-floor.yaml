@@ -8,16 +8,14 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp01_1m
-  
+
+logger:
+  baud_rate: 0
+
 uart:
   rx_pin: GPIO3
   tx_pin: GPIO1
   baud_rate: 9600
-
-time:
-  - platform: sntp
-    id: sntp_time
-    timezone: Europe/Kiev
 
 tuya:
   time_id: sntp_time
@@ -29,10 +27,9 @@ climate:
     target_temperature_datapoint: 16
     target_temperature_multiplier: 1.0
     current_temperature_datapoint: 24
-    current_temperature_multiplier: 10.0
-    
+    current_temperature_multiplier: 0.1
+
 switch:
   - platform: "tuya"
     name: "Warm floor lock"
     switch_datapoint: 40
-
