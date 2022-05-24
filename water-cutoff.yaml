@@ -1,6 +1,12 @@
 substitutions:
   device_name: water-cutoff
 
+globals:
+  - id: valve_is_open
+    type: bool
+    restore_value: yes
+    initial_value: "true"
+
 external_components:
   - source: github://dentra/esphome-components
 
@@ -20,25 +26,29 @@ status_led:
 # Red (red) - open positive - relay_2 NO
 # Blue (white-blue) - close positive - relay_2 NC
 script:
+
+  # Open valve script
   - id: open_valve
     then:
-      - switch.template.publish:
-          id: water_cutoff
-          state: ON
-      - switch.turn_on: relay_1
-      - switch.turn_off: relay_2
-      - delay: 10000ms
-      - switch.turn_off: relay_1 
-  - id: close_valve
-    then:
-      - switch.template.publish:
-          id: water_cutoff
-          state: OFF
       - switch.turn_on: relay_1
       - switch.turn_on: relay_2
       - delay: 10000ms
       - switch.turn_off: relay_1
       - switch.turn_off: relay_2
+      - globals.set:
+          id: valve_is_open
+          value: "true"
+
+  # Close valve script
+  - id: close_valve
+    then:
+      - switch.turn_on: relay_1
+      - switch.turn_off: relay_2
+      - delay: 10000ms
+      - switch.turn_off: relay_1
+      - globals.set:
+          id: valve_is_open
+          value: "false"
 
 time:
   - platform: sntp
@@ -50,99 +60,113 @@ time:
         then:
           - if:
               condition:
-                switch.is_on: water_cutoff
+                lambda: |-
+                  return id(valve_is_open);
               then:
                 - script.execute: close_valve
                 - delay: 10000ms
                 - script.execute: open_valve
 
 switch:
-    # Relay 1
+
+  # Relay 1
   - platform: gpio
     pin: GPIO21
     id: "relay_1"
     name: "Relay 1"
     internal: true
-    # Relay 2
+
+  # Relay 2
   - platform: gpio
     pin: GPIO19
     id: "relay_2"
     name: "Relay 2"
     internal: true
-    # Relay 3
+
+  # Relay 3
   - platform: gpio
     pin: GPIO18
     id: "relay_3"
     name: "Relay 3"
     internal: true
-    # Relay 4
+
+  # Relay 4
   - platform: gpio
     pin: GPIO05
     id: "relay_4"
     name: "Relay 4"
     internal: true
-    # valve switch
+
+  # Valve switch
   - platform: template
     id: water_cutoff
     name: "Water cutoff"
-    restore_state: yes
+    restore_state: no
     turn_on_action:
       - script.execute: open_valve
     turn_off_action:
       - script.execute: close_valve
+    lambda: |-
+      return id(valve_is_open);
 
 binary_sensor:
-    # Boiler leak sensor
+
+  # Boiler leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:1C:23"
     bindkey: "47b658e2288541239bb8ab4b79d75039"
     name: "Boiler Leak sensor"
     on_press:
-      - switch.turn_on: water_cutoff
+      - switch.turn_off: water_cutoff
     battery_level:
       name: "Boiler Leak sensor battery level"
-    # Filter leak sensor
+
+  # Filter leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:29:F6"
     bindkey: "0daf32121dbdd402144b0cf33ea70557"
     name: "Filter Leak sensor"
     on_press:
-      - switch.turn_on: water_cutoff
+      - switch.turn_off: water_cutoff
     battery_level:
       name: "Filter Leak sensor battery level"
-    # Shower leak sensor
+
+  # Shower leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:28:CD"
     bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
     name: "Shower Leak sensor"
     on_press:
-      - switch.turn_on: water_cutoff
+      - switch.turn_off: water_cutoff
     battery_level:
       name: "Shower Leak sensor battery level"
-    # Laundry leak sensor
+
+  # Laundry leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:12:9A"
     bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
     name: "Laundry Leak sensor"
     on_press:
-      - switch.turn_on: water_cutoff
+      - switch.turn_off: water_cutoff
     battery_level:
       name: "Laundry Leak sensor battery level"
-    # Toilet leak sensor
+
+  # Toilet leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:16:16"
     bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
     name: "Toilet Leak sensor"
     on_press:
-      - switch.turn_on: water_cutoff
+      - switch.turn_off: water_cutoff
     battery_level:
       name: "Toilet Leak sensor battery level"
-    # Kitchen leak sensor
+
+  # Kitchen leak sensor
   - platform: miot_sjws01lm
     mac_address: "54:EF:44:E5:18:4A"
     bindkey: "b2354449e4782b6d326858011afb0f12"
     name: "Kitchen Leak sensor"
     on_press:
-      - switch.turn_on: water_cutoff
+      - switch.turn_off: water_cutoff
     battery_level:
       name: "Kitchen Leak sensor battery level"
