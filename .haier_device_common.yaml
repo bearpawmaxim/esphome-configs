@@ -14,10 +14,9 @@ logger:
 
 uart:
   id: haier_uart
-  tx_pin: D6
-  rx_pin: D5
+  tx_pin: GPIO01
+  rx_pin: GPIO03
   baud_rate: 9600
-  rx_buffer_size: 64
 
 status_led:
   pin:
@@ -33,4 +32,3 @@ climate:
       return {haier};
     climates:
       - name: ${climate_name}
-

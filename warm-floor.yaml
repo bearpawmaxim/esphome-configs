@@ -28,8 +28,19 @@ climate:
     target_temperature_multiplier: 1.0
     current_temperature_datapoint: 24
     current_temperature_multiplier: 0.1
+    active_state_datapoint: 36
+    active_state_heating_value: 0
 
 switch:
   - platform: "tuya"
     name: "Warm floor lock"
     switch_datapoint: 40
+
+select:
+  - platform: "tuya"
+    name: "Warm floor sensor selection"
+    enum_datapoint: 43
+    options:
+      0: Internal
+      1: Floor
+      2: Both
