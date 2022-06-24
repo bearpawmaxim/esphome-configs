@@ -1,14 +1,6 @@
 substitutions:
   device_name: "ajax-armed-sense"
 
-globals:
-  - id: last_on
-    type: uint32_t
-  - id: blink_frequency_ms
-    type: uint32_t
-    restore_value: no
-    initial_value: "2000"
-
 packages:
   device_common: !include .device_common.yaml
 
@@ -29,16 +21,9 @@ sensor:
     internal: true
 
 binary_sensor:
-#  - platform: gpio
-#    pin: D7
-#    name: "AJAX HomeSiren LED"
-#    on_press:
-#      - globals.set:
-#          id: last_on
-#          value: >-
-#            millis()
   - platform: template
     name: "AJAX armed state"
+    device_class: running
+    icon: "mdi:shield"
     lambda: >-
       return id(ajax_homesiren_led_pulses).state > 0;
-      //return millis() - id(last_on) <= id(blink_frequency_ms);
