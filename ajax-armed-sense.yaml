@@ -1,0 +1,44 @@
+substitutions:
+  device_name: "ajax-armed-sense"
+
+globals:
+  - id: last_on
+    type: uint32_t
+  - id: blink_frequency_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "2000"
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: d1_mini
+
+sensor:
+  - platform: pulse_meter
+    pin:
+      number: D7
+      inverted: true
+    id: ajax_homesiren_led_pulses
+    name: "AJAX HomeSiren LED Pulses"
+    timeout: 5s
+    internal_filter_mode: EDGE
+    internal: true
+
+binary_sensor:
+#  - platform: gpio
+#    pin: D7
+#    name: "AJAX HomeSiren LED"
+#    on_press:
+#      - globals.set:
+#          id: last_on
+#          value: >-
+#            millis()
+  - platform: template
+    name: "AJAX armed state"
+    lambda: >-
+      return id(ajax_homesiren_led_pulses).state > 0;
+      //return millis() - id(last_on) <= id(blink_frequency_ms);

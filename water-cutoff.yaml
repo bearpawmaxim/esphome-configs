@@ -6,6 +6,10 @@ globals:
     type: bool
     restore_value: yes
     initial_value: "true"
+  - id: test_mode
+    type: bool
+    restore_value: yes
+    initial_value: "false"
 
 external_components:
   - source: github://dentra/esphome-components
@@ -42,13 +46,18 @@ script:
   # Close valve script
   - id: close_valve
     then:
-      - switch.turn_on: relay_1
-      - switch.turn_off: relay_2
-      - delay: 10000ms
-      - switch.turn_off: relay_1
-      - globals.set:
-          id: valve_is_open
-          value: "false"
+      - if:
+          condition:
+            lambda: |-
+              return !id(test_mode);
+          then:
+            - switch.turn_on: relay_1
+            - switch.turn_off: relay_2
+            - delay: 10000ms
+            - switch.turn_off: relay_1
+            - globals.set:
+                id: valve_is_open
+                value: "false"
 
 time:
   - platform: sntp
@@ -108,6 +117,21 @@ switch:
       - script.execute: close_valve
     lambda: |-
       return id(valve_is_open);
+      
+  - platform: template
+    id: water_cutoff_test_mode
+    name: "Water cutoff test mode"
+    restore_state: no
+    lambda: |-
+      return id(test_mode);
+    turn_on_action:
+      - globals.set:
+          id: test_mode
+          value: "true"
+    turn_off_action:
+      - globals.set:
+          id: test_mode
+          value: "false"
 
 binary_sensor:
 
