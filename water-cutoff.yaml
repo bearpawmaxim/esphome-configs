@@ -13,6 +13,7 @@ globals:
 
 external_components:
   - source: github://dentra/esphome-components
+    components: [ 'miot', 'xiaomi_account', 'miot_sjws01lm' ]
 
 packages:
   device_common: !include .device_common.yaml
@@ -62,8 +63,10 @@ script:
 time:
   - platform: sntp
     on_time:
+
+      # Maintenance timer: close and open valve every monday at 15:00
       - days_of_week: MON
-        hours: 14
+        hours: 15
         minutes: 00
         seconds: 00
         then:
@@ -117,7 +120,8 @@ switch:
       - script.execute: close_valve
     lambda: |-
       return id(valve_is_open);
-      
+
+  # Test mode switch
   - platform: template
     id: water_cutoff_test_mode
     name: "Water cutoff test mode"
@@ -194,3 +198,54 @@ binary_sensor:
       - switch.turn_off: water_cutoff
     battery_level:
       name: "Kitchen Leak sensor battery level"
+
+  # Washstand leak sensor
+  #- platform: miot_sjws01lm
+  #  mac_address: "54:EF:44:E1:04:EE"
+  #  bindkey: "a1d7c4308f00fe320ac87cdcad02d7e0"
+  #  name: "Washstand Leak sensor"
+  #  on_press:
+  #    - switch.turn_off: water_cutoff
+  #  battery_level:
+  #    name: "Washstand Leak sensor battery level"
+
+# 54:EF:44:E1:04:EE - 54EF44E104EE
+# token 421583c260f29c8e39292cb3
+# bindkey a1d7c4308f00fe320ac87cdcad02d7e0
+
+sensor:
+
+  # Boiler leak sensor
+  - platform: ble_rssi
+    mac_address: "54:EF:44:E5:1C:23"
+    name: "Boiler Leak sensor RSSI"
+
+  # Filter leak sensor
+  - platform: ble_rssi
+    mac_address: "54:EF:44:E5:29:F6"
+    name: "Filter Leak sensor RSSI"
+
+  # Shower leak sensor
+  - platform: ble_rssi
+    mac_address: "54:EF:44:E5:28:CD"
+    name: "Shower Leak sensor RSSI"
+
+  # Laundry leak sensor
+  - platform: ble_rssi
+    mac_address: "54:EF:44:E5:12:9A"
+    name: "Laundry Leak sensor RSSI"
+
+  # Toilet leak sensor
+  - platform: ble_rssi
+    mac_address: "54:EF:44:E5:16:16"
+    name: "Toilet Leak sensor RSSI"
+
+  # Kitchen leak sensor
+  - platform: ble_rssi
+    mac_address: "54:EF:44:E5:18:4A"
+    name: "Kitchen Leak sensor RSSI"
+    
+  # Washstand leak sensor
+  #- platform: ble_rssi
+  #  mac_address: "54:EF:44:E1:04:EE"
+  #  name: "Washstand Leak sensor RSSI"

@@ -16,14 +16,14 @@ sensor:
       inverted: true
     id: ajax_homesiren_led_pulses
     name: "AJAX HomeSiren LED Pulses"
-    timeout: 5s
+    timeout: 15s
     internal_filter_mode: EDGE
     internal: true
 
 binary_sensor:
   - platform: template
     name: "AJAX armed state"
-    device_class: running
     icon: "mdi:shield"
+    device_class: ''
     lambda: >-
       return id(ajax_homesiren_led_pulses).state > 0;

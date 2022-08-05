@@ -1,7 +1,5 @@
-# Enable logging
 logger:
 
-# Enable Home Assistant API
 api:
 
 ota:
@@ -13,8 +11,6 @@ wifi:
   password: !secret wifi_password
   reboot_timeout: 0s
   fast_connect: true
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: ${device_name}
     password: !secret wifi_ap_password
@@ -29,23 +25,8 @@ time:
 sensor:
   - platform: wifi_signal
     name: "${device_name} WiFi Signal"
-    update_interval: 60s
+    update_interval: 120s
   - platform: uptime
     id: uptime_seconds
     name: "${device_name} uptime seconds"
-    update_interval: 60s
-
-text_sensor:
-  - platform: template
-    name: "${device_name} uptime"
-    lambda: |-
-      int seconds = (id(uptime_seconds).state);
-      int days = seconds / (24 * 3600);
-      seconds = seconds % (24 * 3600); 
-      int hours = seconds / 3600;
-      seconds = seconds % 3600;
-      int minutes = seconds /  60;
-      seconds = seconds % 60;
-      return { (String(days) +"d " + String(hours) +"h " + String(minutes) +"m "+ String(seconds) +"s").c_str() };
-    icon: mdi:clock-start
-    update_interval: 60s
+    update_interval: 120s

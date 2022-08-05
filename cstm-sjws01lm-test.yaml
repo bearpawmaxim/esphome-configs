@@ -1,0 +1,32 @@
+substitutions:
+  device_name: "cstm-sjws01lm-test"
+
+external_components:
+  - source: github://dentra/esphome-components
+    components: [ 'miot', 'xiaomi_account', 'miot_sjws01lm' ]
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+binary_sensor:
+
+  # Boiler leak sensor
+  - platform: miot_sjws01lm
+    mac_address: "54:EF:44:E1:04:EE"
+    bindkey: "a1d7c4308f00fe320ac87cdcad02d7e0"
+    name: "Test Leak sensor"
+    battery_level:
+      name: "Test Leak sensor battery level"
+
+
+# 54:EF:44:E1:04:EE - 54EF44E104EE
+# token 421583c260f29c8e39292cb3
+# bindkey a1d7c4308f00fe320ac87cdcad02d7e0
