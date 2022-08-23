@@ -1,6 +1,7 @@
 substitutions:
   device_name: haier-childrens
   climate_name: "Children room AC"
+  climate_id: children_room_ac
   
 packages:
   haier_common: !include .haier_device_common.yaml

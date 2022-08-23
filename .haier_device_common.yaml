@@ -32,3 +32,4 @@ climate:
       return {haier};
     climates:
       - name: ${climate_name}
+        id: ${climate_id}

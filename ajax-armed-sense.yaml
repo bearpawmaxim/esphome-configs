@@ -1,6 +1,10 @@
 substitutions:
   device_name: "ajax-armed-sense"
 
+external_components:
+  - source: github://pr#3321
+    components: [pulse_meter]
+
 packages:
   device_common: !include .device_common.yaml
 
