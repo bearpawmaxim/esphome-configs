@@ -1,9 +1,10 @@
 esphome:
   name: ${device_name}
   platform: ESP8266
-  board: d1_mini
+  board: esp12e
   includes:
-    - includes/HaierV2.h
+#    - includes/HaierV2.h
+    - includes/HaierV2Test.h
 
 packages:
   device_common: !include .device_common.yaml
