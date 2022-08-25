@@ -60,24 +60,28 @@ script:
                 id: valve_is_open
                 value: "false"
 
+  # Maintenance script: closes valve for a 10 seconds every monday at 15:00
+  - id: run_maintenance
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(valve_is_open);
+          then:
+            - script.execute: close_valve
+            - delay: 10000ms
+            - script.execute: open_valve
 time:
   - platform: sntp
     on_time:
 
-      # Maintenance timer: close and open valve every monday at 15:00
+      # Maintenance timer: execute run_maintenance every monday at 15:00
       - days_of_week: MON
         hours: 15
         minutes: 00
         seconds: 00
         then:
-          - if:
-              condition:
-                lambda: |-
-                  return id(valve_is_open);
-              then:
-                - script.execute: close_valve
-                - delay: 10000ms
-                - script.execute: open_valve
+          - script.execute: run_maintenance
 
 switch:
 
