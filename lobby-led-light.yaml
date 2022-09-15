@@ -11,6 +11,19 @@ globals:
     type: float
     restore_value: no
     initial_value: '0'
+  # moon/sun color, 1-1-1 for sun.
+  - id: luminary_red
+    type: float
+    restore_value: no
+    initial_value: '1'
+  - id: luminary_green
+    type: float
+    restore_value: no
+    initial_value: '0.88'
+  - id: luminary_blue
+    type: float
+    restore_value: no
+    initial_value: '0'
 
 substitutions:
   device_name: lobby-led-light
@@ -22,10 +35,30 @@ esphome:
   name: ${device_name}
   platform: ESP32
   board: esp32doit-devkit-v1
+  includes:
+    - includes/led_rect_effect.h
   on_boot:
     priority: 300.0
     then:
       - script.execute: turn_on_light
+
+number:
+  - platform: template
+    id: wheel_angle
+    name: Wheel angle
+    mode: slider
+    min_value: 0
+    max_value: 360
+    step: 1
+    optimistic: true
+  - platform: template
+    id: led_num
+    name: Led number
+    mode: slider
+    min_value: 0
+    max_value: 300
+    step: 1
+    optimistic: true
 
 light:
   - platform: fastled_clockless
@@ -55,6 +88,60 @@ light:
           name: Rainbow Effect With Custom Values 3
           speed: 50
           width: 70
+      - addressable_lambda:
+          name: "LedRect auto wheel effect"
+          update_interval: 20ms
+          lambda: |-
+            static int16_t angle = 0;
+
+            uint8_t red = to_uint8_scale(id(intensity_red));
+            uint8_t green = to_uint8_scale(id(intensity_green));
+            uint8_t blue = to_uint8_scale(id(intensity_blue));
+            Color background_color = Color(red, green, blue);
+
+            uint8_t effect_red = to_uint8_scale(id(luminary_red));
+            uint8_t effect_green = to_uint8_scale(id(luminary_green));
+            uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
+            Color effect_color = Color(effect_red, effect_green, effect_blue);
+
+            it.all().set(background_color);
+            LedRectEffect::set_effect(it, effect_color, angle);
+
+            angle += 1;
+            if (angle > 360) {
+              angle -= 360;
+            }
+      - addressable_lambda:
+          name: "LedRect manual wheel effect"
+          update_interval: 200ms
+          lambda: |-
+            uint16_t angle = static_cast<uint16_t>(id(wheel_angle).state);
+
+            uint8_t red = to_uint8_scale(id(intensity_red));
+            uint8_t green = to_uint8_scale(id(intensity_green));
+            uint8_t blue = to_uint8_scale(id(intensity_blue));
+            Color background_color = Color(red, green, blue);
+
+            uint8_t effect_red = to_uint8_scale(id(luminary_red));
+            uint8_t effect_green = to_uint8_scale(id(luminary_green));
+            uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
+            Color effect_color = Color(effect_red, effect_green, effect_blue);
+
+            it.all().set(background_color);
+            LedRectEffect::set_effect(it, effect_color, angle);
+      - addressable_lambda:
+          name: "Set individual led"
+          update_interval: 20ms
+          lambda: |-
+            uint16_t num = static_cast<uint16_t>(id(led_num).state);
+
+            uint8_t red = to_uint8_scale(id(intensity_red));
+            uint8_t green = to_uint8_scale(id(intensity_green));
+            uint8_t blue = to_uint8_scale(id(intensity_blue));
+            Color background_color = Color(red, green, blue);
+
+            it.all().set(background_color);
+            it[num] = Color(255, 0, 0);
 
 time:
   - platform: sntp
@@ -109,6 +196,15 @@ script:
             - globals.set:
                 id: intensity_blue
                 value: '.11'
+            - globals.set:
+                id: luminary_red
+                value: '1.0'
+            - globals.set:
+                id: luminary_green
+                value: '1.0'
+            - globals.set:
+                id: luminary_blue
+                value: '1.0'
           else:
             - globals.set:
                 id: intensity_red
