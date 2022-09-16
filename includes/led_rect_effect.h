@@ -24,42 +24,42 @@ class LedRectEffect {
             }
 
             if (angle >= 0 && angle < 90) {
-                sideBLength = compute_len(30, angle);
+                sideBLength = compute_len(45, angle);
                 if (sideBLength >= maxSideBLength) {
-                    lengthOffset = 45;
-                    maxSideBLength = 30;
+                    lengthOffset = 30;
+                    maxSideBLength = 45;
                     isNegativeLength = true;
-                    sideBLength = compute_len(45, 90 - angle);
+                    sideBLength = compute_len(30, 90 - angle);
                 }
             } else if (angle >= 90 && angle < 180) {
-                maxSideBLength = 30;
-                lengthOffset = 75;
-                sideBLength = compute_len(45, angle - 90);
-                if (sideBLength >= 30) {
-                    lengthOffset = 105;
-                    maxSideBLength = 45;
-                    isNegativeLength = true;
-                    sideBLength = compute_len(30, 180 - angle);
-                }
-            } else if (angle >= 180 && angle < 270) {
                 maxSideBLength = 45;
-                lengthOffset = 150;
-                sideBLength = compute_len(30, angle - 180);
-                if (sideBLength >= 45) {
-                    lengthOffset = 195;
+                lengthOffset = 75;
+                sideBLength = compute_len(30, angle - 90);
+                if (sideBLength >= maxSideBLength) {
+                    lengthOffset = 120;
                     maxSideBLength = 30;
                     isNegativeLength = true;
-                    sideBLength = compute_len(45, 270 - angle);
+                    sideBLength = compute_len(45, 180 - angle);
                 }
-            } else {
+            } else if (angle >= 180 && angle < 270) {
                 maxSideBLength = 30;
-                lengthOffset = 225;
-                sideBLength = compute_len(45, angle - 270);
-                if (sideBLength >= 30) {
-                    lengthOffset = 255;
+                lengthOffset = 150;
+                sideBLength = compute_len(45, angle - 180);
+                if (sideBLength >= maxSideBLength) {
+                    lengthOffset = 180;
                     maxSideBLength = 45;
                     isNegativeLength = true;
-                    sideBLength = compute_len(30, 360 - angle);
+                    sideBLength = compute_len(30, 270 - angle);
+                }
+            } else {
+                maxSideBLength = 45;
+                lengthOffset = 225;
+                sideBLength = compute_len(30, angle - 270);
+                if (sideBLength >= maxSideBLength) {
+                    lengthOffset = 270;
+                    maxSideBLength = 30;
+                    isNegativeLength = true;
+                    sideBLength = compute_len(45, 360 - angle);
                 }
             }
 
