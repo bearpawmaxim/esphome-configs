@@ -68,8 +68,9 @@ class LedRectEffect {
 
     public:
         static void set_effect(light::AddressableLight &it, Color &color, uint16_t angle) {
-            int16_t startLedIdx = LedRectEffect::angle_to_led_number(angle - 10);
-            int16_t endLedIdx = LedRectEffect::angle_to_led_number(angle + 10);
+            int16_t cw_angle = 360 - angle;
+            int16_t startLedIdx = LedRectEffect::angle_to_led_number(cw_angle - 10);
+            int16_t endLedIdx = LedRectEffect::angle_to_led_number(cw_angle + 10);
 
             uint16_t length = abs(endLedIdx - startLedIdx);
             if (startLedIdx > endLedIdx) {
