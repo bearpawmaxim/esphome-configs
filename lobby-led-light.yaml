@@ -24,6 +24,10 @@ globals:
     type: float
     restore_value: no
     initial_value: '0'
+  - id: north_angle
+    type: integer
+    restore_value: no
+    initial_value: '340'
 
 substitutions:
   device_name: lobby-led-light
@@ -132,6 +136,26 @@ light:
 
             it.all().set(background_color);
             it[num] = Color(255, 0, 0);
+      - adressable_lambda:
+          name: "Moon/sun location"
+          update_interval: 60s
+          lambda: |-
+            uint8_t red = to_uint8_scale(id(intensity_red));
+            uint8_t green = to_uint8_scale(id(intensity_green));
+            uint8_t blue = to_uint8_scale(id(intensity_blue));
+            Color background_color = Color(red, green, blue);
+
+            uint8_t effect_red = to_uint8_scale(id(luminary_red));
+            uint8_t effect_green = to_uint8_scale(id(luminary_green));
+            uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
+            Color effect_color = Color(effect_red, effect_green, effect_blue);
+
+            uint16_t angle_to_north = static_cast<uint16_t>(
+              id(north_angle).state);
+            uint16_t luminary_azimuth = 0;
+            it.all().set(background_color);
+            LedRectEffect::set_effect(it, effect_color,
+              angle_to_north + luminary_azimuth); 
 
 time:
   - platform: sntp
