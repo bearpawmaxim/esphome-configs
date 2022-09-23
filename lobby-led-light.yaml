@@ -24,6 +24,12 @@ globals:
     type: float
     restore_value: no
     initial_value: '0'
+  - id: latitude
+    type: float
+    restore_value: no
+  - id: longitude
+    type: float
+    restore_value: no
   - id: north_angle
     type: integer
     restore_value: no
@@ -136,7 +142,7 @@ light:
 
             it.all().set(background_color);
             it[num] = Color(255, 0, 0);
-      - adressable_lambda:
+      - addressable_lambda:
           name: "Moon/sun location"
           update_interval: 60s
           lambda: |-
@@ -153,6 +159,10 @@ light:
             uint16_t angle_to_north = static_cast<uint16_t>(
               id(north_angle).state);
             uint16_t luminary_azimuth = 0;
+            
+            auto lat = !secret gps_latitude;
+            auto lon = !secret gps_longitude;
+            
             it.all().set(background_color);
             LedRectEffect::set_effect(it, effect_color,
               angle_to_north + luminary_azimuth); 
