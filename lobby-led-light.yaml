@@ -24,19 +24,15 @@ globals:
     type: float
     restore_value: no
     initial_value: '0'
-  - id: latitude
-    type: float
-    restore_value: no
-  - id: longitude
-    type: float
-    restore_value: no
   - id: north_angle
-    type: integer
+    type: uint16_t
     restore_value: no
     initial_value: '340'
 
 substitutions:
   device_name: lobby-led-light
+  latitude: "${!secret gps_latitude}"
+  longitude: "${!secret gps_longitude}"
 
 packages:
   device_common: !include .device_common.yaml
@@ -157,11 +153,11 @@ light:
             Color effect_color = Color(effect_red, effect_green, effect_blue);
 
             uint16_t angle_to_north = static_cast<uint16_t>(
-              id(north_angle).state);
+              id(north_angle));
             uint16_t luminary_azimuth = 0;
             
-            auto lat = !secret gps_latitude;
-            auto lon = !secret gps_longitude;
+            auto lat = "${latitude}";
+            auto lon = "${longitude}";
             
             it.all().set(background_color);
             LedRectEffect::set_effect(it, effect_color,
