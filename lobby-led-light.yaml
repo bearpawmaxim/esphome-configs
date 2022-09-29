@@ -31,8 +31,8 @@ globals:
 
 substitutions:
   device_name: lobby-led-light
-  latitude: "${!secret gps_latitude}"
-  longitude: "${!secret gps_longitude}"
+  latitude: "!secret {gps_latitude}"
+  longitude: "!secret {gps_longitude}"
 
 packages:
   device_common: !include .device_common.yaml
