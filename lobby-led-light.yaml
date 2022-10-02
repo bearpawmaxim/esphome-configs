@@ -28,6 +28,18 @@ globals:
     type: uint16_t
     restore_value: no
     initial_value: '340'
+  - id: gps_latitude
+    type: float
+    restore_value: no
+    initial_value: !secret gps_latitude
+  - id: gps_longitude
+    type: float
+    restore_value: no
+    initial_value: !secret gps_longitude
+  - id: gps_elevation
+    type: int8_t
+    restore_value: no
+    initial_value: !secret gps_elevation
 
 substitutions:
   device_name: lobby-led-light
@@ -49,6 +61,18 @@ esphome:
     priority: 300.0
     then:
       - script.execute: turn_on_light
+      - lambda: |-
+          float latitude = id(gps_latitude);
+          float longitude = id(gps_longitude);
+          int8_t elevation = id(gps_elevation);
+
+          Ephemeris::setLocationOnEarth(latitude, longitude);
+          Ephemeris::flipLongitude(true);
+          Ephemeris::setAltitude(elevation);
+
+external_components:
+  - source: github://bearpawmaxim/esphome@templatable_globals
+    components: [ globals ]
 
 number:
   - platform: template
@@ -152,13 +176,18 @@ light:
             uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
             Color effect_color = Color(effect_red, effect_green, effect_blue);
 
+            // TODO: get time and:
+            // 1. Comute Sun position
+            // 2. Detect sunrise/sunset
+            // 3. Compute Moon position if sun is above the horizon
+            // 4. Compute Sun/Moon azimuth and set corresponding angle in effect
+            // SolarSystemObject solarSystemObject = 
+            //    Ephemeris::solarSystemObjectAtDateAndTime(index, day, month, year, hour, minute, second);
+
             uint16_t angle_to_north = static_cast<uint16_t>(
               id(north_angle));
             uint16_t luminary_azimuth = 0;
-            
-            auto lat = "${latitude}";
-            auto lon = "${longitude}";
-            
+
             it.all().set(background_color);
             LedRectEffect::set_effect(it, effect_color,
               angle_to_north + luminary_azimuth); 
