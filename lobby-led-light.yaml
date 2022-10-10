@@ -66,9 +66,9 @@ esphome:
           float longitude = id(gps_longitude);
           int8_t elevation = id(gps_elevation);
 
-          Ephemeris::setLocationOnEarth(latitude, longitude);
-          Ephemeris::flipLongitude(true);
-          Ephemeris::setAltitude(elevation);
+          //Ephemeris::setLocationOnEarth(latitude, longitude);
+          //Ephemeris::flipLongitude(true);
+          //Ephemeris::setAltitude(elevation);
 
 external_components:
   - source: github://bearpawmaxim/esphome@templatable_globals
