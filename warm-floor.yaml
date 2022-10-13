@@ -19,6 +19,9 @@ uart:
 
 tuya:
   time_id: sntp_time
+  status_pin:
+    number: 14
+    inverted: true
 
 climate:
   - platform: tuya
