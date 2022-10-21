@@ -2,9 +2,9 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp12e
-  includes:
-#    - includes/HaierV2.h
-    - includes/HaierV2Test.h
+
+external_components:
+  - source: github://paveldn/ESP32-S0WD-Haier@dev
 
 packages:
   device_common: !include .device_common.yaml
@@ -25,12 +25,64 @@ status_led:
     inverted: yes
 
 climate:
-  - platform: custom
+  - platform: haier
+    id: ${climate_id}
+    name: ${climate_name} 
+    uart_id: haier_uart
+    wifi_signal: true
+    beeper: true
+    outdoor_temperature:
+      name: ${climate_name} outdoor temperature
+    visual:
+      min_temperature: 18 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+    supported_swing_modes:
+    - 'OFF'
+    - VERTICAL
+    - HORIZONTAL
+    - BOTH
+
+switch:
+  - platform: template
+    id: ${climate_id}_display_switch
+    name: ${climate_name} display
+    icon: mdi:led-on
+    entity_category: config
     lambda: |-
-      auto uart = id(haier_uart);
-      auto haier = new Haier(uart);
-      App.register_component(haier);
-      return {haier};
-    climates:
-      - name: ${climate_name}
-        id: ${climate_id}
+      return id(${climate_id}).get_display_state();
+    turn_on_action:
+      climate.haier.display_on: ${climate_id}
+    turn_off_action:
+      climate.haier.display_off: ${climate_id}
+  - platform: template
+    id: ${climate_id}_beeper_switch
+    entity_category: config
+    name: ${climate_name} beeper
+    icon: mdi:volume-high
+    lambda: |-
+      return id(${climate_id}).get_beeper_echo();
+    turn_on_action:
+      climate.haier.beeper_on: ${climate_id}
+    turn_off_action:
+      climate.haier.beeper_off: ${climate_id}
+
+select:
+  - platform: template
+    id: ${climate_id}_vertical_direction
+    name: ${climate_name} airflow vertical
+    entity_category: config
+    icon: mdi:arrow-expand-vertical
+    optimistic: true
+    restore_value: true
+    initial_option: Center 
+    options:
+      - Up
+      - Center
+      - Down
+    on_value:
+      then:
+        - climate.haier.set_vertical_airflow:
+           id: ${climate_id}
+           vertical_airflow: !lambda |-
+             return esphome::haier::AirflowVerticalDirection(i);
