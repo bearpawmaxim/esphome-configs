@@ -1,10 +1,6 @@
 substitutions:
   device_name: "ajax-armed-sense"
 
-external_components:
-  - source: github://pr#3321
-    components: [pulse_meter]
-
 packages:
   device_common: !include .device_common.yaml
 
@@ -20,7 +16,7 @@ sensor:
       inverted: true
     id: ajax_homesiren_led_pulses
     name: "AJAX HomeSiren LED Pulses"
-    timeout: 15s
+    timeout: 5s
     internal_filter_mode: EDGE
     internal: true
 
