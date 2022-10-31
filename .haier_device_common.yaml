@@ -61,7 +61,7 @@ switch:
     name: ${climate_name} beeper
     icon: mdi:volume-high
     lambda: |-
-      return id(${climate_id}).get_beeper_echo();
+      return id(${climate_id}).get_beeper_state();
     turn_on_action:
       climate.haier.beeper_on: ${climate_id}
     turn_off_action:
