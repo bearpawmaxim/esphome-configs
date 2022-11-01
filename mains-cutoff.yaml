@@ -79,6 +79,9 @@ button:
     id: reset_pzem_004t
     on_press:
       - uart.write: [0x01, 0x42, 0x80, 0x11]
+  - platform: restart
+    id: mains_cutoff_restart
+    name: "Mains Cutoff Restart"
 
 status_led:
   pin:
