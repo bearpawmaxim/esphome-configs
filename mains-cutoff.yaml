@@ -1,26 +1,17 @@
-first-need-to-be-tested: 1!
-
 substitutions:
-  device_name: mains-cutoff
+  device_name: mains-relay
+  device_name_underscore: mains_relay
+  relay_pin: GPIO12
+  button_pin: GPIO0
+  delay_time: 1min
 
 packages:
   device_common: !include .device_common.yaml
-
+  delayed_start: !include .sonoff_delayed_start.yaml
 esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp8285
-  esp8266_restore_from_flash: true
-
-globals:
-  - id: relay_state
-    type: boolean
-    restore_value: true
-    initial_value: "true"
-  - id: manual
-    type: boolean
-    restore_value: false
-    initial_value: "false"
 
 logger:
   level: DEBUG
@@ -63,60 +54,12 @@ sensor:
     accuracy_decimals: 2
     device_class: energy
 
-binary_sensor:
-  - platform: gpio
-    pin:
-      number: GPIO0
-      mode: INPUT_PULLUP
-      inverted: true
-    id: relay_switch
-    on_press:
-      - switch.toggle: relay_phy
-    internal: true
-
-switch:
-  - platform: template
-    id: relay
-    name: "Cutoff relay"
-    restore_state: no
-    turn_on_action:
-      - script.execute: turn_relay_on
-    turn_off_action:
-      - script.execute: turn_relay_off
-    lambda: |-
-      return id(relay_state);
-  - platform: gpio
-    id: relay_phy
-    pin: GPIO12
-    internal: true
-
-script:
-  - id: turn_relay_on
-    then:
-      - if:
-          condition:
-            lambda: |-
-              return !id(manual);
-          then:
-            delay: "00:01:00"
-          else:
-            globals.set:
-              id: manual
-              value: "true"
-      - switch.turn_on: relay_phy
-  - id: turn_relay_off
-    then:
-      - switch.turn_off: relay_phy
-
 button:
   - platform: template
     name: "Reset PZEM-004T"
     id: reset_pzem_004t
     on_press:
       - uart.write: [0x01, 0x42, 0x80, 0x11]
-  - platform: restart
-    id: mains_cutoff_restart
-    name: "Mains Cutoff Restart"
 
 status_led:
   pin:
