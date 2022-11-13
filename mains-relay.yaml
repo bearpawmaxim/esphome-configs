@@ -45,7 +45,7 @@ sensor:
     update_interval: 60s
 
   - platform: total_daily_energy
-    name: "${device_name} Total Daily Energy"
+    name: "Mains Total Daily Energy"
     power_id: mains_power
     id: mains_daily_energy
     filters:

@@ -29,19 +29,19 @@ status_led:
 sensor:
   - platform: cse7766
     current:
-      name: "Boiler Current (A)"
+      name: "Boiler Current"
       id: "boiler_current"
     voltage:
-      name: "Boiler Voltage (V)"
+      name: "Boiler Voltage"
       id: "boiler_voltage"
     power:
-      name: "Boiler Power (W)"
+      name: "Boiler Power"
       id: "boiler_power"
     energy:
-      name: "Boiler Energy (Wh)"
+      name: "Boiler Energy"
       id: "boiler_energy"
   - platform: total_daily_energy
-    name: "Boiler Total Daily Energy (kWh)"
+    name: "Boiler Total Daily Energy"
     power_id: "boiler_power"
     id: "boiler_daily_energy"
     filters:

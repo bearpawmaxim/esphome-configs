@@ -1,5 +1,5 @@
 substitutions:
-  device_name: water-cutoff
+  device_name: water-guard
 
 globals:
   - id: valve_is_open
