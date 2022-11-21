@@ -40,8 +40,6 @@ climate:
     supported_swing_modes:
     - 'OFF'
     - VERTICAL
-    - HORIZONTAL
-    - BOTH
 
 # switch:
 #   - platform: template
@@ -68,21 +66,21 @@ climate:
 #       climate.haier.beeper_off: ${climate_id}
 
 # select:
-#   - platform: template
-#     id: ${climate_id}_vertical_direction
-#     name: ${climate_name} airflow vertical
-#     entity_category: config
-#     icon: mdi:arrow-expand-vertical
-#     optimistic: true
-#     restore_value: true
-#     initial_option: Center 
-#     options:
-#       - Up
-#       - Center
-#       - Down
-#     on_value:
-#       then:
-#         - climate.haier.set_vertical_airflow:
-#           id: ${climate_id}
-#           vertical_airflow: !lambda |-
-#              return esphome::haier::AirflowVerticalDirection(i);
+#  - platform: template
+#    id: ${climate_id}_vertical_direction
+#    name: ${climate_name} airflow vertical
+#    entity_category: config
+#    icon: mdi:arrow-expand-vertical
+#    optimistic: true
+#    restore_value: true
+#    initial_option: Center 
+#    options:
+#      - Up
+#      - Center
+#      - Down
+#    on_value:
+#      then:
+#        - climate.haier.set_vertical_airflow:
+#          id: ${climate_id}
+#          vertical_airflow: !lambda |-
+#             return esphome::haier::AirflowVerticalDirection(i);
