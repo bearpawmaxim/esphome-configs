@@ -41,29 +41,29 @@ climate:
     - 'OFF'
     - VERTICAL
 
-switch:
-  - platform: template
-    id: ${climate_id}_display_switch
-    name: ${climate_name} display
-    icon: mdi:led-on
-    entity_category: config
-    lambda: |-
-      return id(${climate_id}).get_display_state();
-    turn_on_action:
-      climate.haier.display_on: ${climate_id}
-    turn_off_action:
-      climate.haier.display_off: ${climate_id}
-  - platform: template
-    id: ${climate_id}_beeper_switch
-    entity_category: config
-    name: ${climate_name} beeper
-    icon: mdi:volume-high
-    lambda: |-
-      return id(${climate_id}).get_beeper_state();
-    turn_on_action:
-      climate.haier.beeper_on: ${climate_id}
-    turn_off_action:
-      climate.haier.beeper_off: ${climate_id}
+#switch:
+#  - platform: template
+#    id: ${climate_id}_display_switch
+#    name: ${climate_name} display
+#    icon: mdi:led-on
+#    entity_category: config
+#    lambda: |-
+#      return id(${climate_id}).get_display_state();
+#    turn_on_action:
+#      climate.haier.display_on: ${climate_id}
+#    turn_off_action:
+#      climate.haier.display_off: ${climate_id}
+#  - platform: template
+#    id: ${climate_id}_beeper_switch
+#    entity_category: config
+#    name: ${climate_name} beeper
+#    icon: mdi:volume-high
+#    lambda: |-
+#      return id(${climate_id}).get_beeper_state();
+#    turn_on_action:
+#      climate.haier.beeper_on: ${climate_id}
+#    turn_off_action:
+#      climate.haier.beeper_off: ${climate_id}
 
 select:
   - platform: template
