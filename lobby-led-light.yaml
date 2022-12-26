@@ -24,10 +24,6 @@ globals:
     type: float
     restore_value: no
     initial_value: '0'
-  - id: north_angle
-    type: uint16_t
-    restore_value: no
-    initial_value: '340'
   - id: gps_latitude
     type: float
     restore_value: no
@@ -55,6 +51,7 @@ esphome:
   board: esp32doit-devkit-v1
   includes:
     - includes/led_rect_effect.h
+    - includes/luminary_effect.h
   libraries:
     - marscaper/Ephemeris
   on_boot:
@@ -69,6 +66,7 @@ esphome:
           //Ephemeris::setLocationOnEarth(latitude, longitude);
           //Ephemeris::flipLongitude(true);
           //Ephemeris::setAltitude(elevation);
+          LuminaryEffect::setup_effect(latitude, longitude, elevation);
 
 external_components:
   - source: github://bearpawmaxim/esphome@templatable_globals
@@ -176,21 +174,21 @@ light:
             uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
             Color effect_color = Color(effect_red, effect_green, effect_blue);
 
+            optional<ESPTime> sunrise = id(sun_id).sunrise(115);
+            if (sunrise.has_value()) {
+              ESPTime sunrise_time = sunrise.value();
+              ESP_LOGD("SUNMOON", "esp sunrise time: %d:%d:%f", sunrise_time.hour, sunrise_time.minute, sunrise_time.second);
+            }
+
+            ESPTime time = id(sntp_time)->now();
+            LuminaryEffect::do_effect(time, it, background_color, effect_color);
+
             // TODO: get time and:
-            // 1. Comute Sun position
-            // 2. Detect sunrise/sunset
-            // 3. Compute Moon position if sun is above the horizon
+            // 1. Detect sunrise/sunset
+            // 3. Compute Sun/Moon position
             // 4. Compute Sun/Moon azimuth and set corresponding angle in effect
             // SolarSystemObject solarSystemObject = 
             //    Ephemeris::solarSystemObjectAtDateAndTime(index, day, month, year, hour, minute, second);
-
-            uint16_t angle_to_north = static_cast<uint16_t>(
-              id(north_angle));
-            uint16_t luminary_azimuth = 0;
-
-            it.all().set(background_color);
-            LedRectEffect::set_effect(it, effect_color,
-              angle_to_north + luminary_azimuth); 
 
 time:
   - platform: sntp
@@ -199,8 +197,9 @@ time:
         - script.execute: set_daylight_color
 
 sun:
-  latitude: 50.391968°
-  longitude: 30.557317°
+  id: sun_id
+  latitude: !secret gps_latitude
+  longitude: !secret gps_longitude
   on_sunrise:
     then:
       - script.execute: set_daylight_color
