@@ -37,6 +37,17 @@ sensor:
     power:
       name: "Boiler Power"
       id: "boiler_power"
+      on_value_range:
+        - below: 10.0
+          then:
+            - binary_sensor.template.publish:
+                id: boiler_state
+                state: OFF
+        - above: 10.0
+          then:
+            - binary_sensor.template.publish:
+                id: boiler_state
+                state: ON
     energy:
       name: "Boiler Energy"
       id: "boiler_energy"
@@ -49,3 +60,8 @@ sensor:
     unit_of_measurement: kWh
     accuracy_decimals: 2
     device_class: energy
+
+binary_sensor:
+  - platform: template
+    name: "Boiler state"
+    id: boiler_state
