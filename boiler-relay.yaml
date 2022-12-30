@@ -42,7 +42,7 @@ sensor:
           then:
             - binary_sensor.template.publish:
                 id: boiler_state
-                state: OFF
+                state: "OFF"
         - above: 10.0
           then:
             - binary_sensor.template.publish:
