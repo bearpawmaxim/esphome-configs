@@ -30,3 +30,7 @@ sensor:
     id: uptime_seconds
     name: "${device_name} uptime seconds"
     update_interval: 120s
+
+button:
+  - platform: restart
+    name: "${device_name} Restart"
