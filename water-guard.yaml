@@ -25,6 +25,12 @@ esphome:
 
 status_led:
   pin: GPIO25
+ 
+miot:
+  on_miot_advertise:
+    mac_address: "A4:C1:38:8A:67:22"
+    then:
+      lambda: //
 
 # CWX CR02 valve pinout:
 # Yellow (black) - common negative - relay_1 NO
