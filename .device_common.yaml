@@ -1,6 +1,8 @@
 logger:
 
 api:
+  encryption:
+    key: !secret api_key
 
 ota:
   id: my_ota
