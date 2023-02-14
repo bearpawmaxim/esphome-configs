@@ -15,7 +15,7 @@ esphome:
           then:
             - if:
                 condition:
-                  - lambda: 'return system_get_rst_info()->reason == 0;'    
+                  - lambda: 'return system_get_rst_info()->reason == 0;'
                 then:
                   - delay: ${delay_time}
             - switch.turn_on: relay_phy
