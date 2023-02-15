@@ -77,10 +77,10 @@ script:
             - script.execute: close_valve
             - delay: 10000ms
             - script.execute: open_valve
-time:
-  - platform: sntp
-    on_time:
 
+time:
+  - id: !extend sntp_time
+    on_time:
       # Maintenance timer: execute run_maintenance every monday at 15:00
       - days_of_week: MON
         hours: 15

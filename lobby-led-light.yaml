@@ -191,7 +191,7 @@ light:
             //    Ephemeris::solarSystemObjectAtDateAndTime(index, day, month, year, hour, minute, second);
 
 time:
-  - platform: sntp
+  - id: !extend sntp_time
     on_time_sync:
       then:
         - script.execute: set_daylight_color
