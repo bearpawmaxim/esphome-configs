@@ -25,7 +25,7 @@ esphome:
 
 status_led:
   pin: GPIO25
- 
+
 miot:
   on_miot_advertise:
     mac_address: "A4:C1:38:8A:67:22"
@@ -254,7 +254,7 @@ sensor:
   - platform: ble_rssi
     mac_address: "54:EF:44:E5:18:4A"
     name: "Kitchen Leak sensor RSSI"
-    
+
   # Washstand leak sensor
   #- platform: ble_rssi
   #  mac_address: "54:EF:44:E1:04:EE"
