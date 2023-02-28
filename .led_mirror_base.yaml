@@ -1,0 +1,102 @@
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp12e
+
+globals:
+  - id: led_increasing_brightness
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: led_brightness
+    type: float
+    restore_value: no
+    initial_value: '0.3'
+
+packages:
+  device_common: !include .device_common.yaml
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+status_led:
+  pin:
+    number: GPIO2
+    inverted: yes
+
+output:
+  - platform: esp8266_pwm
+    id: pwm_led_output
+    pin: GPIO4
+
+light:
+  - platform: monochromatic
+    id: ${device_name_underscore}_led
+    name: "${device_name} Led"
+    output: pwm_led_output
+
+binary_sensor:
+  - platform: gpio
+    id: ttp223_button
+    pin: GPIO12
+    internal: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_click:
+      then:
+        - if:
+            condition:
+              light.is_off: ${device_name_underscore}_led
+            then:
+              - lambda: |-
+                  id(led_brightness) = 0.7;
+                  ESP_LOGD("main", "Global value brightness is: %f", id(led_brightness));
+                  id(led_increasing_brightness) = (true);  // make sure always dim up after turn on
+              - light.turn_on:
+                  id: ${device_name_underscore}_led
+                  brightness: !lambda |-
+                    return id(led_brightness);
+            else:
+              - light.turn_off: ${device_name_underscore}_led
+      on_press:
+        then:
+          - delay: 0.5s
+          - if:
+              condition: 
+                # check if button is still pressed
+                binary_sensor.is_on: ttp223_button
+              then:
+                - while:
+                    condition:
+                      # continue while the button is still pressed
+                      binary_sensor.is_on: ttp223_button
+                    then:
+                      - if:
+                          condition: 
+                              lambda: |-
+                                return id(led_increasing_brightness);
+                          then:
+                            - light.dim_relative:
+                                id: ${device_name_underscore}_led
+                                relative_brightness: 2%
+                                transition_length: 0.1s
+                            - delay: 0.1s
+                            - lambda: |-
+                                id(led_brightness) = id(${device_name_underscore}_led).current_values.get_brightness();
+                                ESP_LOGD("main", "+Global value is: %f", id(led_brightness));
+                                // invert dim direction if full on
+                                if (id(${device_name_underscore}_led).current_values.get_brightness() >= 0.99) id(led_increasing_brightness) = false;
+                          else:
+                            - light.dim_relative:
+                                id: ${device_name_underscore}_led
+                                relative_brightness: -2%
+                                transition_length: 0.1s
+                            - delay: 0.1s
+                            - lambda: |-
+                                id(led_brightness) = id(${device_name_underscore}_led).current_values.get_brightness();
+                                ESP_LOGD("main", "Global value brightness is: %f", id(led_brightness)); 
+                                if (id(${device_name_underscore}_led).current_values.get_brightness() <= 0.04) id(led_increasing_brightness) = true;
+                - lambda: |-
+                    id(led_increasing_brightness) = !id(led_increasing_brightness) ; // invert bool at end of while
