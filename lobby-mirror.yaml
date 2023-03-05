@@ -1,0 +1,6 @@
+substitutions:
+  device_name: lobby-mirror
+  device_name_underscore: lobby_mirror
+  
+packages:
+  haier_common: !include .led_mirror_base.yaml

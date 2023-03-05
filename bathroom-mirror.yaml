@@ -1,0 +1,6 @@
+substitutions:
+  device_name: bathroom-mirror
+  device_name_underscore: bathroom_mirror
+  
+packages:
+  haier_common: !include .led_mirror_base.yaml
