@@ -27,6 +27,7 @@ status_led:
 climate:
   - platform: haier
     id: ${climate_id}
+    protocol: hon
     name: ${climate_name} 
     uart_id: haier_uart
     wifi_signal: true
