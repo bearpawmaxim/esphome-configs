@@ -2,6 +2,10 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: esp12e
+  libraries:
+    - https://github.com/JoDaNl/esp8266_ws2812_i2s
+  includes:
+    - includes/ws2812_custom_light.h
 
 globals:
   - id: led_increasing_brightness
@@ -35,17 +39,42 @@ light:
     id: ${device_name_underscore}_led
     name: "${device_name} Led"
     output: pwm_led_output
-  - platform: neopixelbus
-    id: "${device_name_underscore}_button_led"
-    num_leds: 1
-    pin: GPIO13
-    variant: ws2812
-    internal: true
-    effects:
-      - pulse: 
-          name: Off effect
-          transition_length: 
-            seconds: 2
+    on_turn_off: 
+      - light.turn_on:
+          id: button_led
+          #effect: off_effect
+          red: 0%
+          green: 0%
+          blue: 100%
+          brightness: 100%
+    on_turn_on: 
+      - light.turn_on:
+          id: button_led
+          #effect: none
+          red: 100%
+          green: 100%
+          blue: 100%
+          brightness: 100%
+  - platform: custom
+    lambda: |-
+      auto light_out = new WS2812CustomLight();
+      App.register_component(light_out);
+      return {light_out};
+    lights:
+      - name: "Button led"
+        id: button_led
+        internal: true
+          # - platform: neopixelbus
+  #   id: button_led
+  #   num_leds: 1
+  #   pin: GPIO3
+  #   type: GRB
+  #   variant: ws2812
+  #   internal: true
+  #   effects:
+  #     - pulse:
+  #         name: off_effect
+  #         transition_length: 2s
 
 binary_sensor:
   - platform: gpio
@@ -62,7 +91,7 @@ binary_sensor:
               light.is_off: "${device_name_underscore}_led"
             then:
               - lambda: |-
-                  id(led_brightness) = 0.7;
+                  id(led_brightness) = 1.0;
                   ESP_LOGD("main", "Global value brightness is: %f", id(led_brightness));
                   id(led_increasing_brightness) = (true);  // make sure always dim up after turn on
               - light.turn_on:
@@ -73,7 +102,7 @@ binary_sensor:
               - light.turn_off: "${device_name_underscore}_led"
     on_press:
       then:
-        - delay: 0.5s
+        - delay: 1s
         - if:
             condition:
               # check if button is still pressed
@@ -98,7 +127,9 @@ binary_sensor:
                               id(led_brightness) = id(${device_name_underscore}_led).current_values.get_brightness();
                               ESP_LOGD("main", "+Global value is: %f", id(led_brightness));
                               // invert dim direction if full on
-                              if (id(${device_name_underscore}_led).current_values.get_brightness() >= 0.99) id(led_increasing_brightness) = false;
+                              if (id(${device_name_underscore}_led).current_values.get_brightness() >= 0.99) {
+                                id(led_increasing_brightness) = false;
+                              }
                         else:
                           - light.dim_relative:
                               id: "${device_name_underscore}_led"
@@ -108,7 +139,9 @@ binary_sensor:
                           - lambda: |-
                               id(led_brightness) = id(${device_name_underscore}_led).current_values.get_brightness();
                               ESP_LOGD("main", "Global value brightness is: %f", id(led_brightness)); 
-                              if (id(${device_name_underscore}_led).current_values.get_brightness() <= 0.04) id(led_increasing_brightness) = true;
+                              if (id(${device_name_underscore}_led).current_values.get_brightness() <= 0.04) {
+                                id(led_increasing_brightness) = true;
+                              }
               - lambda: |-
                   // invert bool at end of while
                   id(led_increasing_brightness) = !id(led_increasing_brightness);

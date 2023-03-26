@@ -17,8 +17,6 @@ wifi:
     ssid: ${device_name}
     password: !secret wifi_ap_password
 
-captive_portal:
-
 time:
   - platform: sntp
     id: sntp_time
