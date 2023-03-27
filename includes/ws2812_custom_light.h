@@ -8,21 +8,21 @@ class WS2812CustomLight : public Component, public LightOutput {
 
  public:
   void setup() override {
-    this.led_.init(1);
+    this->led_.init(1);
   }
 
   LightTraits get_traits() override {
     auto traits = LightTraits();
-    traits.set_supported_color_modes({ColorMode::BRG, ColorMode::BRIGHTNESS});
+    traits.set_supported_color_modes({ColorMode::RGB, ColorMode::BRIGHTNESS});
     return traits;
   }
 
   void write_state(LightState *state) override {
     float red, green, blue;
     state->current_values_as_rgb(&red, &green, &blue);
-    this.pixels_[0].R = red;
-    this.pixels_[0].G = green;
-    this.pixels_[0].B = blue;
-    this.led_.show(this.pixels_);
+    this->pixels_[0].R = red;
+    this->pixels_[0].G = green;
+    this->pixels_[0].B = blue;
+    this->led_.show(this->pixels_);
   }
 };
