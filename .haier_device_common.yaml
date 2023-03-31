@@ -4,7 +4,7 @@ esphome:
   board: esp12e
 
 external_components:
-  - source: github://paveldn/ESP32-S0WD-Haier@dev
+  - source: github://paveldn/haier-esphome@master
 
 packages:
   device_common: !include .device_common.yaml
