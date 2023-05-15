@@ -37,7 +37,6 @@ miot:
 # Red (red) - open positive - relay_2 NO
 # Blue (white-blue) - close positive - relay_2 NC
 script:
-
   # Open valve script
   - id: open_valve
     then:
@@ -49,7 +48,6 @@ script:
       - globals.set:
           id: valve_is_open
           value: "true"
-
   # Close valve script
   - id: close_valve
     then:
@@ -65,7 +63,6 @@ script:
             - globals.set:
                 id: valve_is_open
                 value: "false"
-
   # Maintenance script: closes valve for a 10 seconds every monday at 15:00
   - id: run_maintenance
     then:
@@ -77,6 +74,8 @@ script:
             - script.execute: close_valve
             - delay: 10000ms
             - script.execute: open_valve
+            - homeassistant.event:
+                event: esphome.valve_maintenance_executed
 
 time:
   - id: !extend sntp_time
@@ -90,7 +89,6 @@ time:
           - script.execute: run_maintenance
 
 switch:
-
   # Relay 1
   - platform: gpio
     pin: GPIO21
