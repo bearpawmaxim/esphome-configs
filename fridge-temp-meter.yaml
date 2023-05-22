@@ -1,0 +1,25 @@
+
+substitutions:
+  device_name: "fridge-temp-meter"
+  device_name_underscore: "fridge_temp_meter"
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+dallas:
+  - pin: 23
+
+sensor:
+  - platform: dallas
+    name: "${device_name} temperature"
+    id: "${device_name_underscore}_temp"
+    #index: 0
+    address: 0xfe0000001ee44c28
