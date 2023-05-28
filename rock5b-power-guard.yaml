@@ -1,0 +1,13 @@
+substitutions:
+    device_name: "rock5b-power-guard"
+    device_name_underscore: "rock5b_power_guard"
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: d1_mini
+
+ 
