@@ -2,6 +2,12 @@ substitutions:
     device_name: "rock5b-power-guard"
     device_name_underscore: "rock5b_power_guard"
 
+globals:
+  - id: power_state
+    type: bool
+    restore_value: true
+    initial_value: "true"
+
 packages:
   device_common: !include .device_common.yaml
 
@@ -9,5 +15,36 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: d1_mini
+  esp8266_restore_from_flash: true
 
- 
+status_led:
+  pin:
+    number: D4
+    inverted: true
+
+switch:
+  - platform: gpio
+    pin: D1
+    id: relay
+    internal: true
+
+binary_sensor:
+  - platform: gpio
+    id: "${device_name_underscore}_external_power"
+    pin: 
+      number: D7
+      inverted: true
+    name: "${device_name} external power"
+    on_press:
+      - lambda: ESP_LOGD("WATCHER", "Added power");
+      - lambda: id(power_state) = true;
+    on_release:
+      - lambda: ESP_LOGD("WATCHER", "Removed power");
+      - lambda: id(power_state) = false;
+
+script:
+  - id: reset_rock5b
+    then:
+      - switch.turn_on: relay
+      - delay: 0.5s
+      - switch.turn_off: relay

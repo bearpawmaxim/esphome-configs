@@ -8,6 +8,7 @@ substitutions:
 packages:
   device_common: !include .device_common.yaml
   delayed_start: !include .sonoff_delayed_start.yaml
+
 esphome:
   name: ${device_name}
   platform: ESP8266
