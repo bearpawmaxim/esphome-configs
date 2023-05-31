@@ -17,16 +17,24 @@ esphome:
   board: d1_mini
   esp8266_restore_from_flash: true
 
-status_led:
-  pin:
-    number: D4
-    inverted: true
+# status_led:
+#   pin:
+#     number: D4
+#     inverted: true
 
 switch:
   - platform: gpio
     pin: D1
     id: relay
     internal: true
+
+light:
+  - platform: status_led
+    id: "status_led_"
+    internal: true
+    pin:
+      number: D4
+      inverted: true
 
 binary_sensor:
   - platform: gpio
@@ -38,9 +46,11 @@ binary_sensor:
     on_press:
       - lambda: ESP_LOGD("WATCHER", "Added power");
       - lambda: id(power_state) = true;
+      - light.turn_on: status_led_
     on_release:
       - lambda: ESP_LOGD("WATCHER", "Removed power");
       - lambda: id(power_state) = false;
+      - light.turn_off: status_led_
 
 script:
   - id: reset_rock5b
