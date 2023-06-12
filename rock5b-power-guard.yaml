@@ -11,6 +11,10 @@ globals:
 packages:
   device_common: !include .device_common.yaml
 
+deep_sleep:
+  id: deep_sleep_
+  sleep_duration: 60s
+
 esphome:
   name: ${device_name}
   platform: ESP8266
@@ -43,18 +47,25 @@ binary_sensor:
       number: D7
       inverted: true
     name: "${device_name} external power"
-    on_press:
-      - lambda: ESP_LOGD("WATCHER", "Added power");
-      - lambda: id(power_state) = true;
-      - light.turn_on: status_led_
-    on_release:
-      - lambda: ESP_LOGD("WATCHER", "Removed power");
-      - lambda: id(power_state) = false;
-      - light.turn_off: status_led_
+    on_state:
+      lambda: |-
+        bool old_power_state = id(power_state);
+        id(power_state) = x;
+        if (x) {
+          id(status_led_).turn_on().perform();
+          ESP_LOGD("WATCHER", "Added power");
+          if (!old_power_state) {
+            id(reset_rock5b).execute();
+          }
+        } else {
+          id(status_led_).turn_off().perform();
+          ESP_LOGD("WATCHER", "Removed power");
+          id(deep_sleep_).begin_sleep(true);
+        }
 
 script:
   - id: reset_rock5b
     then:
       - switch.turn_on: relay
-      - delay: 0.5s
+      - delay: 1s
       - switch.turn_off: relay
