@@ -2,24 +2,17 @@ substitutions:
     device_name: "rock5b-power-guard"
     device_name_underscore: "rock5b_power_guard"
 
-globals:
-  - id: power_state
-    type: bool
-    restore_value: true
-    initial_value: "true"
-
 packages:
   device_common: !include .device_common.yaml
 
 deep_sleep:
   id: deep_sleep_
-  sleep_duration: 60s
+  sleep_duration: 120s
 
 esphome:
   name: ${device_name}
   platform: ESP8266
   board: d1_mini
-  esp8266_restore_from_flash: true
 
 # status_led:
 #   pin:
@@ -47,21 +40,9 @@ binary_sensor:
       number: D7
       inverted: true
     name: "${device_name} external power"
+    publish_initial_state: true
     on_state:
-      lambda: |-
-        bool old_power_state = id(power_state);
-        id(power_state) = x;
-        if (x) {
-          id(status_led_).turn_on().perform();
-          ESP_LOGD("WATCHER", "Added power");
-          if (!old_power_state) {
-            id(reset_rock5b).execute();
-          }
-        } else {
-          id(status_led_).turn_off().perform();
-          ESP_LOGD("WATCHER", "Removed power");
-          id(deep_sleep_).begin_sleep(true);
-        }
+      - script.execute: handle_power_sensor
 
 script:
   - id: reset_rock5b
@@ -69,3 +50,25 @@ script:
       - switch.turn_on: relay
       - delay: 1s
       - switch.turn_off: relay
+  - id: wait_and_sleep
+    then:
+      - delay: 30s
+      - deep_sleep.enter:
+          id: deep_sleep_
+  - id: handle_power_sensor
+    then:
+      - lambda: |-
+          auto power_state = id(${device_name_underscore}_external_power).state;
+          if (power_state) {
+            id(status_led_).turn_on().perform();
+            ESP_LOGD("WATCHER", "Power is on");
+            auto reset_reason = system_get_rst_info()->reason;
+            if (reset_reason == 5) {
+              // awaked from deep sleep.
+              id(reset_rock5b).execute();
+            }
+          } else {
+            id(status_led_).turn_on().perform();
+            ESP_LOGD("WATCHER", "Power is off");
+            id(wait_and_sleep).execute();
+          }
