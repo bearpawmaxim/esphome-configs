@@ -14,10 +14,10 @@ esphome:
   platform: ESP8266
   board: d1_mini
 
-# status_led:
-#   pin:
-#     number: D4
-#     inverted: true
+status_led:
+  pin:
+    number: D4
+    inverted: true
 
 switch:
   - platform: gpio
@@ -25,20 +25,12 @@ switch:
     id: relay
     internal: true
 
-light:
-  - platform: status_led
-    id: "status_led_"
-    internal: true
-    pin:
-      number: D4
-      inverted: true
-
 binary_sensor:
   - platform: gpio
     id: "${device_name_underscore}_external_power"
     pin: 
       number: D7
-      inverted: true
+      inverted: false
     name: "${device_name} external power"
     publish_initial_state: true
     on_state:
@@ -46,21 +38,23 @@ binary_sensor:
 
 script:
   - id: reset_rock5b
+    mode: single
     then:
       - switch.turn_on: relay
       - delay: 1s
       - switch.turn_off: relay
   - id: wait_and_sleep
+    mode: single
     then:
-      - delay: 30s
+      - delay: 60s
       - deep_sleep.enter:
           id: deep_sleep_
   - id: handle_power_sensor
+    mode: single
     then:
       - lambda: |-
           auto power_state = id(${device_name_underscore}_external_power).state;
           if (power_state) {
-            id(status_led_).turn_on().perform();
             ESP_LOGD("WATCHER", "Power is on");
             auto reset_reason = system_get_rst_info()->reason;
             if (reset_reason == 5) {
@@ -68,7 +62,6 @@ script:
               id(reset_rock5b).execute();
             }
           } else {
-            id(status_led_).turn_on().perform();
             ESP_LOGD("WATCHER", "Power is off");
             id(wait_and_sleep).execute();
           }
