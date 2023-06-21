@@ -30,7 +30,7 @@ binary_sensor:
     id: "${device_name_underscore}_external_power"
     pin: 
       number: D7
-      inverted: false
+      inverted: true
     name: "${device_name} external power"
     publish_initial_state: true
     on_state:
