@@ -1,0 +1,16 @@
+binary_sensor:
+  - platform: miot_sjws01lm
+    id: ${ls_id}
+    mac_address: "${ls_mac_addr}"
+    bindkey: "${ls_bindkey}"
+    name: "${ls_name}"
+    on_press:
+      - switch.turn_off: water_valve
+    battery_level:
+      name: "${ls_name} battery level"
+
+sensor:
+  - platform: ble_rssi
+    id: ${ls_id}_rssi
+    mac_address: "${ls_mac_addr}"
+    name: "${ls_name} RSSI"

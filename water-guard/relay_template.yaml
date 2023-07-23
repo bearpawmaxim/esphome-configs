@@ -1,0 +1,5 @@
+switch:
+  - platform: gpio
+    pin: ${r_pin}
+    id: ${r_id}
+    internal: true

@@ -17,6 +17,59 @@ external_components:
 
 packages:
   device_common: !include .device_common.yaml
+  relay_1: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_1, r_pin: GPIO21 } }
+  relay_2: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_2, r_pin: GPIO19 } }
+  relay_3: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_3, r_pin: GPIO18 } }
+  relay_4: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_4, r_pin: GPIO05 } }
+  boiler_leak_sensor: !include
+    file: water-guard/leak_sensor_template.yaml
+    vars:
+      ls_id: boiler_leak_sensor
+      ls_mac_addr: "54:EF:44:E5:1C:23"
+      ls_bindkey: "47b658e2288541239bb8ab4b79d75039"
+      ls_name: "Boiler Leak sensor"
+  filter_leak_sensor: !include
+    file: water-guard/leak_sensor_template.yaml
+    vars:
+      ls_id: filter_leak_sensor
+      ls_mac_addr: "54:EF:44:E5:29:F6"
+      ls_bindkey: "0daf32121dbdd402144b0cf33ea70557"
+      ls_name: "Filter Leak sensor"
+  shower_leak_sensor: !include
+    file: water-guard/leak_sensor_template.yaml
+    vars:
+      ls_id: shower_leak_sensor
+      ls_mac_addr: "54:EF:44:E5:28:CD"
+      ls_bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
+      ls_name: "Shower Leak sensor"
+  laundry_leak_sensor: !include
+    file: water-guard/leak_sensor_template.yaml
+    vars:
+      ls_id: laundry_leak_sensor
+      ls_mac_addr: "54:EF:44:E5:12:9A"
+      ls_bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
+      ls_name: "Laundry Leak sensor"
+  toilet_leak_sensor: !include
+    file: water-guard/leak_sensor_template.yaml
+    vars:
+      ls_id: toilet_leak_sensor
+      ls_mac_addr: "54:EF:44:E5:16:16"
+      ls_bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
+      ls_name: "Toilet Leak sensor"
+  kitchen_leak_sensor: !include
+    file: water-guard/leak_sensor_template.yaml
+    vars:
+      ls_id: kitchen_leak_sensor
+      ls_mac_addr: "54:EF:44:E5:18:4A"
+      ls_bindkey: "b2354449e4782b6d326858011afb0f12"
+      ls_name: "Kitchen Leak sensor"
+  # washstand_leak_sensor: !include
+  #   file: water-guard/leak_sensor_template.yaml
+  #   vars:
+  #     ls_id: washstand_leak_sensor
+  #     ls_mac_addr: "54:EF:44:E1:04:EE"
+  #     ls_bindkey: "a1d7c4308f00fe320ac87cdcad02d7e0"
+  #     ls_name: "Washstand Leak sensor"
 
 esphome:
   name: ${device_name}
@@ -89,51 +142,22 @@ time:
           - script.execute: run_maintenance
 
 switch:
-  # Relay 1
-  - platform: gpio
-    pin: GPIO21
-    id: "relay_1"
-    name: "Relay 1"
-    internal: true
-
-  # Relay 2
-  - platform: gpio
-    pin: GPIO19
-    id: "relay_2"
-    name: "Relay 2"
-    internal: true
-
-  # Relay 3
-  - platform: gpio
-    pin: GPIO18
-    id: "relay_3"
-    name: "Relay 3"
-    internal: true
-
-  # Relay 4
-  - platform: gpio
-    pin: GPIO05
-    id: "relay_4"
-    name: "Relay 4"
-    internal: true
-
   # Valve switch
   - platform: template
-    id: water_cutoff
-    name: "Water cutoff"
-    restore_state: no
+    id: water_valve
+    name: "Water valve"
+    restore_mode: DISABLED
+    lambda: |-
+      return id(valve_is_open);
     turn_on_action:
       - script.execute: open_valve
     turn_off_action:
       - script.execute: close_valve
-    lambda: |-
-      return id(valve_is_open);
-
   # Test mode switch
   - platform: template
-    id: water_cutoff_test_mode
-    name: "Water cutoff test mode"
-    restore_state: no
+    id: water_guard_test_mode
+    name: "Water guard test mode"
+    restore_mode: DISABLED
     lambda: |-
       return id(test_mode);
     turn_on_action:
@@ -145,115 +169,9 @@ switch:
           id: test_mode
           value: "false"
 
-binary_sensor:
-
-  # Boiler leak sensor
-  - platform: miot_sjws01lm
-    mac_address: "54:EF:44:E5:1C:23"
-    bindkey: "47b658e2288541239bb8ab4b79d75039"
-    name: "Boiler Leak sensor"
+button:
+  - platform: template
+    id: run_valve_maintenance
+    name: Run water valve maintenance
     on_press:
-      - switch.turn_off: water_cutoff
-    battery_level:
-      name: "Boiler Leak sensor battery level"
-
-  # Filter leak sensor
-  - platform: miot_sjws01lm
-    mac_address: "54:EF:44:E5:29:F6"
-    bindkey: "0daf32121dbdd402144b0cf33ea70557"
-    name: "Filter Leak sensor"
-    on_press:
-      - switch.turn_off: water_cutoff
-    battery_level:
-      name: "Filter Leak sensor battery level"
-
-  # Shower leak sensor
-  - platform: miot_sjws01lm
-    mac_address: "54:EF:44:E5:28:CD"
-    bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
-    name: "Shower Leak sensor"
-    on_press:
-      - switch.turn_off: water_cutoff
-    battery_level:
-      name: "Shower Leak sensor battery level"
-
-  # Laundry leak sensor
-  - platform: miot_sjws01lm
-    mac_address: "54:EF:44:E5:12:9A"
-    bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
-    name: "Laundry Leak sensor"
-    on_press:
-      - switch.turn_off: water_cutoff
-    battery_level:
-      name: "Laundry Leak sensor battery level"
-
-  # Toilet leak sensor
-  - platform: miot_sjws01lm
-    mac_address: "54:EF:44:E5:16:16"
-    bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
-    name: "Toilet Leak sensor"
-    on_press:
-      - switch.turn_off: water_cutoff
-    battery_level:
-      name: "Toilet Leak sensor battery level"
-
-  # Kitchen leak sensor
-  - platform: miot_sjws01lm
-    mac_address: "54:EF:44:E5:18:4A"
-    bindkey: "b2354449e4782b6d326858011afb0f12"
-    name: "Kitchen Leak sensor"
-    on_press:
-      - switch.turn_off: water_cutoff
-    battery_level:
-      name: "Kitchen Leak sensor battery level"
-
-  # Washstand leak sensor
-  #- platform: miot_sjws01lm
-  #  mac_address: "54:EF:44:E1:04:EE"
-  #  bindkey: "a1d7c4308f00fe320ac87cdcad02d7e0"
-  #  name: "Washstand Leak sensor"
-  #  on_press:
-  #    - switch.turn_off: water_cutoff
-  #  battery_level:
-  #    name: "Washstand Leak sensor battery level"
-
-# 54:EF:44:E1:04:EE - 54EF44E104EE
-# token 421583c260f29c8e39292cb3
-# bindkey a1d7c4308f00fe320ac87cdcad02d7e0
-
-sensor:
-
-  # Boiler leak sensor
-  - platform: ble_rssi
-    mac_address: "54:EF:44:E5:1C:23"
-    name: "Boiler Leak sensor RSSI"
-
-  # Filter leak sensor
-  - platform: ble_rssi
-    mac_address: "54:EF:44:E5:29:F6"
-    name: "Filter Leak sensor RSSI"
-
-  # Shower leak sensor
-  - platform: ble_rssi
-    mac_address: "54:EF:44:E5:28:CD"
-    name: "Shower Leak sensor RSSI"
-
-  # Laundry leak sensor
-  - platform: ble_rssi
-    mac_address: "54:EF:44:E5:12:9A"
-    name: "Laundry Leak sensor RSSI"
-
-  # Toilet leak sensor
-  - platform: ble_rssi
-    mac_address: "54:EF:44:E5:16:16"
-    name: "Toilet Leak sensor RSSI"
-
-  # Kitchen leak sensor
-  - platform: ble_rssi
-    mac_address: "54:EF:44:E5:18:4A"
-    name: "Kitchen Leak sensor RSSI"
-
-  # Washstand leak sensor
-  #- platform: ble_rssi
-  #  mac_address: "54:EF:44:E1:04:EE"
-  #  name: "Washstand Leak sensor RSSI"
+      - script.execute: run_maintenance
