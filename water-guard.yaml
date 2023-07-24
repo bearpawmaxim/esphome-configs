@@ -76,6 +76,10 @@ esphome:
   platform: ESP32
   board: esp-wrover-kit
 
+http_request:
+  useragent: esphome/device
+  timeout: 10s
+
 status_led:
   pin: GPIO25
 
@@ -90,8 +94,9 @@ miot:
 # Red (red) - open positive - relay_2 NO
 # Blue (white-blue) - close positive - relay_2 NC
 script:
-  # Open valve script
+  # Open valve script.
   - id: open_valve
+    mode: single
     then:
       - switch.turn_on: relay_1
       - switch.turn_on: relay_2
@@ -101,8 +106,9 @@ script:
       - globals.set:
           id: valve_is_open
           value: "true"
-  # Close valve script
+  # Close valve script.
   - id: close_valve
+    mode: single
     then:
       - if:
           condition:
@@ -116,8 +122,9 @@ script:
             - globals.set:
                 id: valve_is_open
                 value: "false"
-  # Maintenance script: closes valve for a 10 seconds every monday at 15:00
+  # Maintenance script: closes valve for a 10 seconds every monday at 15:00.
   - id: run_maintenance
+    mode: single
     then:
       - if:
           condition:
@@ -129,11 +136,21 @@ script:
             - script.execute: open_valve
             - homeassistant.event:
                 event: esphome.valve_maintenance_executed
+  # Turn off the boiler when valve is closed for more than 25 seconds.
+  - id: turn_off_boiler
+    mode: single
+    then:
+      - delay: 25s
+      - if:
+          condition:
+            switch.is_on: water_valve
+          then:
+            - http_request.post: http://boiler-relay.local:4576/switch/boiler-relay_relay/turn_off
 
 time:
   - id: !extend sntp_time
     on_time:
-      # Maintenance timer: execute run_maintenance every monday at 15:00
+      # Maintenance timer: execute run_maintenance every monday at 15:00.
       - days_of_week: MON
         hours: 15
         minutes: 00
@@ -153,6 +170,10 @@ switch:
       - script.execute: open_valve
     turn_off_action:
       - script.execute: close_valve
+    on_turn_on:
+      - script.stop: turn_off_boiler
+    on_turn_off:
+      - script.execute: turn_off_boiler
   # Test mode switch
   - platform: template
     id: water_guard_test_mode

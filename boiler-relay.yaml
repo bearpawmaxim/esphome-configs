@@ -26,6 +26,10 @@ status_led:
     number: GPIO13
     inverted: yes
 
+web_server:
+  port: 4576
+  ota: false
+
 sensor:
   - platform: cse7766
     current:
