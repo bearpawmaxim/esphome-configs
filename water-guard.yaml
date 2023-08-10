@@ -143,7 +143,7 @@ script:
       - delay: 25s
       - if:
           condition:
-            switch.is_on: water_valve
+            switch.is_off: water_valve
           then:
             - http_request.post: http://boiler-relay.local:4576/switch/boiler-relay_relay/turn_off
 
