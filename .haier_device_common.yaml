@@ -54,6 +54,7 @@ switch:
       climate.haier.display_on: ${climate_id}
     turn_off_action:
       climate.haier.display_off: ${climate_id}
+    restore_mode: RESTORE_DEFAULT_ON
   - platform: template
     id: ${climate_id}_beeper_switch
     entity_category: config
@@ -65,6 +66,7 @@ switch:
       climate.haier.beeper_on: ${climate_id}
     turn_off_action:
       climate.haier.beeper_off: ${climate_id}
+    restore_mode: RESTORE_DEFAULT_ON
 
 select:
   - platform: template
