@@ -1,0 +1,126 @@
+substitutions:
+  device_name: pc-wol-button
+  device_name_underscore: pc_wol_button
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp32-c3-devkitm-1
+
+packages:
+  device_common: !include .device_common.yaml
+
+external_components:
+  - source: components/
+    components: [gc9a01]
+  - source: components/CST816S_touchscreen/components/
+    components: [CST816S_touchscreen]
+
+spi:
+  mosi_pin: GPIO7
+  clk_pin: GPIO6
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+
+output:
+  - platform: ledc
+    pin: GPIO3
+    id: gpio_3_backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: gpio_3_backlight_pwm
+    name: "Display Backlight"
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+font:
+  - file: "gfonts://Roboto"
+    id: font_16
+    size: 16
+  - file: "gfonts://Roboto"
+    id: font_32
+    size: 32
+
+color:
+  - id: my_red
+    red: 100%
+    green: 3%
+    blue: 5%
+  - id: my_green
+    red: 3%
+    green: 100%
+    blue: 5%
+  - id: my_blue
+    red: 3%
+    green: 5%
+    blue: 100%
+
+time:
+  - id: !extend sntp_time
+    on_time:
+      # Turn off the backlight at night.
+      - hours: 23
+        then:
+          - light.turn_off: backlight
+      - hours: 08
+        then:
+          - light.turn_on: backlight
+
+display:
+#  - platform: ili9xxx
+#    model: gc9a01
+# Above is for when or if this is merged into the ili9xxx platform
+  - platform: gc9a01
+    id: watchface
+    reset_pin: GPIO1
+    cs_pin: GPIO10
+    dc_pin: GPIO2
+    rotation: 90
+    pages:
+      - id: power_on_btn_page
+        lambda: |-
+          it.strftime(120,80, id(font_16), id(my_blue), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
+          it.strftime(120,120, id(font_32), TextAlign::CENTER, "%I:%M %p", id(sntp_time).now());
+          it.circle(120, 120, 115, id(my_red));
+
+button:
+  - platform: wake_on_lan
+    name: "Start the PC"
+    id: bearpaw_pc_wol_button
+    target_mac_address: !secret bearpaw_pc_mac_addr
+    internal: true
+
+text_sensor:
+  - platform: CST816S_touchscreen
+    id: touchscreen
+    interrupt_pin: GPIO8
+    on_value:
+      then:
+        - if:
+            condition:
+              and:
+                - text_sensor.state:
+                    id: touchscreen
+                    state: 'SINGLE CLICK'
+                - display.is_displaying_page: power_on_btn_page
+            then:
+              - logger.log: "Single click on page1"           
+              - button.press: bearpaw_pc_wol_button
+              # refresh the screen
+              - component.update: watchface
+ # Have found that the 'single click' does not always register hence also using 'long press' to toggle light 
+        - if:
+            condition:
+              and:
+                - text_sensor.state:
+                    id: touchscreen
+                    state: 'LONG PRESS'
+                - display.is_displaying_page: power_on_btn_page
+            then:
+              - logger.log: "Long press on page1"           
+              - button.press: bearpaw_pc_wol_button
+              # refresh the screen
+              - component.update: watchface
