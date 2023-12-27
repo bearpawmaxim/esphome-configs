@@ -11,10 +11,10 @@ packages:
   device_common: !include .device_common.yaml
 
 external_components:
-  - source: components/
+  - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
-  - source: components/CST816S_touchscreen/components/
-    components: [CST816S_touchscreen]
+  - source: github://pr#5941
+    components: [cst816]
 
 spi:
   mosi_pin: GPIO7
@@ -35,14 +35,6 @@ light:
     name: "Display Backlight"
     id: backlight
     restore_mode: ALWAYS_ON
-
-font:
-  - file: "gfonts://Roboto"
-    id: font_16
-    size: 16
-  - file: "gfonts://Roboto"
-    id: font_32
-    size: 32
 
 color:
   - id: my_red
@@ -69,22 +61,32 @@ time:
         then:
           - light.turn_on: backlight
 
+image:
+  - file: mdi:power
+    id: power_img
+    resize: 200x200
+
+animation:
+  - file: progress.gif
+    id: progress_animation
+
 display:
 #  - platform: ili9xxx
 #    model: gc9a01
 # Above is for when or if this is merged into the ili9xxx platform
   - platform: gc9a01
     id: watchface
-    reset_pin: GPIO1
+    #reset_pin: GPIO1
     cs_pin: GPIO10
     dc_pin: GPIO2
     rotation: 90
     pages:
       - id: power_on_btn_page
         lambda: |-
-          it.strftime(120,80, id(font_16), id(my_blue), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
-          it.strftime(120,120, id(font_32), TextAlign::CENTER, "%I:%M %p", id(sntp_time).now());
-          it.circle(120, 120, 115, id(my_red));
+          it.image(20, 20, id(power_img));
+      - id: power_on_progress_page
+        lambda: |-
+          it.image(20, 20, id(progress_animation));
 
 button:
   - platform: wake_on_lan
@@ -93,34 +95,20 @@ button:
     target_mac_address: !secret bearpaw_pc_mac_addr
     internal: true
 
-text_sensor:
-  - platform: CST816S_touchscreen
-    id: touchscreen
-    interrupt_pin: GPIO8
-    on_value:
-      then:
-        - if:
-            condition:
-              and:
-                - text_sensor.state:
-                    id: touchscreen
-                    state: 'SINGLE CLICK'
-                - display.is_displaying_page: power_on_btn_page
-            then:
-              - logger.log: "Single click on page1"           
-              - button.press: bearpaw_pc_wol_button
-              # refresh the screen
-              - component.update: watchface
- # Have found that the 'single click' does not always register hence also using 'long press' to toggle light 
-        - if:
-            condition:
-              and:
-                - text_sensor.state:
-                    id: touchscreen
-                    state: 'LONG PRESS'
-                - display.is_displaying_page: power_on_btn_page
-            then:
-              - logger.log: "Long press on page1"           
-              - button.press: bearpaw_pc_wol_button
-              # refresh the screen
-              - component.update: watchface
+touchscreen:
+  platform: cst816
+  interrupt_pin: GPIO0
+  reset_pin: GPIO1
+
+binary_sensor:
+  - platform: touchscreen
+    name: Power on button
+    id: power_on_button
+    x_min: 100
+    x_max: 140
+    y_min: 100
+    y_max: 140
+    page_id: power_on_btn_page
+    on_click: 
+      - button.press: bearpaw_pc_wol_button
+      - display.page.show: power_on_progress_page
