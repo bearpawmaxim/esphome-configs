@@ -80,13 +80,15 @@ display:
     cs_pin: GPIO10
     dc_pin: GPIO2
     rotation: 90
-    pages:
-      - id: power_on_btn_page
-        lambda: |-
-          it.image(20, 20, id(power_img));
-      - id: power_on_progress_page
-        lambda: |-
-          it.image(20, 20, id(progress_animation));
+    lambda: |-
+      it.image(20, 20, id(power_img));
+    # pages:
+    #   - id: power_on_btn_page
+    #     lambda: |-
+    #       it.image(20, 20, id(power_img));
+    #   - id: power_on_progress_page
+    #     lambda: |-
+    #       it.image(20, 20, id(progress_animation));
 
 button:
   - platform: wake_on_lan
@@ -108,7 +110,7 @@ binary_sensor:
     x_max: 140
     y_min: 100
     y_max: 140
-    page_id: power_on_btn_page
+    #page_id: power_on_btn_page
     on_click: 
       - button.press: bearpaw_pc_wol_button
-      - display.page.show: power_on_progress_page
+    #  - display.page.show: power_on_progress_page
