@@ -15,6 +15,7 @@ external_components:
     components: [gc9a01]
   - source: github://pr#5941
     components: [cst816]
+  - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
 spi:
   mosi_pin: GPIO7
@@ -66,29 +67,26 @@ image:
     id: power_img
     resize: 200x200
 
-animation:
-  - file: progress.gif
-    id: progress_animation
-
 display:
 #  - platform: ili9xxx
 #    model: gc9a01
 # Above is for when or if this is merged into the ili9xxx platform
   - platform: gc9a01
     id: watchface
-    #reset_pin: GPIO1
+    reset_pin: GPIO1
     cs_pin: GPIO10
     dc_pin: GPIO2
-    rotation: 90
-    lambda: |-
-      it.image(20, 20, id(power_img));
-    # pages:
-    #   - id: power_on_btn_page
-    #     lambda: |-
-    #       it.image(20, 20, id(power_img));
-    #   - id: power_on_progress_page
-    #     lambda: |-
-    #       it.image(20, 20, id(progress_animation));
+    rotation: 270
+    pages:
+      - id: power_on_btn_page
+        lambda: |-
+          it.image(20, 20, id(power_img));
+      - id: power_on_progress_page
+        lambda: |-
+          it.strftime(120,80, id(font_16), id(my_blue), TextAlign::CENTER, "%A %b %d", id(esptime).now());
+          it.strftime(120,120, id(font_32), TextAlign::CENTER, "%I:%M %p", id(esptime).now());
+          it.printf(120, 170, id(font_32), id(my_green), TextAlign::CENTER, "Now: %.1f°", id(outdoor_temperature).state);
+          it.circle(120, 120, 115, id(my_red));
 
 button:
   - platform: wake_on_lan
@@ -97,20 +95,52 @@ button:
     target_mac_address: !secret bearpaw_pc_mac_addr
     internal: true
 
-touchscreen:
-  platform: cst816
-  interrupt_pin: GPIO0
-  reset_pin: GPIO1
+text_sensor:
+  - platform: CST816S_touchscreen
+    id: my_touch_screen
+    on_value:
+      then:
+        - if:
+            condition:
+              and:
+                - text_sensor.state:
+                    id: my_touch_screen
+                    state: 'SINGLE CLICK'
+                - display.is_displaying_page: power_on_btn_page
+            then:
+              - button.press: bearpaw_pc_wol_button
+              - display.page.show: power_on_progress_page
+              - delay: 10s
+              - display.page.show: power_on_btn_page
 
-binary_sensor:
-  - platform: touchscreen
-    name: Power on button
-    id: power_on_button
-    x_min: 100
-    x_max: 140
-    y_min: 100
-    y_max: 140
-    #page_id: power_on_btn_page
-    on_click: 
-      - button.press: bearpaw_pc_wol_button
-    #  - display.page.show: power_on_progress_page
+ # Have found that the 'single click' does not always register hence also using 'long press' to toggle light 
+        - if:
+            condition:
+              and:
+                - text_sensor.state:
+                    id: my_touch_screen
+                    state: 'LONG PRESS'
+                - display.is_displaying_page: power_on_btn_page
+            then:
+              - button.press: bearpaw_pc_wol_button
+              - display.page.show: power_on_progress_page
+              - delay: 10s
+              - display.page.show: power_on_btn_page
+
+# touchscreen:
+#   platform: cst816
+#   interrupt_pin: 0
+#   #reset_pin: GPIO1
+
+# binary_sensor:
+#   - platform: touchscreen
+#     name: Power on button
+#     id: power_on_button
+#     x_min: 20
+#     x_max: 20
+#     y_min: 220
+#     y_max: 220
+#     page_id: power_on_btn_page
+#     on_click: 
+#       - button.press: bearpaw_pc_wol_button
+#       - display.page.show: power_on_progress_page
