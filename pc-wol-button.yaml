@@ -1,11 +1,16 @@
 substitutions:
   device_name: pc-wol-button
   device_name_underscore: pc_wol_button
+  bearpaw_pc_mac_addr: !secret bearpaw_pc_mac_addr
 
 esphome:
   name: ${device_name}
   platform: ESP32
   board: esp32-c3-devkitm-1
+  includes:
+    - pc-wol-button/WakeOnLan.cpp
+    - pc-wol-button/WakeOnLan.h
+    - pc-wol-button/pc_wol_button.h
 
 packages:
   device_common: !include .device_common.yaml
@@ -13,8 +18,9 @@ packages:
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
-  - source: github://pr#5941
-    components: [cst816]
+  - source: pc-wol-button/
+  #- source: github://pr#5941
+  #  components: [cst816]
   - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
 spi:
@@ -37,35 +43,51 @@ light:
     id: backlight
     restore_mode: ALWAYS_ON
 
+time:
+  - id: !extend sntp_time
+    on_time:
+      # Lower the backlight at night.
+      - hours: 23
+        then:
+          - light.turn_on: 
+              id: backlight
+              brightness: 20%
+      - hours: 08
+        then:
+          - light.turn_on:
+              id: backlight
+              brightness: 100%
+
+wifi:
+  on_connect:
+    - script.execute: prepare_wol
+
+script:
+  - id: prepare_wol
+    mode: single
+    then:
+      lambda: wol_setup();
+  - id: send_wol_packet
+    mode: single
+    then:
+      lambda: wol_send("id(bearpaw_pc_mac_addr");
+
 color:
-  - id: my_red
-    red: 100%
-    green: 3%
-    blue: 5%
-  - id: my_green
-    red: 3%
-    green: 100%
-    blue: 5%
   - id: my_blue
     red: 3%
     green: 5%
     blue: 100%
+  - id: flip_clock_color
+    hex: 5C2603
 
-time:
-  - id: !extend sntp_time
-    on_time:
-      # Turn off the backlight at night.
-      - hours: 23
-        then:
-          - light.turn_off: backlight
-      - hours: 08
-        then:
-          - light.turn_on: backlight
-
-image:
-  - file: mdi:power
-    id: power_img
-    resize: 200x200
+font:
+  - file: 'gfonts://Roboto'
+    id: font_16
+    size: 16
+  - file: 'pc-wol-button/flip_clock_font.ttf'
+    id: flip_clock_font
+    size: 70
+    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
 
 display:
 #  - platform: ili9xxx
@@ -76,56 +98,47 @@ display:
     reset_pin: GPIO1
     cs_pin: GPIO10
     dc_pin: GPIO2
+    eight_bit_color: false
     rotation: 270
-    pages:
-      - id: power_on_btn_page
-        lambda: |-
-          it.image(20, 20, id(power_img));
-      - id: power_on_progress_page
-        lambda: |-
-          it.strftime(120,80, id(font_16), id(my_blue), TextAlign::CENTER, "%A %b %d", id(esptime).now());
-          it.strftime(120,120, id(font_32), TextAlign::CENTER, "%I:%M %p", id(esptime).now());
-          it.printf(120, 170, id(font_32), id(my_green), TextAlign::CENTER, "Now: %.1f°", id(outdoor_temperature).state);
-          it.circle(120, 120, 115, id(my_red));
-
-button:
-  - platform: wake_on_lan
-    name: "Start the PC"
-    id: bearpaw_pc_wol_button
-    target_mac_address: !secret bearpaw_pc_mac_addr
-    internal: true
+    lambda: |-
+      it.strftime(120, 70, id(font_16), id(flip_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
+      it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M", id(sntp_time).now());
+      bool is_sending_wol = id(send_wol_packet).is_running();
+      if (is_sending_wol)
+        it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Press to wake the PC");
+      else
+        it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Sending WOL packet");
+      
+      it.circle(120, 120, 115, id(flip_clock_color));
 
 text_sensor:
   - platform: CST816S_touchscreen
-    id: my_touch_screen
+    id: touch
     on_value:
       then:
         - if:
             condition:
               and:
                 - text_sensor.state:
-                    id: my_touch_screen
+                    id: touch
                     state: 'SINGLE CLICK'
-                - display.is_displaying_page: power_on_btn_page
             then:
-              - button.press: bearpaw_pc_wol_button
-              - display.page.show: power_on_progress_page
-              - delay: 10s
-              - display.page.show: power_on_btn_page
+              - script.execute: send_wol_packet
+              - component.update: watchface
+              - script.wait: send_wol_packet
+              - component.update: watchface
 
- # Have found that the 'single click' does not always register hence also using 'long press' to toggle light 
         - if:
             condition:
               and:
                 - text_sensor.state:
-                    id: my_touch_screen
+                    id: touch
                     state: 'LONG PRESS'
-                - display.is_displaying_page: power_on_btn_page
             then:
-              - button.press: bearpaw_pc_wol_button
-              - display.page.show: power_on_progress_page
-              - delay: 10s
-              - display.page.show: power_on_btn_page
+              - script.execute: send_wol_packet
+              - component.update: watchface
+              - script.wait: send_wol_packet
+              - component.update: watchface
 
 # touchscreen:
 #   platform: cst816
