@@ -9,7 +9,7 @@ WakeOnLan WOL(UDP);
 const char* TAG = "WOL";
 
 void wol_setup() {
-  WOL.setRepeat(3, 100);
+  WOL.setRepeat(10, 200);
   WOL.calculateBroadcastAddress(WiFi.localIP(), WiFi.subnetMask());
 }
 
