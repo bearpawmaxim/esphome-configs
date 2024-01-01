@@ -16,16 +16,20 @@ packages:
   device_common: !include .device_common.yaml
 
 external_components:
-  # - source: github://bearpawmaxim/esphome@pr3625fix
-  #  components: [gc9a01]
-  - source: pc-wol-button/
+  - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
+  - source: pc-wol-button/
+    components: [logger]
   - source: github://pr#5941
     components: [cst816]
   - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
 logger:
-  level: DEBUG
+  level: VERBOSE
+  hardware_uart: USB_CDC
+  baud_rate: 460800
+  logs:
+    cst816.touchscreen: VERBOSE
 
 spi:
   mosi_pin: GPIO7
