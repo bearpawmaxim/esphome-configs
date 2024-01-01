@@ -18,18 +18,14 @@ packages:
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
-  - source: pc-wol-button/
-    components: [logger]
+  # - source: pc-wol-button/
+  #   components: [logger, gc9a01]
   - source: github://pr#5941
     components: [cst816]
-  - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
+# - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
 logger:
-  level: VERBOSE
-  hardware_uart: USB_CDC
   baud_rate: 460800
-  logs:
-    cst816.touchscreen: VERBOSE
 
 spi:
   mosi_pin: GPIO7
@@ -69,6 +65,16 @@ light:
 wifi:
   on_connect:
     - script.execute: prepare_wol
+
+
+button:
+  - platform: template
+    name: read id
+    on_press:
+      - lambda: |-
+          uint8_t chip_id_;
+          bool s = id(cst816d)->read_byte(0xA7, &chip_id_);
+          ESP_LOGI("CST", "CST Chip id is %d (success %d)", chip_id_, s);
 
 script:
   - id: prepare_wol
@@ -150,6 +156,7 @@ display:
 #              - component.update: watchface
 
 touchscreen:
+  id: cst816d
   platform: cst816
   interrupt_pin: GPIO0
   reset_pin: GPIO1
