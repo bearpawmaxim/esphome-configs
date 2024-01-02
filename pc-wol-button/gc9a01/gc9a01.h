@@ -30,7 +30,6 @@ class GC9A01 : public display::DisplayBuffer,
  protected:
   void sendcommand_(uint8_t cmd, const uint8_t *data_bytes, uint8_t num_data_bytes);
   void senddata_(const uint8_t *data_bytes, uint8_t num_data_bytes);
-
   void writecommand_(uint8_t value);
   void writedata_(uint8_t value);
 

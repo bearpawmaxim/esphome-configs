@@ -16,11 +16,11 @@ packages:
   device_common: !include .device_common.yaml
 
 external_components:
-  - source: github://bearpawmaxim/esphome@pr3625fix
+  # - source: github://bearpawmaxim/esphome@pr3625fix
+  - source: pc-wol-button/
     components: [gc9a01]
-  # - source: pc-wol-button/
-  #   components: [logger, gc9a01]
-  - source: github://pr#5941
+  # - source: github://pr#5941
+  - source: github://bearpawmaxim/esphome@pr5941fix
     components: [cst816]
 # - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
@@ -66,7 +66,6 @@ wifi:
   on_connect:
     - script.execute: prepare_wol
 
-
 button:
   - platform: template
     name: read id
@@ -91,6 +90,14 @@ color:
     red: 3%
     green: 5%
     blue: 100%
+  - id: my_red
+    red: 100%
+    green: 5%
+    blue: 3%
+  - id: my_green
+    red: 5%
+    green: 100%
+    blue: 3%
   - id: flip_clock_color
     hex: 5C2603
 
@@ -100,7 +107,7 @@ font:
     size: 16
   - file: 'pc-wol-button/flip_clock_font.ttf'
     id: flip_clock_font
-    size: 70
+    size: 50
     glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
 
 display:
@@ -109,57 +116,39 @@ display:
 # Above is for when or if this is merged into the ili9xxx platform
   - platform: gc9a01
     id: watchface
-    # reset_pin: GPIO1
     cs_pin: GPIO10
     dc_pin: GPIO2
     width: 240
     height: 240
     eight_bit_color: false
-    rotation: 270
+    # rotation: 270
+    update_interval: 1s
     lambda: |-
+      it.draw_pixel_at(0, 120, id(my_blue));
+      it.draw_pixel_at(120, 0, id(my_red));
+      it.draw_pixel_at(239, 120, id(my_green));
       it.strftime(120, 70, id(font_16), id(flip_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
-      it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M", id(sntp_time).now());
+      it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
       bool is_sending_wol = id(send_wol_packet).is_running();
       if (!is_sending_wol)
         it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Press to wake the PC");
       else
         it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Sending WOL packet");
-      
       it.circle(120, 120, 115, id(flip_clock_color));
-
-# text_sensor:
-#  - platform: CST816S_touchscreen
-#    id: touch
-#    on_value:
-#      then:
-#        - if:
-#            condition:
-#              and:
-#                - text_sensor.state:
-#                    id: touch
-#                    state: 'SINGLE CLICK'
-#            then:
-#              - script.execute: send_wol_packet
-#              - component.update: watchface
-#              - script.wait: send_wol_packet
-#              - component.update: watchface
-#        - if:
-#            condition:
-#              and:
-#                - text_sensor.state:
-#                    id: touch
-#                    state: 'LONG PRESS'
-#            then:
-#              - script.execute: send_wol_packet
-#              - component.update: watchface
-#              - script.wait: send_wol_packet
-#              - component.update: watchface
 
 touchscreen:
   id: cst816d
   platform: cst816
   interrupt_pin: GPIO0
   reset_pin: GPIO1
+  on_touch:
+    - lambda: |-
+        ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
+            touch.x,
+            touch.y,
+            touch.x_raw,
+            touch.y_raw
+        );
 
 binary_sensor:
   - platform: touchscreen
@@ -169,8 +158,7 @@ binary_sensor:
     x_max: 20
     y_min: 220
     y_max: 220
-#     page_id: power_on_btn_page
-    on_click: 
+    on_click:
       - script.execute: send_wol_packet
       - component.update: watchface
       - script.wait: send_wol_packet

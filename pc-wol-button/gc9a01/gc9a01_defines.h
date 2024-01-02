@@ -33,7 +33,6 @@ static const uint8_t GC9A01_DISPON = 0x29;   ///< Display ON
 static const uint8_t GC9A01_CASET = 0x2A;  ///< Column Address Set
 static const uint8_t GC9A01_PASET = 0x2B;  ///< Page Address Set
 static const uint8_t GC9A01_RAMWR = 0x2C;  ///< Memory Write
-static const uint8_t GC9A01_RAMWR_CONTINUE = 0x3C;  ///< Memory Write Continue
 // static const uint8_t ILI9341_RAMRD = 0x2E; ///< Memory Read
 
 static const uint8_t GC9A01_PTLAR = 0x30;     ///< Partial Area
