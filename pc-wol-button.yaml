@@ -5,27 +5,36 @@ substitutions:
 
 esphome:
   name: ${device_name}
-  platform: ESP32
-  board: esp32-c3-devkitm-1
+  #platform: ESP32
+  #board: esp32-c3-devkitm-1
+  platformio_options:
+    board_build.flash_mode: dio  
   includes:
-    - pc-wol-button/WakeOnLan.cpp
-    - pc-wol-button/WakeOnLan.h
-    - pc-wol-button/pc_wol_button.h
+    # - pc-wol-button/WakeOnLan.cpp
+    # - pc-wol-button/WakeOnLan.h
+    # - pc-wol-button/pc_wol_button.h
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+    version: recommended
 
 packages:
   device_common: !include .device_common.yaml
 
 external_components:
-  # - source: github://bearpawmaxim/esphome@pr3625fix
-  - source: pc-wol-button/
+  - source: github://bearpawmaxim/esphome@pr3625fix
+  # - source: pc-wol-button/
     components: [gc9a01]
-  # - source: github://pr#5941
-  - source: github://bearpawmaxim/esphome@pr5941fix
+  - source: github://pr#5941
+  # - source: github://bearpawmaxim/esphome@pr5941fix
     components: [cst816]
-# - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
+  # - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
 logger:
   baud_rate: 460800
+  hardware_uart: USB_SERIAL_JTAG
 
 spi:
   mosi_pin: GPIO7
@@ -66,38 +75,21 @@ wifi:
   on_connect:
     - script.execute: prepare_wol
 
-button:
-  - platform: template
-    name: read id
-    on_press:
-      - lambda: |-
-          uint8_t chip_id_;
-          bool s = id(cst816d)->read_byte(0xA7, &chip_id_);
-          ESP_LOGI("CST", "CST Chip id is %d (success %d)", chip_id_, s);
-
 script:
   - id: prepare_wol
     mode: single
     then:
-      lambda: wol_setup();
+      # lambda: wol_setup();
   - id: send_wol_packet
     mode: single
     then:
-      lambda: wol_send("id(bearpaw_pc_mac_addr");
+      # lambda: wol_send("id(bearpaw_pc_mac_addr");
 
 color:
   - id: my_blue
     red: 3%
     green: 5%
     blue: 100%
-  - id: my_red
-    red: 100%
-    green: 5%
-    blue: 3%
-  - id: my_green
-    red: 5%
-    green: 100%
-    blue: 3%
   - id: flip_clock_color
     hex: 5C2603
 
@@ -124,9 +116,6 @@ display:
     # rotation: 270
     update_interval: 1s
     lambda: |-
-      it.draw_pixel_at(0, 120, id(my_blue));
-      it.draw_pixel_at(120, 0, id(my_red));
-      it.draw_pixel_at(239, 120, id(my_green));
       it.strftime(120, 70, id(font_16), id(flip_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
       it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
       bool is_sending_wol = id(send_wol_packet).is_running();
@@ -141,6 +130,9 @@ touchscreen:
   platform: cst816
   interrupt_pin: GPIO0
   reset_pin: GPIO1
+  transform:
+    swap_xy: true
+    mirror_y: true
   on_touch:
     - lambda: |-
         ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
@@ -149,17 +141,8 @@ touchscreen:
             touch.x_raw,
             touch.y_raw
         );
-
-binary_sensor:
-  - platform: touchscreen
-    name: Power on button
-    id: power_on_button
-    x_min: 20
-    x_max: 20
-    y_min: 220
-    y_max: 220
-    on_click:
-      - script.execute: send_wol_packet
-      - component.update: watchface
-      - script.wait: send_wol_packet
-      - component.update: watchface
+    - script.execute: send_wol_packet
+    - component.update: watchface
+    - delay: 5s
+    # - script.wait: send_wol_packet
+    - component.update: watchface

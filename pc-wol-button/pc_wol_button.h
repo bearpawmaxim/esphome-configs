@@ -14,7 +14,7 @@ void wol_setup() {
 }
 
 void wol_send(const char *mac_addr) {
-  bool result = WOL.sendMagicPacket(mac_addr);
+  bool result = WOL.sendMagicPacket(mac_addr, 7);
   if (result) {
     ESP_LOGI(TAG, "WOL Packet successfully sent.");
   } else {
