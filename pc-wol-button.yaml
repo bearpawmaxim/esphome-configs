@@ -5,20 +5,12 @@ substitutions:
 
 esphome:
   name: ${device_name}
-  #platform: ESP32
-  #board: esp32-c3-devkitm-1
-  platformio_options:
-    board_build.flash_mode: dio  
-  includes:
-    # - pc-wol-button/WakeOnLan.cpp
-    # - pc-wol-button/WakeOnLan.h
-    # - pc-wol-button/pc_wol_button.h
-
-esp32:
+  platform: ESP32
   board: esp32-c3-devkitm-1
-  framework:
-    type: esp-idf
-    version: recommended
+  includes:
+    - pc-wol-button/WakeOnLan.cpp
+    - pc-wol-button/WakeOnLan.h
+    - pc-wol-button/pc_wol_button.h
 
 packages:
   device_common: !include .device_common.yaml
@@ -26,14 +18,12 @@ packages:
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
-    refresh: 1s
   - source: github://pr#5941
     components: [cst816]
-  # - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
 logger:
-  baud_rate: 460800
-  hardware_uart: USB_SERIAL_JTAG
+  baud_rate: 0 #460800
+#  hardware_uart: USB_SERIAL_JTAG
 
 spi:
   mosi_pin: GPIO7
@@ -78,11 +68,11 @@ script:
   - id: prepare_wol
     mode: single
     then:
-      # lambda: wol_setup();
+      lambda: wol_setup();
   - id: send_wol_packet
     mode: single
     then:
-      # lambda: wol_send("id(bearpaw_pc_mac_addr");
+      lambda: wol_send("id(bearpaw_pc_mac_addr");
 
 color:
   - id: my_blue
@@ -93,15 +83,54 @@ color:
     red: 0
     green_int: 53
     blue_int: 31
+  - id: watchface_bg_color
+    red: 9%
+    blue: 8%
+    green: 9%
+  - id: watchface_fg_color
+    red: 75%
+    blue: 75%
+    green: 75%
+
+# image:
+ #  - id: watchface_bg
+  #   file: pc-wol-button/watchface.bmp
+ #    type: BINARY
 
 font:
   - file: 'gfonts://Roboto'
     id: font_16
     size: 16
-  - file: 'pc-wol-button/flip_clock_font.ttf'
+  - file: pc-wol-button/flip_clock_font.ttf
     id: flip_clock_font
     size: 50
     glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
+
+number:
+  - id: c_r
+    name: Color red
+    platform: template
+    min_value: 0
+    max_value: 255
+    step: 0
+    optimistic: true
+    initial_value: 100
+  - id: c_g
+    name: Color green
+    platform: template
+    min_value: 0
+    max_value: 255
+    step: 0
+    optimistic: true
+    initial_value: 100
+  - id: c_b
+    name: Color blue
+    platform: template
+    min_value: 0
+    max_value: 255
+    step: 0
+    optimistic: true
+    initial_value: 100
 
 display:
 #  - platform: ili9xxx
@@ -117,14 +146,17 @@ display:
     rotation: 270
     update_interval: 1s
     lambda: |-
+      auto color = Color(id(c_r)->state, id(c_g)->state, id(c_b)->state);
+      draw_bezel(&it, color, 120, 120, 107, 100);
+      //it.image(0, 0, id(watchface_bg), color, id(watchface_fg_color));
       it.strftime(120, 70, id(font_16), id(flip_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
-      it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
-      bool is_sending_wol = id(send_wol_packet).is_running();
-      if (!is_sending_wol)
-        it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Press to wake the PC");
-      else
-        it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Sending WOL packet");
-      it.circle(120, 120, 115, id(flip_clock_color));
+      //it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
+      //bool is_sending_wol = id(send_wol_packet).is_running();
+      //if (!is_sending_wol)
+      //  it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Press to wake the PC");
+      //else
+      //  it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Sending WOL packet");
+      //it.circle(120, 120, 115, id(flip_clock_color));
 
 touchscreen:
   id: cst816d
@@ -145,5 +177,4 @@ touchscreen:
     - script.execute: send_wol_packet
     - component.update: watchface
     - delay: 5s
-    # - script.wait: send_wol_packet
     - component.update: watchface
