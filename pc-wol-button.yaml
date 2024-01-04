@@ -25,10 +25,9 @@ packages:
 
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
-  # - source: pc-wol-button/
     components: [gc9a01]
+    refresh: 1s
   - source: github://pr#5941
-  # - source: github://bearpawmaxim/esphome@pr5941fix
     components: [cst816]
   # - source: github://GadgetFactory/CST816S_touchscreen@1.0.0
 
@@ -91,7 +90,9 @@ color:
     green: 5%
     blue: 100%
   - id: flip_clock_color
-    hex: 5C2603
+    red: 0
+    green_int: 53
+    blue_int: 31
 
 font:
   - file: 'gfonts://Roboto'
@@ -113,7 +114,7 @@ display:
     width: 240
     height: 240
     eight_bit_color: false
-    # rotation: 270
+    rotation: 270
     update_interval: 1s
     lambda: |-
       it.strftime(120, 70, id(font_16), id(flip_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
