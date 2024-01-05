@@ -10,7 +10,8 @@ esphome:
   includes:
     - pc-wol-button/WakeOnLan.cpp
     - pc-wol-button/WakeOnLan.h
-    - pc-wol-button/pc_wol_button.h
+    - pc-wol-button/wol.h
+    - pc-wol-button/clock.h
 
 packages:
   device_common: !include .device_common.yaml
@@ -45,6 +46,22 @@ light:
     id: backlight
     restore_mode: ALWAYS_ON
 
+text_sensor:
+  - id: bearpaw_pc_state_text
+    platform: homeassistant
+    entity_id: device_tracker.bearpaw_l340_17_eth
+  - id: bearpaw_pc_ip
+    platform: homeassistant
+    entity_id: device_tracker.bearpaw_l340_17_eth
+    attribute: ip
+
+binary_sensor:
+  - id: bearpaw_pc_state
+    platform: template
+    internal: true
+    lambda: |-
+      return id(bearpaw_pc_state_text)->state == "home";
+    
 # time:
 #   - id: !extend sntp_time
 #     on_time:
@@ -75,62 +92,48 @@ script:
       lambda: wol_send("id(bearpaw_pc_mac_addr");
 
 color:
-  - id: my_blue
-    red: 3%
-    green: 5%
-    blue: 100%
-  - id: flip_clock_color
+  - id: text_wol_color
+    # red: 100%
+    # green: 5%
+    # blue: 3%
+    hex: af3a03
+  - id: text_clock_color
     red: 0
     green_int: 53
     blue_int: 31
-  - id: watchface_bg_color
-    red: 9%
-    blue: 8%
-    green: 9%
   - id: watchface_fg_color
-    red: 75%
-    blue: 75%
-    green: 75%
-
-# image:
- #  - id: watchface_bg
-  #   file: pc-wol-button/watchface.bmp
- #    type: BINARY
+    red: 10%
+    blue: 0%
+    green: 10%
+  - id: my_blue
+    blue: 100%
+  - id: my_red
+    red: 100%
+  - id: my_green
+    green: 100%
+  - id: my_white
+    red: 100%
+    blue: 100%
+    green: 100%
+  - id: my_yellow
+    hex: ffff00
 
 font:
   - file: 'gfonts://Roboto'
     id: font_16
     size: 16
-  - file: pc-wol-button/flip_clock_font.ttf
-    id: flip_clock_font
-    size: 50
-    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
+ # - file: pc-wol-button/flip_clock_font.ttf
+ #   id: flip_clock_font
+ #   size: 50
+ #   glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
 
-number:
-  - id: c_r
-    name: Color red
-    platform: template
-    min_value: 0
-    max_value: 255
-    step: 0
-    optimistic: true
-    initial_value: 100
-  - id: c_g
-    name: Color green
-    platform: template
-    min_value: 0
-    max_value: 255
-    step: 0
-    optimistic: true
-    initial_value: 100
-  - id: c_b
-    name: Color blue
-    platform: template
-    min_value: 0
-    max_value: 255
-    step: 0
-    optimistic: true
-    initial_value: 100
+image:
+  - id: wifi_icon
+    file: mdi:wifi
+    resize: 16x16
+  - id: pc_icon
+    file: mdi:laptop
+    resize: 16x16
 
 display:
 #  - platform: ili9xxx
@@ -146,17 +149,20 @@ display:
     rotation: 270
     update_interval: 1s
     lambda: |-
-      auto color = Color(id(c_r)->state, id(c_g)->state, id(c_b)->state);
-      draw_bezel(&it, color, 120, 120, 107, 100);
-      //it.image(0, 0, id(watchface_bg), color, id(watchface_fg_color));
-      it.strftime(120, 70, id(font_16), id(flip_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
-      //it.strftime(120, 120, id(flip_clock_font), id(flip_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
-      //bool is_sending_wol = id(send_wol_packet).is_running();
-      //if (!is_sending_wol)
-      //  it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Press to wake the PC");
-      //else
-      //  it.print(120, 180, id(font_16), id(my_blue), TextAlign::CENTER, "Sending WOL packet");
-      //it.circle(120, 120, 115, id(flip_clock_color));
+      Color marks_color = id(text_clock_color);
+      Clock::draw_watch_face(&it, 120, 120, 107, 100, id(sntp_time).now(),
+        id(watchface_fg_color), marks_color, marks_color, marks_color);
+      if (id(bearpaw_pc_state)->state) {
+        it.image(100, 40, id(pc_icon));
+      }
+      it.strftime(120, 70, id(font_16), id(text_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
+      it.strftime(120, 90, id(font_16), id(text_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
+      it.printf(120, 110, id(font_16), id(text_wol_color), TextAlign::CENTER, "%s: %s", id(bearpaw_pc_state_text)->state.c_str(), id(bearpaw_pc_ip)->state.c_str());
+      bool is_sending_wol = id(send_wol_packet).is_running();
+      if (!is_sending_wol)
+        it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Press to wake the PC");
+      else
+        it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Sending WOL packet");
 
 touchscreen:
   id: cst816d
