@@ -97,7 +97,7 @@ class Clock {
       const double angle_step = M_PI / 30;
       if (tick_values_[0][0] == 0) {
         for (int i = 0; i < 60; ++i) {
-          uint16_t outer_radius_adj = i % 5 == 0 ? outer_radius + 3 : outer_radius;
+          uint16_t outer_radius_adj = i % 5 == 0 ? outer_radius + 5 : outer_radius;
           tick_values_[i][0] = static_cast<uint8_t>(center_x + outer_radius_adj * cos(i * angle_step - shift_angle_));
           tick_values_[i][1] = static_cast<uint8_t>(center_y + outer_radius_adj * sin(i * angle_step - shift_angle_));
           tick_values_[i][2] = static_cast<uint8_t>(center_x + inner_radius * cos(i * angle_step - shift_angle_));
@@ -110,11 +110,79 @@ class Clock {
       }
     }
 
-    static void triangle_(Display* it, uint16_t x1, uint16_t y1, uint16_t x2,
-        uint16_t y2, uint16_t x3, uint16_t y3, Color color) {
+    static void triangle_(Display* it, uint16_t x0, uint16_t y0, uint16_t x1,
+        uint16_t y1, uint16_t x2, uint16_t y2, Color color) {
+      it->line(x0, y0, x1, y1, color);
       it->line(x1, y1, x2, y2, color);
-      it->line(x2, y2, x3, y3, color);
-      it->line(x3, y3, x1, y1, color);
+      it->line(x2, y2, x0, y0, color);
+    }
+
+    static void filled_triangle_(Display* it, uint16_t x0, uint16_t y0, uint16_t x1,
+        uint16_t y1, uint16_t x2, uint16_t y2, Color color) {
+      triangle_(it, x0, y0, x1, y1, x2, y2, color);
+      int16_t a, b, y, last;
+      if (y0 > y1) {
+        std::swap(y0, y1);
+        std::swap(x0, x1);
+      }
+      if (y1 > y2) {
+        std::swap(y2, y1);
+        std::swap(x2, x1);
+      }
+      if (y0 > y1) {
+        std::swap(y0, y1);
+        std::swap(x0, x1);
+      }
+      if (y0 == y2) {
+        a = b = x0;
+        if (x1 < a) {
+          a = x1;
+        } else if (x1 > b) {
+          b = x1;
+        }
+        if (x2 < a) {
+          a = x2;
+        } else if (x2 > b) {
+          b = x2;
+        }
+        it->horizontal_line(a, y0, b - a + 1, color);
+        return;
+      }
+
+      int16_t dx01 = x1 - x0, dy01 = y1 - y0, dx02 = x2 - x0, dy02 = y2 - y0,
+        dx12 = x2 - x1, dy12 = y2 - y1;
+      int32_t sa = 0, sb = 0;
+
+      if (y1 == y2) {
+        last = y1;
+      } else {
+        last = y1 - 1;
+      }
+
+      for (y = y0; y <= last; y++) {
+        a = x0 + sa / dy01;
+        b = x0 + sb / dy02;
+        sa += dx01;
+        sb += dx02;
+
+        if (a > b) {
+          std::swap(a, b);
+        }
+        it->horizontal_line(a, y, b - a + 1, color);
+      }
+
+      sa = (int32_t)dx12 * (y - y1);
+      sb = (int32_t)dx02 * (y - y0);
+      for (; y <= y2; y++) {
+        a = x1 + sa / dy12;
+        b = x0 + sb / dy02;
+        sa += dx12;
+        sb += dx02;
+        if (a > b) {
+          std::swap(a, b);
+        }
+        it->horizontal_line(a, y, b - a + 1, color);
+      }
     }
 
     static void draw_minutes_hand_(Display *it, uint16_t x, uint16_t y,
@@ -123,14 +191,14 @@ class Clock {
       uint8_t i = time.minute;
       // uint8_t i_prev = i == 0 ? 59 : i - 1;
       // uint8_t i_next = i == 59 ? 0 : i + 1;
-      uint8_t x1 = static_cast<uint8_t>(x + (radius - 10) * cos(i * angle_step - angle_step - shift_angle_));
-      uint8_t y1 = static_cast<uint8_t>(y + (radius - 10) * sin(i * angle_step - angle_step - shift_angle_));
-      uint8_t x2 = static_cast<uint8_t>(x + (radius - 10) * cos(i * angle_step + angle_step - shift_angle_));
-      uint8_t y2 = static_cast<uint8_t>(y + (radius - 10) * sin(i * angle_step + angle_step - shift_angle_));
+      uint8_t x1 = static_cast<uint8_t>(x + (radius - 7) * cos(i * angle_step - angle_step - shift_angle_ + 0.04));
+      uint8_t y1 = static_cast<uint8_t>(y + (radius - 7) * sin(i * angle_step - angle_step - shift_angle_ + 0.04));
+      uint8_t x2 = static_cast<uint8_t>(x + (radius - 7) * cos(i * angle_step + angle_step - shift_angle_ - 0.04));
+      uint8_t y2 = static_cast<uint8_t>(y + (radius - 7) * sin(i * angle_step + angle_step - shift_angle_ - 0.04));
       auto tick_values = tick_values_[i];
       uint8_t x3 = tick_values[2];
       uint8_t y3 = tick_values[3];
-      triangle_(it, x1, y1, x2, y2, x3, y3, color);
+      filled_triangle_(it, x1, y1, x2, y2, x3, y3, color);
     }
 
     static void draw_hours_hand_(Display *it, uint16_t x, uint16_t y,
@@ -138,13 +206,13 @@ class Clock {
       const double angle_step = M_PI / 6;
       const double sixth_step = angle_step / 6;
       uint8_t i = time.hour > 12 ? time.hour - 12 : time.hour;
-      uint8_t x1 = static_cast<uint8_t>(x + (radius + 10) * cos(i * angle_step - sixth_step - shift_angle_));
-      uint8_t y1 = static_cast<uint8_t>(y + (radius + 10) * sin(i * angle_step - sixth_step - shift_angle_));
-      uint8_t x2 = static_cast<uint8_t>(x + (radius + 10) * cos(i * angle_step + sixth_step - shift_angle_));
-      uint8_t y2 = static_cast<uint8_t>(y + (radius + 10) * sin(i * angle_step + sixth_step - shift_angle_));
+      uint8_t x1 = static_cast<uint8_t>(x + (radius + 7) * cos(i * angle_step - sixth_step - shift_angle_ + 0.04));
+      uint8_t y1 = static_cast<uint8_t>(y + (radius + 7) * sin(i * angle_step - sixth_step - shift_angle_ + 0.04));
+      uint8_t x2 = static_cast<uint8_t>(x + (radius + 7) * cos(i * angle_step + sixth_step - shift_angle_ - 0.04));
+      uint8_t y2 = static_cast<uint8_t>(y + (radius + 7) * sin(i * angle_step + sixth_step - shift_angle_ - 0.04));
       uint8_t x3 = static_cast<uint8_t>(x + (radius) * cos(i * angle_step - shift_angle_));
       uint8_t y3 = static_cast<uint8_t>(y + (radius) * sin(i * angle_step - shift_angle_));
-      triangle_(it, x1, y1, x2, y2, x3, y3, color);
+      filled_triangle_(it, x1, y1, x2, y2, x3, y3, color);
     }
 
     static void draw_seconds_hand_(Display *it, ESPTime time, Color color) {

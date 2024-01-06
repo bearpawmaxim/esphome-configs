@@ -3,6 +3,14 @@ substitutions:
   device_name_underscore: pc_wol_button
   bearpaw_pc_mac_addr: !secret bearpaw_pc_mac_addr
 
+globals:
+  # - id: clr
+  #   type: Color
+  - id: is_wifi_connected
+    type: bool
+    initial_value: 'true'
+    restore_value: false
+
 esphome:
   name: ${device_name}
   platform: ESP32
@@ -12,6 +20,8 @@ esphome:
     - pc-wol-button/WakeOnLan.h
     - pc-wol-button/wol.h
     - pc-wol-button/clock.h
+  # on_boot:
+  #   lambda: id(clr) = Color(255, 255, 255);
 
 packages:
   device_common: !include .device_common.yaml
@@ -19,6 +29,7 @@ packages:
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
+    refresh: 1s
   - source: github://pr#5941
     components: [cst816]
 
@@ -38,6 +49,21 @@ output:
   - platform: ledc
     pin: GPIO3
     id: gpio_3_backlight_pwm
+  # - platform: template
+  #   type: float
+  #   id: out_r
+  #   write_action:
+  #     lambda: id(clr).red = (uint8_t)(state * 255.999);
+  # - platform: template
+  #   type: float
+  #   id: out_g
+  #   write_action:
+  #     lambda: id(clr).green = (uint8_t)(state * 255.999);
+  # - platform: template
+  #   type: float
+  #   id: out_b
+  #   write_action:
+  #     lambda: id(clr).blue = (uint8_t)(state * 255.999);
 
 light:
   - platform: monochromatic
@@ -45,15 +71,18 @@ light:
     name: "Display Backlight"
     id: backlight
     restore_mode: ALWAYS_ON
+  # - id: color_set
+  #   platform: rgb
+  #   name: Color set
+  #   red: out_r
+  #   green: out_g
+  #   blue: out_b
 
 text_sensor:
   - id: bearpaw_pc_state_text
     platform: homeassistant
     entity_id: device_tracker.bearpaw_l340_17_eth
-  - id: bearpaw_pc_ip
-    platform: homeassistant
-    entity_id: device_tracker.bearpaw_l340_17_eth
-    attribute: ip
+    internal: true
 
 binary_sensor:
   - id: bearpaw_pc_state
@@ -89,43 +118,41 @@ script:
   - id: send_wol_packet
     mode: single
     then:
-      lambda: wol_send("id(bearpaw_pc_mac_addr");
+      lambda: wol_send("${bearpaw_pc_mac_addr}");
 
 color:
   - id: text_wol_color
-    # red: 100%
-    # green: 5%
-    # blue: 3%
-    hex: af3a03
+    red: 100%
+    green: 5%
+    blue: 3%
   - id: text_clock_color
-    red: 0
     green_int: 53
     blue_int: 31
   - id: watchface_fg_color
-    red: 10%
-    blue: 0%
+    blue: 10%
     green: 10%
-  - id: my_blue
-    blue: 100%
-  - id: my_red
-    red: 100%
-  - id: my_green
-    green: 100%
-  - id: my_white
-    red: 100%
-    blue: 100%
-    green: 100%
-  - id: my_yellow
-    hex: ffff00
+  - id: time_marks_color
+    red_int: 255
+    green_int: 44
+  - id: time_text_color
+    red_int: 137
+    green_int: 61
+    blue_int: 25
+  - id: off_icon_color
+    red_int: 137
+    green_int: 61
+    blue_int: 25
+  - id: on_icon_color
+    green_int: 98
 
 font:
   - file: 'gfonts://Roboto'
     id: font_16
     size: 16
- # - file: pc-wol-button/flip_clock_font.ttf
- #   id: flip_clock_font
- #   size: 50
- #   glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
+  - file: pc-wol-button/Clickuper.ttf
+    id: clock_font
+    size: 45
+    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
 
 image:
   - id: wifi_icon
@@ -149,15 +176,17 @@ display:
     rotation: 270
     update_interval: 1s
     lambda: |-
-      Color marks_color = id(text_clock_color);
-      Clock::draw_watch_face(&it, 120, 120, 107, 100, id(sntp_time).now(),
-        id(watchface_fg_color), marks_color, marks_color, marks_color);
-      if (id(bearpaw_pc_state)->state) {
-        it.image(100, 40, id(pc_icon));
-      }
-      it.strftime(120, 70, id(font_16), id(text_clock_color), TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
-      it.strftime(120, 90, id(font_16), id(text_clock_color), TextAlign::CENTER, "%H:%M:%S", id(sntp_time).now());
-      it.printf(120, 110, id(font_16), id(text_wol_color), TextAlign::CENTER, "%s: %s", id(bearpaw_pc_state_text)->state.c_str(), id(bearpaw_pc_ip)->state.c_str());
+      Color t_marks_color = id(time_marks_color);
+      Color t_text_color = id(time_text_color);
+      Clock::draw_watch_face(&it, 120, 120, 111, 100, id(sntp_time).now(),
+        id(watchface_fg_color), t_marks_color, t_marks_color, t_marks_color);
+      bool is_pc_on = id(bearpaw_pc_state)->state;
+      it.image(100, 40, id(pc_icon), is_pc_on ? id(on_icon_color) : id(off_icon_color));
+      bool is_connected = id(is_wifi_connected);
+      it.image(124, 40, id(wifi_icon), is_connected ? id(on_icon_color) : id(off_icon_color));
+      // ESP_LOGW("COL", "Color:  R=%d, G=%d, B=%d", id(clr).red, id(clr).green, id(clr).blue);
+      it.strftime(120, 85, id(font_16), t_text_color, TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
+      it.strftime(120, 120, id(clock_font), t_text_color, TextAlign::CENTER, "%H:%M", id(sntp_time).now());
       bool is_sending_wol = id(send_wol_packet).is_running();
       if (!is_sending_wol)
         it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Press to wake the PC");
@@ -184,3 +213,9 @@ touchscreen:
     - component.update: watchface
     - delay: 5s
     - component.update: watchface
+
+button:
+  - id: send_wol
+    platform: template
+    on_press:
+      script.execute: send_wol_packet
