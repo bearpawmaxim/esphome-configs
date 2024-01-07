@@ -16,6 +16,8 @@ esphome:
   platform: ESP32
   board: esp32-c3-devkitm-1
   includes:
+    - includes/binary_display_buffer.h
+    - includes/binary_display_buffer.cpp
     - pc-wol-button/WakeOnLan.cpp
     - pc-wol-button/WakeOnLan.h
     - pc-wol-button/wol.h
@@ -91,20 +93,20 @@ binary_sensor:
     lambda: |-
       return id(bearpaw_pc_state_text)->state == "home";
     
-# time:
-#   - id: !extend sntp_time
-#     on_time:
+time:
+  - id: !extend sntp_time
+    on_time:
 #       # Lower the backlight at night.
-#       - hours: 23
-#         then:
-#           - light.turn_on: 
-#               id: backlight
-#               brightness: 20%
-#       - hours: 08
-#         then:
-#           - light.turn_on:
-#               id: backlight
-#               brightness: 100%
+      - hours: 23
+        then:
+          - light.turn_on: 
+              id: backlight
+              brightness: 20%
+      - hours: 08
+        then:
+          - light.turn_on:
+              id: backlight
+              brightness: 100%
 
 wifi:
   on_connect:
@@ -122,9 +124,9 @@ script:
 
 color:
   - id: text_wol_color
-    red: 100%
-    green: 5%
-    blue: 3%
+    red: 30%
+    green: 30%
+    blue: 30%
   - id: text_clock_color
     green_int: 53
     blue_int: 31
@@ -152,7 +154,7 @@ font:
   - file: pc-wol-button/Clickuper.ttf
     id: clock_font
     size: 45
-    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':']
+    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '-']
 
 image:
   - id: wifi_icon
@@ -182,16 +184,18 @@ display:
         id(watchface_fg_color), t_marks_color, t_marks_color, t_marks_color);
       bool is_pc_on = id(bearpaw_pc_state)->state;
       it.image(100, 40, id(pc_icon), is_pc_on ? id(on_icon_color) : id(off_icon_color));
-      bool is_connected = id(is_wifi_connected);
+      bool is_connected = id(is_wifi_connected) && id(sntp_time).now().is_valid();
       it.image(124, 40, id(wifi_icon), is_connected ? id(on_icon_color) : id(off_icon_color));
       // ESP_LOGW("COL", "Color:  R=%d, G=%d, B=%d", id(clr).red, id(clr).green, id(clr).blue);
-      it.strftime(120, 85, id(font_16), t_text_color, TextAlign::CENTER, "%A %b %d", id(sntp_time).now());
-      it.strftime(120, 120, id(clock_font), t_text_color, TextAlign::CENTER, "%H:%M", id(sntp_time).now());
+      it.strftime(120, 85, id(font_16), t_text_color, TextAlign::CENTER, is_connected ? "%A %b %d" : " ", id(sntp_time).now());
+      it.strftime(120, 120, id(clock_font), t_text_color, TextAlign::CENTER, is_connected ? "%H:%M" : "--:--", id(sntp_time).now());
       bool is_sending_wol = id(send_wol_packet).is_running();
-      if (!is_sending_wol)
-        it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Press to wake the PC");
-      else
-        it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Sending WOL packet");
+      if (is_connected) {
+        if (!is_sending_wol)
+          it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Press to wake the PC");
+        else
+          it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Sending WOL packet");
+      }
 
 touchscreen:
   id: cst816d

@@ -230,9 +230,11 @@ class Clock {
         draw_bezel_(buffer_, center_x, center_y, outer_radius, inner_radius);
       }
       buffer_->draw_buffer(it, face_color);
-      draw_hours_hand_(it, center_x, center_y, outer_radius, time, hours_color);
-      draw_minutes_hand_(it, center_x, center_y, inner_radius, time, minutes_color);
-      draw_seconds_hand_(it, time, seconds_color);
+      if (time.is_valid()) {
+        draw_hours_hand_(it, center_x, center_y, outer_radius, time, hours_color);
+        draw_minutes_hand_(it, center_x, center_y, inner_radius, time, minutes_color);
+        draw_seconds_hand_(it, time, seconds_color);
+      }
     }
 
 };
