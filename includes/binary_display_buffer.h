@@ -11,11 +11,16 @@ namespace binary_display_buffer {
 class BinaryDisplayBuffer: public display::DisplayBuffer {
   public:
     BinaryDisplayBuffer(uint16_t width, uint16_t height);
-    void write_data(Display *display, Color color);
+    void draw_to(Display *display, Color color);
 
   protected:
-    int get_width_internal() override;
-    int get_height_internal() override;
+    int get_width_internal() override { return width_; }
+    int get_height_internal() override { return height_; }
+    display::DisplayType get_display_type() override {
+      return display::DisplayType::DISPLAY_TYPE_BINARY;
+    }
+    void draw_absolute_pixel_internal(int x, int y, esphome::Color color) override;
+    void update() override {};
 
   private:
     uint16_t width_ = 240;

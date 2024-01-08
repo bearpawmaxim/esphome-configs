@@ -18,6 +18,7 @@ esphome:
   includes:
     - includes/binary_display_buffer.h
     - includes/binary_display_buffer.cpp
+    - includes/graphic_utils.h
     - pc-wol-button/WakeOnLan.cpp
     - pc-wol-button/WakeOnLan.h
     - pc-wol-button/wol.h
