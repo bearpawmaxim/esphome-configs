@@ -24,23 +24,12 @@ globals:
     type: float
     restore_value: no
     initial_value: '0'
-  - id: gps_latitude
-    type: float
-    restore_value: no
-    initial_value: !secret gps_latitude
-  - id: gps_longitude
-    type: float
-    restore_value: no
-    initial_value: !secret gps_longitude
-  - id: gps_elevation
-    type: int8_t
-    restore_value: no
-    initial_value: !secret gps_elevation
 
 substitutions:
   device_name: lobby-led-light
-  latitude: "!secret {gps_latitude}"
-  longitude: "!secret {gps_longitude}"
+  latitude: !secret gps_latitude_str
+  longitude: !secret gps_longitude_str
+  elevation: !secret gps_elevation_str
 
 packages:
   device_common: !include .device_common.yaml
@@ -59,18 +48,10 @@ esphome:
     then:
       - script.execute: turn_on_light
       - lambda: |-
-          float latitude = id(gps_latitude);
-          float longitude = id(gps_longitude);
-          int8_t elevation = id(gps_elevation);
-
           //Ephemeris::setLocationOnEarth(latitude, longitude);
           //Ephemeris::flipLongitude(true);
           //Ephemeris::setAltitude(elevation);
-          LuminaryEffect::setup_effect(latitude, longitude, elevation);
-
-external_components:
-  - source: github://bearpawmaxim/esphome@templatable_globals
-    components: [ globals ]
+          LuminaryEffect::setup_effect(${latitude}, ${longitude}, ${elevation});
 
 number:
   - platform: template

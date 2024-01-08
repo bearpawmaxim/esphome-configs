@@ -20,8 +20,6 @@ void BinaryDisplayBuffer::draw_to(Display *display, Color color) {
   }
 }
 
-
-
 void HOT BinaryDisplayBuffer::draw_absolute_pixel_internal(int x, int y, esphome::Color color) {
   if (x > width_ || y > height_) {
     return;
