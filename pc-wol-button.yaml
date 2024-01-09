@@ -4,8 +4,6 @@ substitutions:
   bearpaw_pc_mac_addr: !secret bearpaw_pc_mac_addr
 
 globals:
-  # - id: clr
-  #   type: Color
   - id: is_wifi_connected
     type: bool
     initial_value: 'true'
@@ -22,6 +20,9 @@ ota:
     - lambda: |-
         id(ota_progress) = 0;
         Clock::stop();
+    - output.set_level:
+        id: gpio_3_backlight_pwm
+        level: 100%
     - display.page.show: ota_page
     - component.update: watchface
   on_progress:
@@ -31,10 +32,13 @@ ota:
 sensor:
   - platform: debug
     free:
+      id: heap_free
       name: "Heap Free"
     block:
+      id: heap_max_block
       name: "Heap Max Block"
     loop_time:
+      id: loop_time
       name: "Loop Time"
 
 esphome:
@@ -47,11 +51,6 @@ esphome:
     - pc-wol-button/WakeOnLan.h
     - pc-wol-button/wol.h
     - pc-wol-button/clock.h
-  # on_boot:
-  #   lambda: id(clr) = Color(255, 255, 255);
-
-packages:
-  device_common: !include .device_common.yaml
 
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
@@ -59,10 +58,15 @@ external_components:
     refresh: 1s
   - source: github://pr#5941
     components: [cst816]
+  - source: github://esphome/esphome@dev
+    components: [logger]
+
+packages:
+  device_common: !include .device_common.yaml
 
 logger:
-  baud_rate: 0 #460800
-#  hardware_uart: USB_SERIAL_JTAG
+  baud_rate: 460800
+  #hardware_uart: USB_CDC
 
 spi:
   mosi_pin: GPIO7
@@ -76,21 +80,6 @@ output:
   - platform: ledc
     pin: GPIO3
     id: gpio_3_backlight_pwm
-  # - platform: template
-  #   type: float
-  #   id: out_r
-  #   write_action:
-  #     lambda: id(clr).red = (uint8_t)(state * 255.999);
-  # - platform: template
-  #   type: float
-  #   id: out_g
-  #   write_action:
-  #     lambda: id(clr).green = (uint8_t)(state * 255.999);
-  # - platform: template
-  #   type: float
-  #   id: out_b
-  #   write_action:
-  #     lambda: id(clr).blue = (uint8_t)(state * 255.999);
 
 light:
   - platform: monochromatic
@@ -98,12 +87,6 @@ light:
     name: "Display Backlight"
     id: backlight
     restore_mode: ALWAYS_ON
-  # - id: color_set
-  #   platform: rgb
-  #   name: Color set
-  #   red: out_r
-  #   green: out_g
-  #   blue: out_b
 
 text_sensor:
   - id: bearpaw_pc_lan_state
@@ -194,7 +177,7 @@ font:
   - file: pc-wol-button/Clickuper.ttf
     id: clock_font
     size: 45
-    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '-', '%']
+    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', '-', ' ', '%']
 
 image:
   - id: wifi_icon
@@ -203,6 +186,15 @@ image:
   - id: pc_icon
     file: mdi:laptop
     resize: 16x16
+
+interval:
+  - interval: 1sec
+    then:
+      - if:
+          condition:
+            - display.is_displaying_page: clock_page
+          then:
+            - component.update: watchface
 
 display:
 #  - platform: ili9xxx
@@ -216,7 +208,7 @@ display:
     height: 240
     eight_bit_color: false
     rotation: 270
-    update_interval: 1s
+    update_interval: never
     pages:
       - id: clock_page
         lambda: |-
@@ -228,20 +220,21 @@ display:
           it.image(100, 40, id(pc_icon), is_pc_on ? id(on_icon_color) : id(off_icon_color));
           bool is_connected = id(is_wifi_connected) && id(sntp_time).now().is_valid();
           it.image(124, 40, id(wifi_icon), is_connected ? id(on_icon_color) : id(off_icon_color));
-          // ESP_LOGW("COL", "Color:  R=%d, G=%d, B=%d", id(clr).red, id(clr).green, id(clr).blue);
           it.strftime(120, 85, id(font_16), t_text_color, TextAlign::CENTER, is_connected ? "%A %b %d" : " ", id(sntp_time).now());
           it.strftime(120, 120, id(clock_font), t_text_color, TextAlign::CENTER, is_connected ? "%H:%M" : "--:--", id(sntp_time).now());
           bool is_sending_wol = id(send_wol_packet).is_running();
           if (is_pc_on) {
-            it.printf(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "LAN: %s", id(bearpaw_pc_lan_ip)->state.c_str());
-            it.printf(120, 170, id(font_16), id(text_wol_color), TextAlign::CENTER, "WiFi: %s", id(bearpaw_pc_wifi_ip)->state.c_str());
+            std::string lan_ip = id(bearpaw_pc_lan_ip)->state;
+            std::string wifi_ip = id(bearpaw_pc_wifi_ip)->state;
+            it.printf(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "LAN: %s", lan_ip == "" ? "Not available" : lan_ip.c_str());
+            it.printf(120, 170, id(font_16), id(text_wol_color), TextAlign::CENTER, "WiFi: %s", wifi_ip == "" ? "Not available" : wifi_ip.c_str());
           } else {
             it.print(120, 150, id(font_16), id(text_wol_color), TextAlign::CENTER, "Press to wake the PC");
           }
       - id: ota_page
         lambda: |-
           it.print(120, 85, id(font_16), id(time_text_color), TextAlign::CENTER, "OTA in progress");
-          it.printf(120, 120, id(clock_font), id(time_text_color), TextAlign::CENTER, "%d%%", id(ota_progress));
+          it.printf(120, 120, id(clock_font), id(time_text_color), TextAlign::CENTER, "%d %%", id(ota_progress));
 
 touchscreen:
   id: cst816d
@@ -250,22 +243,7 @@ touchscreen:
   reset_pin: GPIO1
   transform:
     swap_xy: true
-    mirror_y: true
+    mirror_y: true    
   on_touch:
-    - lambda: |-
-        ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
-            touch.x,
-            touch.y,
-            touch.x_raw,
-            touch.y_raw
-        );
     - script.execute: send_wol_packet
-    - component.update: watchface
     - delay: 5s
-    - component.update: watchface
-
-button:
-  - id: send_wol
-    platform: template
-    on_press:
-      script.execute: send_wol_packet

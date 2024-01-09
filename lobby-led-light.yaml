@@ -158,7 +158,13 @@ light:
             optional<ESPTime> sunrise = id(sun_id).sunrise(115);
             if (sunrise.has_value()) {
               ESPTime sunrise_time = sunrise.value();
-              ESP_LOGD("SUNMOON", "esp sunrise time: %d:%d:%f", sunrise_time.hour, sunrise_time.minute, sunrise_time.second);
+              ESP_LOGI("SUNMOON", "esp sunrise time: %d:%d:%f", sunrise_time.hour, sunrise_time.minute, sunrise_time.second);
+            }
+
+            optional<ESPTime> sunset = id(sun_id).sunset(115);
+            if (sunset.has_value()) {
+              ESPTime sunset_time = sunset.value();
+              ESP_LOGI("SUNMOON", "esp sunset time: %d:%d:%f", sunset_time.hour, sunset_time.minute, sunset_time.second);
             }
 
             ESPTime time = id(sntp_time)->now();

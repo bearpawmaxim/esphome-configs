@@ -1,0 +1,34 @@
+globals:
+  - id: clr
+    type: Color
+
+esphome:
+  on_boot:
+    lambda: id(clr) = Color(255, 255, 255);
+
+output:
+  - platform: template
+    type: float
+    id: out_r
+    write_action:
+      lambda: id(clr).red = (uint8_t)(state * 255.999);
+  - platform: template
+    type: float
+    id: out_g
+    write_action:
+      lambda: id(clr).green = (uint8_t)(state * 255.999);
+  - platform: template
+    type: float
+    id: out_b
+    write_action:
+      lambda: id(clr).blue = (uint8_t)(state * 255.999);
+
+light:
+  - id: color_set
+    platform: rgb
+    name: Color set
+    red: out_r
+    green: out_g
+    blue: out_b
+
+// ESP_LOGW("COL", "Color:  R=%d, G=%d, B=%d", id(clr).red, id(clr).green, id(clr).blue);
