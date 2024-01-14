@@ -13,7 +13,16 @@ globals:
     initial_value: '0'
     restore_value: false
 
-debug:
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp32-c3-devkitm-1
+  includes:
+    - includes/binary_display_buffer.h
+    - includes/graphic_utils.h
+    - pc-wol-button/WakeOnLan.h
+    - pc-wol-button/wol.h
+    - pc-wol-button/clock.h
 
 ota:
   on_begin:
@@ -29,38 +38,13 @@ ota:
     - lambda: id(ota_progress) = x;
     - component.update: watchface
 
-sensor:
-  - platform: debug
-    free:
-      id: heap_free
-      name: "Heap Free"
-    block:
-      id: heap_max_block
-      name: "Heap Max Block"
-    loop_time:
-      id: loop_time
-      name: "Loop Time"
-
-esphome:
-  name: ${device_name}
-  platform: ESP32
-  board: esp32-c3-devkitm-1
-  includes:
-    - includes/binary_display_buffer.h
-    - includes/graphic_utils.h
-    - pc-wol-button/WakeOnLan.h
-    - pc-wol-button/wol.h
-    - pc-wol-button/clock.h
-
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
-    refresh: 1s
   - source: github://pr#5941
     components: [cst816]
   - source: github://pr#6069
     components: logger
-    refresh: 0s
 
 packages:
   device_common: !include .device_common.yaml
