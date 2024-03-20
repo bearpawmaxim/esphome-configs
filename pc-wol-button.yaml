@@ -41,8 +41,8 @@ ota:
 external_components:
   - source: github://bearpawmaxim/esphome@pr3625fix
     components: [gc9a01]
-  - source: github://pr#5941
-    components: [cst816]
+  # - source: github://pr#5941
+  #  components: [cst816]
   - source: github://pr#6069
     components: logger
 
