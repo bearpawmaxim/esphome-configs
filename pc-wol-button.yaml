@@ -39,8 +39,8 @@ ota:
     - component.update: watchface
 
 external_components:
-  - source: github://bearpawmaxim/esphome@pr3625fix
-    components: [gc9a01]
+  # - source: github://bearpawmaxim/esphome@pr3625fix
+  #   components: [gc9a01]
   # - source: github://pr#5941
   #  components: [cst816]
   - source: github://pr#6069
@@ -182,8 +182,8 @@ interval:
             - component.update: watchface
 
 display:
-#  - platform: ili9xxx
-#    model: gc9a01
+  # - platform: ili9xxx
+  #   model: gc9a01
 # Above is for when or if this is merged into the ili9xxx platform
   - platform: gc9a01
     id: watchface
