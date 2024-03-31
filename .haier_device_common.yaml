@@ -32,8 +32,6 @@ climate:
     uart_id: haier_uart
     wifi_signal: true
     beeper: true
-    outdoor_temperature:
-      name: ${climate_name} outdoor temperature
     visual:
       min_temperature: 18 °C
       max_temperature: 30 °C
@@ -41,6 +39,14 @@ climate:
     supported_swing_modes:
     - 'OFF'
     - VERTICAL
+
+sensor:
+  - platform: haier
+    haier_id: ${climate_id}
+    outdoor_temperature:
+      name: ${climate_name} outdoor temperature
+    power:
+      name: ${climate_name} power
 
 switch:
   - platform: template
@@ -105,4 +111,3 @@ button:
     icon: mdi:spray-bottle
     on_press:
       - lambda: id(${climate_id}).start_steri_cleaning();
-    
