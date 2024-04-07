@@ -4,6 +4,7 @@ substitutions:
   relay_pin: GPIO12
   button_pin: GPIO0
   delay_time: 3min
+  update_interval: 60s
 
 packages:
   device_common: !include .device_common.yaml
@@ -35,12 +36,18 @@ sensor:
     current:
       name: "Boiler Current"
       id: "boiler_current"
+      filters:
+        - throttle_average: ${update_interval}
     voltage:
       name: "Boiler Voltage"
       id: "boiler_voltage"
+      filters:
+        - throttle_average: ${update_interval}
     power:
       name: "Boiler Power"
       id: "boiler_power"
+      filters:
+        - throttle_average: ${update_interval}
       on_value_range:
         - below: 10.0
           then:
@@ -55,11 +62,14 @@ sensor:
     energy:
       name: "Boiler Energy"
       id: "boiler_energy"
+      filters:
+        - throttle: ${update_interval}
   - platform: total_daily_energy
     name: "Boiler Total Daily Energy"
     power_id: "boiler_power"
     id: "boiler_daily_energy"
     filters:
+      - throttle_average: ${update_interval}
       - multiply: 0.001
     unit_of_measurement: kWh
     accuracy_decimals: 2
