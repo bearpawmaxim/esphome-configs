@@ -45,8 +45,6 @@ sensor:
     haier_id: ${climate_id}
     outdoor_temperature:
       name: ${climate_name} outdoor temperature
-    power:
-      name: ${climate_name} power
 
 switch:
   - platform: template
