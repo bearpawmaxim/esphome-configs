@@ -31,8 +31,9 @@ climate:
     target_temperature_multiplier: 1.0
     current_temperature_datapoint: 24
     current_temperature_multiplier: 0.1
-    active_state_datapoint: 36
-    active_state_heating_value: 0
+    active_state:
+      datapoint: 36
+      heating_value: 0
 
 switch:
   - platform: "tuya"
