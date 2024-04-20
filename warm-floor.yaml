@@ -9,6 +9,10 @@ esphome:
   platform: ESP8266
   board: esp01_1m
 
+external_components:
+  - source: github://pr#6568
+    components: ['tuya']
+
 logger:
   baud_rate: 0
 
