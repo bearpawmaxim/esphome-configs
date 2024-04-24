@@ -54,6 +54,7 @@ sensor:
     unit_of_measurement: kWh
     accuracy_decimals: 2
     device_class: energy
+    state_class: total_increasing
 
 button:
   - platform: template
