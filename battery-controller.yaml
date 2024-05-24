@@ -1,0 +1,71 @@
+substitutions:
+  device_name: battery-controller
+      
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: battery-controller
+  friendly_name: battery-controller
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHZ
+
+external_components:
+  - source: github://pr#6537
+    components: [io_bus, i80, spi, ili9xxx]
+
+# Enable logging
+logger:
+
+output:
+  - platform: ledc
+    id: pwm_backlight
+    pin: GPIO45
+
+light:
+  - platform: monochromatic
+    id: display_backlight
+    output: pwm_backlight
+    restore_mode: ALWAYS_ON
+
+font:
+  - file: 'gfonts://Roboto'
+    id: font_roboto_12
+    size: 12
+
+color:
+  - id: my_color
+    red: 100%
+    green: 20%
+
+i80:
+  - id: i80bus
+    dc_pin: GPIO0
+    wr_pin: GPIO47
+    data_pins:
+      - GPIO9
+      - GPIO46
+      - GPIO3
+      - GPIO8
+      - GPIO18
+      - GPIO17
+      - GPIO16
+      - GPIO15
+
+display:
+  - platform: ili9xxx
+    model: ST7796
+    bus_type: i80
+    reset_pin: GPIO4
+    dimensions:
+      width: 480
+      height: 320
+    lambda: |-
+      it.strftime(120, 120, id(font_roboto_12), id(my_color), TextAlign::CENTER, "%H:%M", id(sntp_time).now());
