@@ -1,0 +1,102 @@
+id: clock_page
+widgets:
+  - obj: # Clock container
+      height: size_content
+      width: size_content
+      align: center
+      bg_color: 0x0F0F0F
+      border_width: 0
+      border_opa: 0
+      scrollbar_mode: "OFF"
+      widgets:
+          - meter: # Gradient color  arc
+              height: 310
+              width: 310
+              align: center
+              bg_color: 0
+              scales:
+                angle_range: 360
+                rotation: 255
+                range_from: 0
+                range_to: 12
+                ticks:
+                  width: 35
+                  count: 13
+                  length: 8
+                indicators:
+                  - tick_style:
+                      local: true
+                      start_value: 0
+                      end_value: 12
+                      color_start: 0xFF0000
+                      color_end: 0x0000FF
+          - meter:
+              height: 310
+              width: 310
+              align: center
+              bg_opa: TRANSP
+              text_color: 0xFFFFFF
+              scales:
+                - ticks:
+                    width: 1
+                    count: 61
+                    length: 10
+                    color: 0xFFFFFF
+                  range_from: 0
+                  range_to: 60
+                  angle_range: 360
+                  rotation: 270
+                  indicators:
+                    - line:
+                        id: second_hand
+                        width: 1
+                        color: 0xE0E0E0
+                        r_mod: -1
+                - ticks:
+                    width: 1
+                    count: 61
+                    length: 10
+                    color: 0xFFFFFF
+                  range_from: 0
+                  range_to: 60
+                  angle_range: 360
+                  rotation: 270
+                  indicators:
+                    - line:
+                        id: minute_hand
+                        width: 3
+                        color: 0xE0E0E0
+                        r_mod: -1
+                - 
+                  angle_range: 330
+                  rotation: 300
+                  range_from: 1
+                  range_to: 12
+                  ticks:
+                    width: 1
+                    count: 12
+                    length: 1
+                    major:
+                      stride: 1
+                      width: 4
+                      length: 8
+                      color: 0xC0C0C0
+                      label_gap: 6
+                - angle_range: 360
+                  rotation: 270
+                  range_from: 0
+                  range_to: 720
+                  indicators:
+                    - line:
+                        id: hour_hand
+                        width: 4
+                        color: 0xA0A0A0
+                        r_mod: -20
+          - label:
+              styles: date_style
+              id: day_label
+              y: -20
+          - label:
+              id: date_label
+              styles: date_style
+              y: +20

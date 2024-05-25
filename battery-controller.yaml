@@ -7,43 +7,86 @@ packages:
 esphome:
   name: battery-controller
   friendly_name: battery-controller
+  platformio_options:
+    board_build.flash_mode: dio
 
 esp32:
   board: esp32-s3-devkitc-1
+  variant: ESP32S3
   framework:
     type: esp-idf
 
 psram:
-  mode: octal
+  mode: quad
   speed: 80MHZ
 
 external_components:
   - source: github://pr#6537
-    components: [io_bus, i80, spi, ili9xxx]
+    components: [ io_bus, i80, spi, ili9xxx ]
+  - source: github://clydebarrow/esphome@lvgl
+    components: [ lvgl ]
 
-# Enable logging
 logger:
+
+debug:
+
+sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
+    psram:
+      name: "Free PSRAM"
+
+i2c:
+  sda: GPIO6
+  scl: GPIO5
+  id: touch_i2c
+
+touchscreen:
+  - platform: ft63x6
+    id: touch
+    interrupt_pin: GPIO7
+    transform:
+      mirror_x: true
+    on_update:
+      - lambda: |-
+          for (auto touch: touches)  {
+            if (touch.state <= 2) {
+              ESP_LOGI("Touch points:", "id=%d x=%d, y=%d", touch.id, touch.x, touch.y);
+            }
+          }
+    on_release:
+      - if:
+          condition: lvgl.is_paused
+          then:
+            - logger.log: "LVGL resuming"
+            - lvgl.resume:
+            - lvgl.widget.redraw:
+            - light.turn_on: backlight
 
 output:
   - platform: ledc
-    id: pwm_backlight
+    id: backlight_pwm
     pin: GPIO45
 
 light:
   - platform: monochromatic
-    id: display_backlight
-    output: pwm_backlight
+    id: backlight
+    output: backlight_pwm
     restore_mode: ALWAYS_ON
 
 font:
   - file: 'gfonts://Roboto'
-    id: font_roboto_12
-    size: 12
+    id: font_roboto_64
+    size: 64
 
 color:
-  - id: my_color
+  - id: color_red
     red: 100%
-    green: 20%
 
 i80:
   - id: i80bus
@@ -61,11 +104,164 @@ i80:
 
 display:
   - platform: ili9xxx
-    model: ST7796
+    model: ST7789V
     bus_type: i80
     reset_pin: GPIO4
+    data_rate: 20MHZ
+    pixel_mode: 18bit
+    color_order: bgr
+    invert_colors: true
     dimensions:
       width: 480
       height: 320
-    lambda: |-
-      it.strftime(120, 120, id(font_roboto_12), id(my_color), TextAlign::CENTER, "%H:%M", id(sntp_time).now());
+    transform:
+      swap_xy: true
+    auto_clear_enabled: false
+
+
+script:
+  - id: time_update
+    then:
+      - lvgl.indicator.update:
+          id: second_hand
+          value: !lambda |-
+            return id(sntp_time).now().second;
+      - lvgl.indicator.update:
+          id: minute_hand
+          value: !lambda |-
+            return id(sntp_time).now().minute;
+      - lvgl.indicator.update:
+          id: hour_hand
+          value: !lambda |-
+            auto now = id(sntp_time).now();
+            return std::fmod(now.hour, 12) * 60 + now.minute;
+      - lvgl.label.update:
+          id: date_label
+          text: !lambda |-
+            static const char * const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+            static char date_buf[8];
+            auto now = id(sntp_time).now();
+            snprintf(date_buf, sizeof(date_buf), "%s %2d", mon_names[now.month-1], now.day_of_month);
+            return date_buf;
+      - lvgl.label.update:
+          id: day_label
+          text: !lambda |-
+            static const char * const day_names[] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+            return day_names[id(sntp_time).now().day_of_week-1];
+
+number:
+  - platform: template
+    name: Screen timeout
+    optimistic: true
+    id: display_timeout
+    unit_of_measurement: "s"
+    initial_value: 45
+    restore_value: true
+    min_value: 10
+    max_value: 180
+    step: 5
+    mode: box
+
+interval:
+  - interval: 1sec
+    then:
+      - if:
+          condition:
+            not: lvgl.is_paused
+          then:
+            script.execute: time_update
+  - interval: 10sec
+    then:
+      - if:
+          condition:
+            not: lvgl.is_paused
+          then:
+            lvgl.page.next
+
+lvgl:
+  log_level: WARN
+  color_depth: 16
+  bg_color: 0x0F0F0F
+  text_font: unscii_8
+  align: center
+  touchscreens:
+    - touchscreen_id: touch
+  style_definitions:
+    - id: date_style
+      text_font: unscii_8
+      align: center
+      text_color: 0x000000
+      bg_opa: cover
+      radius: 4
+      pad_all: 2
+  pages:
+
+    # - <<: !include battery-controller/main-page.lvgl.yaml
+    - <<: !include battery-controller/clock-page.lvgl.yaml
+    - id: main_page
+      layout:
+        type: FLEX
+        flex_flow: ROW
+        flex_align_main: CENTER
+        flex_align_cross: CENTER
+        flex_align_track: CENTER
+      widgets:
+        - obj:
+            height: 250
+            width: 250
+            x: 1
+            y: -10
+            align: CENTER
+            radius: 125
+            border_width: 2
+            scrollable: false
+            layout:
+              type: GRID
+              grid_rows:
+                - FR(1)
+                - FR(1)
+              grid_columns:
+                - FR(1)
+                - FR(1)
+            widgets:
+              - arc:
+                  id: bat_chg_left
+                  min_value: 0
+                  max_value: 200
+                  value: 45
+                  x: 0
+                  y: 0
+                  width: 120
+                  height: 120
+                  start_angle: 180
+                  end_angle: 270
+                  border_width: 0
+                  scrollable: false
+                  mode: SYMMETRICAL
+                  align: CENTER
+                  grid_cell_row_pos: 0
+                  grid_cell_column_pos: 0
+              - arc:
+                  id: bat_dischg_left 
+                  min_value: 0
+                  max_value: -250
+                  value: -160
+                  x: 0
+                  y: 0
+                  width: 120
+                  height: 120
+                  start_angle: 100
+                  end_angle: 180
+                  border_width: 0
+                  scrollable: false
+                  mode: SYMMETRICAL
+                  align: CENTER
+                  grid_cell_row_pos: 1
+                  grid_cell_column_pos: 0
+
+  on_idle:
+    timeout: !lambda "return (id(display_timeout).state * 1000);"
+    then:
+      - logger.log: "LVGL is idle"
+      - light.turn_off: backlight
+      - lvgl.pause:
