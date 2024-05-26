@@ -1,6 +1,6 @@
 substitutions:
   device_name: battery-controller
-      
+
 packages:
   device_common: !include .device_common.yaml
 
@@ -63,7 +63,6 @@ touchscreen:
       - if:
           condition: lvgl.is_paused
           then:
-            - logger.log: "LVGL resuming"
             - lvgl.resume:
             - lvgl.widget.redraw:
             - light.turn_on: backlight
@@ -81,12 +80,20 @@ light:
 
 font:
   - file: 'gfonts://Roboto'
-    id: font_roboto_64
-    size: 64
+    id: font_date_time
+    bpp: 4
+    size: 16
+  - file: battery-controller/SquareDotMatrix.ttf
+    id: font_soc
+    bpp: 4
+    size: 36
+    glyphs: ['0','1','2','3','4','5','6','7','8','9','%',' ']
 
 color:
   - id: color_red
     red: 100%
+  - id: color_green
+    green: 100%
 
 i80:
   - id: i80bus
@@ -118,37 +125,6 @@ display:
       swap_xy: true
     auto_clear_enabled: false
 
-
-script:
-  - id: time_update
-    then:
-      - lvgl.indicator.update:
-          id: second_hand
-          value: !lambda |-
-            return id(sntp_time).now().second;
-      - lvgl.indicator.update:
-          id: minute_hand
-          value: !lambda |-
-            return id(sntp_time).now().minute;
-      - lvgl.indicator.update:
-          id: hour_hand
-          value: !lambda |-
-            auto now = id(sntp_time).now();
-            return std::fmod(now.hour, 12) * 60 + now.minute;
-      - lvgl.label.update:
-          id: date_label
-          text: !lambda |-
-            static const char * const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-            static char date_buf[8];
-            auto now = id(sntp_time).now();
-            snprintf(date_buf, sizeof(date_buf), "%s %2d", mon_names[now.month-1], now.day_of_month);
-            return date_buf;
-      - lvgl.label.update:
-          id: day_label
-          text: !lambda |-
-            static const char * const day_names[] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
-            return day_names[id(sntp_time).now().day_of_week-1];
-
 number:
   - platform: template
     name: Screen timeout
@@ -161,22 +137,60 @@ number:
     max_value: 180
     step: 5
     mode: box
+  - platform: template
+    name: SOC test
+    optimistic: true
+    initial_value: 42
+    restore_value: true
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: slider
+    on_value:
+      then:
+        - lvgl.arc.update:
+            id: soc_arc
+            value: !lambda return x;
+            indicator:
+              arc_color: !lambda |-
+                auto color = id(color_red).gradient(id(color_green), x * 2.55);
+                return lv_color_make (color.red, color.green, color.blue);
+        - lvgl.label.update:
+            id: soc_label
+            text:
+              format: "%d%%"
+              args: (int)x
 
 interval:
   - interval: 1sec
+    startup_delay: 10sec
     then:
       - if:
           condition:
             not: lvgl.is_paused
           then:
-            script.execute: time_update
-  - interval: 10sec
+            lvgl.label.update:
+              id: header_time
+              text: !lambda |-
+                static char time_buf[17];
+                auto time = id(sntp_time).now();
+                snprintf(time_buf, sizeof(time_buf), "%2d:%2d:%2d", time.hour, time.minute, time.second);
+                return time_buf;
+  - interval: 1min
+    startup_delay: 10sec
     then:
       - if:
           condition:
             not: lvgl.is_paused
           then:
-            lvgl.page.next
+            lvgl.label.update:
+              id: header_date
+              text: !lambda |-
+                static const char* const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+                static char date_buf[8];
+                auto now = id(sntp_time).now();
+                snprintf(date_buf, sizeof(date_buf), "%s %2d", mon_names[now.month-1], now.day_of_month);
+                return date_buf;
 
 lvgl:
   log_level: WARN
@@ -186,82 +200,127 @@ lvgl:
   align: center
   touchscreens:
     - touchscreen_id: touch
-  style_definitions:
-    - id: date_style
-      text_font: unscii_8
-      align: center
-      text_color: 0x000000
-      bg_opa: cover
-      radius: 4
-      pad_all: 2
   pages:
-
     # - <<: !include battery-controller/main-page.lvgl.yaml
-    - <<: !include battery-controller/clock-page.lvgl.yaml
+    # - <<: !include battery-controller/clock-page.lvgl.yaml
     - id: main_page
-      layout:
-        type: FLEX
-        flex_flow: ROW
-        flex_align_main: CENTER
-        flex_align_cross: CENTER
-        flex_align_track: CENTER
+      bg_color: 0x464B55
+      bg_grad_color: 0x2D323C
+      scrollable: false
       widgets:
         - obj:
-            height: 250
-            width: 250
-            x: 1
-            y: -10
-            align: CENTER
-            radius: 125
-            border_width: 2
+            id: header
+            bg_color: 0x14191E
+            height: 20
+            width: 100%
+            radius: 0
+            border_width: 0
             scrollable: false
-            layout:
-              type: GRID
-              grid_rows:
-                - FR(1)
-                - FR(1)
-              grid_columns:
-                - FR(1)
-                - FR(1)
+            align: TOP_MID
+            widgets:
+              - label:
+                  id: header_date
+                  align: LEFT_MID
+                  width: SIZE_CONTENT
+                  height: SIZE_CONTENT
+                  text: " "
+                  text_color: 0xFFFFFF
+                  text_font: font_date_time
+              - label:
+                  id: header_time
+                  align: RIGHT_MID
+                  width: SIZE_CONTENT
+                  height: SIZE_CONTENT
+                  text: "--:--:--"
+                  text_color: 0xFFFFFF
+                  text_font: font_date_time
+              # TODO: WiFi, BMS and Inverter status icons
+        - label:
+            id: charge_discharge
+            width: SIZE_CONTENT
+            height: SIZE_CONTENT
+            x: 0
+            y: 40
+            align: TOP_MID
+            text: 'Charging'
+            text_color: 0xD2CDC8
+            text_align: CENTER
+            # TODO: Font
+        - obj:
+            width: 240
+            height: 240
+            align: CENTER
+            scrollable: false
+            bg_color: 0xFFFFFF
+            bg_opa: 0
+            border_width: 0
             widgets:
               - arc:
-                  id: bat_chg_left
-                  min_value: 0
-                  max_value: 200
-                  value: 45
-                  x: 0
-                  y: 0
-                  width: 120
-                  height: 120
-                  start_angle: 180
-                  end_angle: 270
-                  border_width: 0
-                  scrollable: false
-                  mode: SYMMETRICAL
+                  id: soc_arc
+                  width: 210
+                  height: 210
                   align: CENTER
-                  grid_cell_row_pos: 0
-                  grid_cell_column_pos: 0
-              - arc:
-                  id: bat_dischg_left 
                   min_value: 0
-                  max_value: -250
-                  value: -160
-                  x: 0
-                  y: 0
-                  width: 120
-                  height: 120
-                  start_angle: 100
-                  end_angle: 180
-                  border_width: 0
-                  scrollable: false
-                  mode: SYMMETRICAL
+                  max_value: 100
+                  value: 42
+                  radius: 210
+                  bg_color: 0x1E232D
+                  bg_opa: 1
+                  pad_left: 5
+                  pad_right: 5
+                  pad_top: 5
+                  pad_bottom: 5
+                  arc_color: 0x0F1215
+                  indicator:
+                    arc_color: 0x00FF00
+                    width: 12
+                  knob:
+                    bg_opa: 0
+              - obj:
+                  width: 168
+                  height: 168
                   align: CENTER
-                  grid_cell_row_pos: 1
-                  grid_cell_column_pos: 0
+                  clickable: false
+                  scrollable: false
+                  radius: 168
+                  bg_color: 0x646464
+                  bg_grad_color: 0x3C414B
+                  bg_grad_dir: VER
+                  bg_opa: 1
+                  border_color: 0x2D323C
+                  border_width: 1
+                  #shadow_color: 0x050A0F
+                  #shadow_width: 40
+                  #shadow_spread: 0
+                  #shadow_ofs_x: 0
+                  #shadow_ofs_y: 15
+                  widgets:
+                    - obj:
+                        width: 120
+                        height: 120
+                        align: CENTER
+                        clickable: false
+                        scrollable: false
+                        radius: 120
+                        bg_color: 0x0C191E
+                        bg_grad_color: 0x191C26
+                        bg_grad_dir: VER
+                        bg_opa: 1
+                        border_color: 0x5A646E
+                        widgets:
+                          - label:
+                              id: soc_label
+                              width: SIZE_CONTENT
+                              height: SIZE_CONTENT
+                              x: 0
+                              y: 0
+                              align: CENTER
+                              text_color: 0xFFFFFF
+                              text: '100%'
+                              text_font: font_soc                  
 
   on_idle:
     timeout: !lambda "return (id(display_timeout).state * 1000);"
     then:
-      - logger.log: "LVGL is idle"
       - light.turn_off: backlight
       - lvgl.pause:

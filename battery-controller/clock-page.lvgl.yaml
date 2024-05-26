@@ -7,13 +7,14 @@ widgets:
       bg_color: 0x0F0F0F
       border_width: 0
       border_opa: 0
-      scrollbar_mode: "OFF"
+      scrollable: false
       widgets:
           - meter: # Gradient color  arc
               height: 310
               width: 310
               align: center
               bg_color: 0
+              scrollable: false
               scales:
                 angle_range: 360
                 rotation: 255
@@ -36,6 +37,7 @@ widgets:
               align: center
               bg_opa: TRANSP
               text_color: 0xFFFFFF
+              scrollable: false
               scales:
                 - ticks:
                     width: 1
