@@ -79,10 +79,6 @@ light:
     restore_mode: ALWAYS_ON
 
 font:
-  - file: 'gfonts://Roboto'
-    id: font_date_time
-    bpp: 4
-    size: 16
   - file: battery-controller/SquareDotMatrix.ttf
     id: font_soc
     bpp: 4
@@ -111,11 +107,10 @@ i80:
 
 display:
   - platform: ili9xxx
-    model: ST7789V
+    model: ST7796
     bus_type: i80
     reset_pin: GPIO4
-    data_rate: 20MHZ
-    pixel_mode: 18bit
+    pixel_mode: 16bit
     color_order: bgr
     invert_colors: true
     dimensions:
@@ -200,56 +195,78 @@ lvgl:
   align: center
   touchscreens:
     - touchscreen_id: touch
+  top_layer:
+    widgets:
+      - obj:
+          id: header
+          bg_color: 0x14191E
+          height: 20
+          width: 100%
+          radius: 0
+          x: 0
+          y: 0
+          border_width: 0
+          scrollable: false
+          align: TOP_MID
+          widgets:
+            - label:
+                id: header_date
+                align: LEFT_MID
+                width: SIZE_CONTENT
+                height: SIZE_CONTENT
+                text: " "
+                text_color: 0xFFFFFF
+                text_font: montserrat_14
+            - label:
+                id: header_time
+                align: RIGHT_MID
+                width: SIZE_CONTENT
+                height: SIZE_CONTENT
+                text: "--:--:--"
+                text_color: 0xFFFFFF
+                text_font: montserrat_14
+            # TODO: WiFi, BMS and Inverter status icons
   pages:
     # - <<: !include battery-controller/main-page.lvgl.yaml
-    # - <<: !include battery-controller/clock-page.lvgl.yaml
+    # - <<: !include battery-controller/voltages-page.lvgl.yaml
     - id: main_page
       bg_color: 0x464B55
       bg_grad_color: 0x2D323C
       scrollable: false
       widgets:
         - obj:
-            id: header
-            bg_color: 0x14191E
-            height: 20
-            width: 100%
-            radius: 0
-            border_width: 0
             scrollable: false
-            align: TOP_MID
-            widgets:
-              - label:
-                  id: header_date
-                  align: LEFT_MID
-                  width: SIZE_CONTENT
-                  height: SIZE_CONTENT
-                  text: " "
-                  text_color: 0xFFFFFF
-                  text_font: font_date_time
-              - label:
-                  id: header_time
-                  align: RIGHT_MID
-                  width: SIZE_CONTENT
-                  height: SIZE_CONTENT
-                  text: "--:--:--"
-                  text_color: 0xFFFFFF
-                  text_font: font_date_time
-              # TODO: WiFi, BMS and Inverter status icons
-        - label:
-            id: charge_discharge
-            width: SIZE_CONTENT
-            height: SIZE_CONTENT
             x: 0
-            y: 40
-            align: TOP_MID
-            text: 'Charging'
-            text_color: 0xD2CDC8
-            text_align: CENTER
-            # TODO: Font
+            y: 280
+            bg_opa: 0
+            border_opa: 0
+            width: 280
+            height: 40
+            widgets:
+              - led:
+                  id: charge_led
+                  color: color_red
+                  align: LEFT_MID
+                  brightness: 100%
+                  width: 10
+                  height: 10
+              - label:
+                  id: charge_label
+                  width: SIZE_CONTENT
+                  height: 20
+                  align_to:
+                    id: charge_led
+                    align: OUT_RIGHT_MID
+                    x: 10
+                  text: 'Discharging'
+                  text_color: 0xD2CDC8
+                  text_align: LEFT
+                  text_font: montserrat_14
         - obj:
             width: 240
             height: 240
-            align: CENTER
+            x: 20
+            y: 40
             scrollable: false
             bg_color: 0xFFFFFF
             bg_opa: 0
@@ -289,11 +306,11 @@ lvgl:
                   bg_opa: 1
                   border_color: 0x2D323C
                   border_width: 1
-                  #shadow_color: 0x050A0F
-                  #shadow_width: 40
-                  #shadow_spread: 0
-                  #shadow_ofs_x: 0
-                  #shadow_ofs_y: 15
+                  shadow_color: 0x050A0F
+                  shadow_width: 40
+                  shadow_spread: 0
+                  shadow_ofs_x: 0
+                  shadow_ofs_y: 15
                   widgets:
                     - obj:
                         width: 120
@@ -317,7 +334,39 @@ lvgl:
                               align: CENTER
                               text_color: 0xFFFFFF
                               text: '100%'
-                              text_font: font_soc                  
+                              text_font: font_soc
+        - obj:
+            x: 280
+            border_width: 2
+            border_side: LEFT
+            border_color: 0x000000
+            y: 20
+            height: 300
+            width: 200
+            bg_grad_color: 0x2D323C
+            bg_dither_mode: ERR_DIFF
+            bg_color: 0x3C414B
+            bg_grad_dir: HOR
+            pad_left: 10
+            pad_top: 10
+            widgets:
+              - label:
+                  id: voltage_heading_label
+                  text: 'Voltage:'
+                  width: SIZE_CONTENT
+                  text_align: LEFT
+                  text_color: 0xFFFFFF
+                  text_font: montserrat_12
+              - label:
+                  id: voltage_label
+                  text: '56.5v'
+                  width: SIZE_CONTENT
+                  text_color: 0xFFFFFF
+                  text_font: montserrat_12
+                  align_to:
+                    id: voltage_heading_label
+                    align: OUT_RIGHT_MID
+                    x: 10
 
   on_idle:
     timeout: !lambda "return (id(display_timeout).state * 1000);"
