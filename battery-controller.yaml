@@ -4,6 +4,12 @@ substitutions:
 packages:
   device_common: !include .device_common.yaml
 
+globals:
+  - id: is_burnout_protection
+    type: boolean
+    restore_value: false
+    initial_value: 'true'
+
 esphome:
   name: battery-controller
   friendly_name: battery-controller
@@ -52,13 +58,6 @@ touchscreen:
     interrupt_pin: GPIO7
     transform:
       mirror_x: true
-    on_update:
-      - lambda: |-
-          for (auto touch: touches)  {
-            if (touch.state <= 2) {
-              ESP_LOGI("Touch points:", "id=%d x=%d, y=%d", touch.id, touch.x, touch.y);
-            }
-          }
     on_release:
       - if:
           condition: lvgl.is_paused
@@ -66,6 +65,8 @@ touchscreen:
             - lvgl.resume:
             - lvgl.widget.redraw:
             - light.turn_on: backlight
+          else:
+            - lvgl.page.next
 
 output:
   - platform: ledc
@@ -169,7 +170,7 @@ interval:
               text: !lambda |-
                 static char time_buf[17];
                 auto time = id(sntp_time).now();
-                snprintf(time_buf, sizeof(time_buf), "%2d:%2d:%2d", time.hour, time.minute, time.second);
+                snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
                 return time_buf;
   - interval: 1min
     startup_delay: 10sec
@@ -182,9 +183,9 @@ interval:
               id: header_date
               text: !lambda |-
                 static const char* const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-                static char date_buf[8];
+                static char date_buf[16];
                 auto now = id(sntp_time).now();
-                snprintf(date_buf, sizeof(date_buf), "%s %2d", mon_names[now.month-1], now.day_of_month);
+                snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
                 return date_buf;
 
 lvgl:
@@ -199,7 +200,8 @@ lvgl:
     widgets:
       - obj:
           id: header
-          bg_color: 0x14191E
+          bg_color: !lambda |-
+            return id(is_burnout_protection) ? 0x000000 : 0x14191E;
           height: 20
           width: 100%
           radius: 0
@@ -230,42 +232,17 @@ lvgl:
     # - <<: !include battery-controller/main-page.lvgl.yaml
     # - <<: !include battery-controller/voltages-page.lvgl.yaml
     - id: main_page
-      bg_color: 0x464B55
-      bg_grad_color: 0x2D323C
+      bg_color: 0x606672
+      bg_grad_color: 0x33363E
+      bg_grad_dir: VER
+      bg_dither_mode: ERR_DIFF
       scrollable: false
       widgets:
-        - obj:
-            scrollable: false
-            x: 0
-            y: 280
-            bg_opa: 0
-            border_opa: 0
-            width: 280
-            height: 40
-            widgets:
-              - led:
-                  id: charge_led
-                  color: color_red
-                  align: LEFT_MID
-                  brightness: 100%
-                  width: 10
-                  height: 10
-              - label:
-                  id: charge_label
-                  width: SIZE_CONTENT
-                  height: 20
-                  align_to:
-                    id: charge_led
-                    align: OUT_RIGHT_MID
-                    x: 10
-                  text: 'Discharging'
-                  text_color: 0xD2CDC8
-                  text_align: LEFT
-                  text_font: montserrat_14
+        # SOC gauge
         - obj:
             width: 240
             height: 240
-            x: 20
+            x: 40
             y: 40
             scrollable: false
             bg_color: 0xFFFFFF
@@ -335,39 +312,133 @@ lvgl:
                               text_color: 0xFFFFFF
                               text: '100%'
                               text_font: font_soc
+        # Status led and label
         - obj:
-            x: 280
-            border_width: 2
-            border_side: LEFT
-            border_color: 0x000000
+            scrollable: false
+            x: 0
+            y: 280
+            bg_opa: 0
+            border_opa: 0
+            width: 280
+            height: 40
+            widgets:
+              - led:
+                  id: charge_led
+                  color: color_red
+                  align: LEFT_MID
+                  brightness: 100%
+                  width: 10
+                  height: 10
+              - label:
+                  id: charge_label
+                  width: SIZE_CONTENT
+                  height: 20
+                  align_to:
+                    id: charge_led
+                    align: OUT_RIGHT_MID
+                    y: 2
+                    x: 10
+                  text: 'Discharging'
+                  text_color: 0xD2CDC8
+                  text_align: LEFT
+                  text_font: montserrat_14
+        # Right panel
+        - obj:
+            x: 320
             y: 20
             height: 300
-            width: 200
-            bg_grad_color: 0x2D323C
+            width: 160
+            bg_color: 0x202831
+            bg_grad_color: 0x101215
             bg_dither_mode: ERR_DIFF
-            bg_color: 0x3C414B
-            bg_grad_dir: HOR
-            pad_left: 10
-            pad_top: 10
+            bg_grad_dir: VER
+            radius: 0
+            border_opa: 0
+            pad_all: 0
+            scrollable: false
             widgets:
-              - label:
-                  id: voltage_heading_label
-                  text: 'Voltage:'
-                  width: SIZE_CONTENT
-                  text_align: LEFT
-                  text_color: 0xFFFFFF
-                  text_font: montserrat_12
-              - label:
-                  id: voltage_label
-                  text: '56.5v'
-                  width: SIZE_CONTENT
-                  text_color: 0xFFFFFF
-                  text_font: montserrat_12
-                  align_to:
-                    id: voltage_heading_label
-                    align: OUT_RIGHT_MID
-                    x: 10
-
+              - obj:
+                  bg_opa: 0
+                  border_opa: 0
+                  align: CENTER
+                  radius: 0
+                  width: 100%
+                  height: SIZE_CONTENT
+                  scrollable: false
+                  layout:
+                    type: FLEX
+                    flex_flow: COLUMN
+                    flex_align_main: SPACE_AROUND
+                    flex_align_track: START
+                    flex_align_cross: SPACE_AROUND
+                  pad_row: 0
+                  widgets:
+                    - obj:
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        bg_opa: 0
+                        border_opa: 0
+                        radius: 0
+                        align: CENTER
+                        widgets:
+                          - label:
+                              id: voltage_label
+                              width: SIZE_CONTENT
+                              height: SIZE_CONTENT
+                              text_color: 0x58D900
+                              text_font: montserrat_28
+                              text_align: RIGHT
+                              text: '56.5'
+                          - label:
+                              width: SIZE_CONTENT
+                              height: SIZE_CONTENT
+                              text_color: 0x58D900
+                              text_font: montserrat_16
+                              text_align: RIGHT
+                              text: 'V'
+                              align_to:
+                                id: voltage_label
+                                align: OUT_RIGHT_TOP
+                                x: 3
+                    - obj:
+                        width: SIZE_CONTENT
+                        height: SIZE_CONTENT
+                        bg_opa: 0
+                        border_opa: 0
+                        radius: 0
+                        align: CENTER
+                        widgets:
+                          - label:
+                              id: current_label
+                              width: SIZE_CONTENT
+                              height: SIZE_CONTENT
+                              text_color: 0x58D900
+                              text_font: montserrat_28
+                              text_align: RIGHT
+                              text: '00.0'
+                          - label:
+                              width: SIZE_CONTENT
+                              height: SIZE_CONTENT
+                              text_color: 0x58D900
+                              text_font: montserrat_16
+                              text_align: RIGHT
+                              text: 'A'
+                              align_to:
+                                id: current_label
+                                align: OUT_RIGHT_TOP
+                                x: 3
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: voltage, l_capt: Voltage } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: current, l_capt: Current } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: ccap, l_capt: Cycle capacity } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: ccnt, l_capt: Cycle count } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: avg_cell_v, l_capt: Avg. cell voltage } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: delte_cell_v, l_capt: Delta cell voltage } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: t1, l_capt: Temp 1 } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: t2, l_capt: Temp 2 } }
+                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: tmos, l_capt: MOS Temp } }
+    - id: burnout_protection
+      bg_color: 0x000000
+      bg_opa: 1
   on_idle:
     timeout: !lambda "return (id(display_timeout).state * 1000);"
     then:
