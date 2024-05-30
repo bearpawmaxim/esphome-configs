@@ -36,6 +36,12 @@ logger:
 
 debug:
 
+# uart:
+  # - id: bms_uart
+  #   tx_pin: GPIO10
+  #   rx_pin: GPIO11
+  #   baud_rate: 115200
+
 sensor:
   - platform: debug
     free:
@@ -86,15 +92,6 @@ font:
     bpp: 4
     size: 36
     glyphs: ['0','1','2','3','4','5','6','7','8','9','%',' ']
-  - file: 'gfonts://Material+Symbols+Outlined'
-    id: font_icons_16
-    bpp: 4
-    size: 16
-    glyphs: [
-      '\U0000E63E',
-      '\U0000E322',
-      '\U0000E3E7'
-    ]
 
 color:
   - id: color_red
@@ -102,11 +99,9 @@ color:
   - id: color_green
     green: 100%
   - id: off_icon_color
-    red_int: 137
-    green_int: 61
-    blue_int: 25
+    hex: FF4F00
   - id: on_icon_color
-    green_int: 98
+    hex: 58D900
 
 i80:
   - id: i80bus
@@ -179,7 +174,7 @@ number:
 
 interval:
   - interval: 1sec
-    startup_delay: 10sec
+    startup_delay: 5sec
     then:
       - if:
           condition:
@@ -188,12 +183,15 @@ interval:
             lvgl.label.update:
               id: header_time
               text: !lambda |-
+                if (!id(sntp_time->now()).is_valid()) {
+                  return "--:--:--";
+                }
                 static char time_buf[17];
                 auto time = id(sntp_time).now();
                 snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
                 return time_buf;
   - interval: 1min
-    startup_delay: 10sec
+    startup_delay: 5sec
     then:
       - if:
           condition:
@@ -229,6 +227,7 @@ lvgl:
           border_width: 0
           scrollable: false
           align: TOP_MID
+          pad_right: 0
           widgets:
             - label:
                 id: header_date
@@ -242,8 +241,8 @@ lvgl:
                 bg_opa: 0
                 border_opa: 0
                 radius: 0
-                width: SIZE_CONTENT
-                height: SIZE_CONTENT
+                width: 160
+                height: 20
                 pad_all: 0
                 align: RIGHT_MID
                 scrollable: false
@@ -252,10 +251,10 @@ lvgl:
                   flex_flow: ROW
                   flex_align_main: END
                   flex_align_cross: CENTER
+                  flex_align_track: CENTER
                 widgets:
                   - label:
                       id: header_time
-                      #align: RIGHT_MID
                       width: SIZE_CONTENT
                       height: SIZE_CONTENT
                       text: "--:--:--"
@@ -263,29 +262,26 @@ lvgl:
                       text_font: montserrat_14
                   - label:
                       id: api_connection
-                      #align: RIGHT_MID
                       width: 16
                       height: 16
-                      text: "\U0000E63E"
+                      text: "\uF1EB"
                       text_color: off_icon_color
-                      text_font: font_icons_16
+                      text_font: montserrat_16
                   - label:
                       id: bms_connection
-                      #align: RIGHT_MID
                       width: 16
                       height: 16
-                      text: "\U0000E322"
+                      text: "\uF008"
                       text_color: off_icon_color
-                      text_font: font_icons_16
+                      text_font: montserrat_16
                   - label:
                       id: inverter_connection
-                      #align: RIGHT_MID
                       width: 16
                       height: 16
-                      text: "\U0000E3E7"
+                      text: "\uF0E7"
                       text_color: off_icon_color
-                      text_font: font_icons_16
-            # TODO: WiFi, BMS and Inverter status icons
+                      text_font: montserrat_16
+
   pages:
     # - <<: !include battery-controller/main-page.lvgl.yaml
     # - <<: !include battery-controller/voltages-page.lvgl.yaml
@@ -496,6 +492,24 @@ lvgl:
                     # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: t1, l_capt: Temp 1 } }
                     # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: t2, l_capt: Temp 2 } }
                     # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: tmos, l_capt: MOS Temp } }
+              - label:
+                  text: "\u0000F0C9"
+                  text_color: 0xFFFFFF
+                  text_font: montserrat_18
+                  floating: true
+                  width: 25
+                  height: 25
+                  align: CENTER
+                  x: 130
+                  y: 5
+                  on_click:
+                    - lvgl.page.show: details_page
+
+    - id: details_page
+      bg_color: 0x202831
+      bg_grad_color: 0x101215
+      bg_grad_dir: VER
+      bg_dither_mode: ERR_DIFF
     - id: burnout_protection_page
       bg_color: 0x000000
       bg_opa: 1
