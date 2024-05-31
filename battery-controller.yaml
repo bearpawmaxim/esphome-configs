@@ -19,9 +19,14 @@ esphome:
 esp32:
   board: esp32-s3-devkitc-1
   variant: ESP32S3
-  # flash_size: 8MB
+  flash_size: 8MB
   framework:
     type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: y
+      CONFIG_ESP32S3_DATA_CACHE_64KB: y
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
+      CONFIG_SPIRAM_RODATA: y
 
 psram:
   mode: quad
@@ -64,6 +69,7 @@ touchscreen:
     id: touch
     interrupt_pin: GPIO7
     transform:
+      swap_xy: true
       mirror_x: true
     on_release:
       - if:
@@ -73,6 +79,14 @@ touchscreen:
             - lvgl.widget.show: header
             - lvgl.page.show: main_page
             - light.turn_on: backlight
+    on_touch:
+      - lambda: |-
+          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
+            touch.x,
+            touch.y,
+            touch.x_raw,
+            touch.y_raw
+          );
 
 output:
   - platform: ledc
@@ -419,7 +433,7 @@ lvgl:
                   radius: 0
                   width: 100%
                   height: SIZE_CONTENT
-                  scrollable: true
+                  scrollable: false
                   layout:
                     type: FLEX
                     flex_flow: COLUMN
@@ -435,7 +449,7 @@ lvgl:
                         border_opa: 0
                         radius: 0
                         align: CENTER
-                        scrollable: true
+                        scrollable: false
                         widgets:
                           - label:
                               id: voltage_label
@@ -463,7 +477,7 @@ lvgl:
                         border_opa: 0
                         radius: 0
                         align: CENTER
-                        scrollable: true
+                        scrollable: false
                         widgets:
                           - label:
                               id: current_label
