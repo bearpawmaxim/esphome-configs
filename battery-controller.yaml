@@ -4,11 +4,21 @@ substitutions:
 packages:
   device_common: !include .device_common.yaml
 
+globals:
+  - id: inverter_on
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+  - id: bms_on
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
 api:
   on_client_connected:
     lvgl.widget.update:
       id: api_connection
-      text_color: on_icon_color
+      text_color: on_color
 
 esphome:
   name: battery-controller
@@ -19,7 +29,7 @@ esphome:
 esp32:
   board: esp32-s3-devkitc-1
   variant: ESP32S3
-  flash_size: 8MB
+  flash_size: 16MB
   framework:
     type: esp-idf
     sdkconfig_options:
@@ -42,11 +52,20 @@ logger:
 
 debug:
 
-# uart:
-  # - id: bms_uart
-  #   tx_pin: GPIO10
-  #   rx_pin: GPIO11
-  #   baud_rate: 115200
+uart:
+  - id: bms_uart
+    tx_pin: GPIO10
+    rx_pin: GPIO11
+    baud_rate: 115200
+  - id: inverter_uart
+    tx_pin: GPIO42
+    rx_pin: GPIO1
+    baud_rate: 9600
+
+modbus:
+  - id: inverter_modbus
+    uart_id: inverter_uart
+    flow_control_pin: GPIO2
 
 sensor:
   - platform: debug
@@ -79,14 +98,6 @@ touchscreen:
             - lvgl.widget.show: header
             - lvgl.page.show: main_page
             - light.turn_on: backlight
-    on_touch:
-      - lambda: |-
-          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
-            touch.x,
-            touch.y,
-            touch.x_raw,
-            touch.y_raw
-          );
 
 output:
   - platform: ledc
@@ -113,9 +124,9 @@ color:
     red: 100%
   - id: color_green
     green: 100%
-  - id: off_icon_color
+  - id: off_color
     hex: FF4F00
-  - id: on_icon_color
+  - id: on_color
     hex: 58D900
 
 i80:
@@ -280,21 +291,21 @@ lvgl:
                       width: 16
                       height: 16
                       text: "\uF1EB"
-                      text_color: off_icon_color
+                      text_color: off_color
                       text_font: montserrat_16
                   - label:
                       id: bms_connection
                       width: 16
                       height: 16
                       text: "\uF008"
-                      text_color: off_icon_color
+                      text_color: off_color
                       text_font: montserrat_16
                   - label:
                       id: inverter_connection
                       width: 16
                       height: 16
                       text: "\uF0E7"
-                      text_color: off_icon_color
+                      text_color: off_color
                       text_font: montserrat_16
 
   pages:
@@ -304,7 +315,7 @@ lvgl:
       bg_color: 0x606672
       bg_grad_color: 0x33363E
       bg_grad_dir: VER
-      bg_dither_mode: ERR_DIFF
+      bg_dither_mode: ORDERED
       scrollable: false
       widgets:
         # SOC gauge
@@ -348,6 +359,7 @@ lvgl:
                   radius: 168
                   bg_color: 0x646464
                   bg_grad_color: 0x3C414B
+                  bg_dither_mode: ORDERED
                   bg_grad_dir: VER
                   bg_opa: 1
                   border_color: 0x2D323C
@@ -368,6 +380,7 @@ lvgl:
                         bg_color: 0x0C191E
                         bg_grad_color: 0x191C26
                         bg_grad_dir: VER
+                        bg_dither_mode: ORDERED
                         bg_opa: 1
                         border_color: 0x5A646E
                         widgets:
@@ -392,156 +405,93 @@ lvgl:
             height: 40
             widgets:
               - led:
-                  id: charge_led
-                  color: color_red
+                  id: status_led
+                  color: off_color
                   align: LEFT_MID
                   brightness: 100%
                   width: 10
                   height: 10
               - label:
-                  id: charge_label
+                  id: status_label
                   width: SIZE_CONTENT
                   height: 20
                   align_to:
-                    id: charge_led
+                    id: status_led
                     align: OUT_RIGHT_MID
                     y: 2
                     x: 10
-                  text: 'Discharging'
+                  text: 'Off'
                   text_color: 0xD2CDC8
                   text_align: LEFT
                   text_font: montserrat_14
         # Right panel
-        - obj:
+        - tileview:
             x: 320
             y: 20
             height: 300
             width: 160
-            bg_color: 0x202831
-            bg_grad_color: 0x101215
-            bg_dither_mode: ERR_DIFF
-            bg_grad_dir: VER
-            radius: 0
-            border_opa: 0
-            pad_all: 0
-            scrollable: false
-            widgets:
-              - obj:
-                  bg_opa: 0
-                  border_opa: 0
-                  align: CENTER
-                  radius: 0
-                  width: 100%
-                  height: SIZE_CONTENT
-                  scrollable: false
-                  layout:
-                    type: FLEX
-                    flex_flow: COLUMN
-                    flex_align_main: SPACE_AROUND
-                    flex_align_track: START
-                    flex_align_cross: SPACE_AROUND
-                  pad_row: 0
-                  widgets:
-                    - obj:
-                        width: 100%
-                        height: SIZE_CONTENT
-                        bg_opa: 0
-                        border_opa: 0
-                        radius: 0
-                        align: CENTER
-                        scrollable: false
-                        widgets:
-                          - label:
-                              id: voltage_label
-                              width: SIZE_CONTENT
-                              height: SIZE_CONTENT
-                              text_color: 0x58D900
-                              text_font: montserrat_26
-                              text_align: RIGHT
-                              text: '56.5'
-                          - label:
-                              width: SIZE_CONTENT
-                              height: SIZE_CONTENT
-                              text_color: 0x58D900
-                              text_font: montserrat_16
-                              text_align: RIGHT
-                              text: 'V'
-                              align_to:
-                                id: voltage_label
-                                align: OUT_RIGHT_TOP
-                                x: 3
-                    - obj:
-                        width: 100%
-                        height: SIZE_CONTENT
-                        bg_opa: 0
-                        border_opa: 0
-                        radius: 0
-                        align: CENTER
-                        scrollable: false
-                        widgets:
-                          - label:
-                              id: current_label
-                              width: SIZE_CONTENT
-                              height: SIZE_CONTENT
-                              text_color: 0x58D900
-                              text_font: montserrat_26
-                              text_align: RIGHT
-                              text: '299.99'
-                          - label:
-                              width: SIZE_CONTENT
-                              height: SIZE_CONTENT
-                              text_color: 0x58D900
-                              text_font: montserrat_16
-                              text_align: RIGHT
-                              text: 'A'
-                              align_to:
-                                id: current_label
-                                align: OUT_RIGHT_TOP
-                                x: 3
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: voltage, l_capt: Voltage } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: current, l_capt: Current } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: ccap, l_capt: Cycle capacity } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: ccnt, l_capt: Cycle count } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: avg_cell_v, l_capt: Avg. cell voltage } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: delte_cell_v, l_capt: Delta cell voltage } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: t1, l_capt: Temp 1 } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: t2, l_capt: Temp 2 } }
-                    # - <<: !include { file: battery-controller/stat-label-group.yaml, vars: { l_name: tmos, l_capt: MOS Temp } }
-                    # Right panel footer
-                    - obj:
-                        bg_opa: 0
-                        hidden: true
-                        border_opa: 0
-                        width: 100%
-                        height: SIZE_CONTENT
-                        widgets:
-                          - label:
-                              text: "\uF053"
-                              text_color: 0xFFFFFF
-                              text_font: montserrat_18
-                              text_align: LEFT
-                              # ignore_layout: true
-                              width: 50%
-                              height: 25
-                              # align: CENTER
-                              # x: 130
-                              # y: 5
-                              on_click:
-                                - lvgl.page.show: details_page
-                          - label:
-                              text: "\uF054"
-                              text_color: 0xFFFFFF
-                              text_font: montserrat_18
-                              text_align: RIGHT
-                              width: 50%
-                              height: 25
-                              # align: CENTER
-
-    - id: details_page
-      bg_color: 0x202831
-      bg_grad_color: 0x101215
-      bg_grad_dir: VER
-      bg_dither_mode: ERR_DIFF
+            tiles:
+              - row: 0
+                column: 0
+                dir: [ RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include battery-controller/lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: voltage,  l_capt: Voltage,  l_unit: V  } }
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: current,  l_capt: Currrent, l_unit: A  } }
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: power,    l_capt: Power,    l_unit: W  } }
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: capacity, l_capt: Capacity, l_unit: Ah } }
+              - row: 0
+                column: 1
+                dir: [ LEFT, RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include battery-controller/lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: t1,   l_capt: Temp 1,   l_unit: C } }
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: t2,   l_capt: Temp 1,   l_unit: C } }
+                        - <<: !include { file: battery-controller/lvgl-label-group-big.yaml, vars: { l_name: tmos, l_capt: MOS Temp, l_unit: C } }
+              - row: 0
+                column: 2
+                dir: [ LEFT, RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include battery-controller/lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: battery-controller/lvgl-switch-group.yaml, vars: { sw_name: charge,    sw_capt: Charge } }
+                        - <<: !include { file: battery-controller/lvgl-switch-group.yaml, vars: { sw_name: discharge, sw_capt: Discharge } }
+                        - <<: !include { file: battery-controller/lvgl-switch-group.yaml, vars: { sw_name: balance,   sw_capt: Balance } }
+              - row: 0
+                column: 3
+                dir: [ LEFT, RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include battery-controller/lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell1voltage,  l_capt: Cell 1,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell2voltage,  l_capt: Cell 2,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell3voltage,  l_capt: Cell 3,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell4voltage,  l_capt: Cell 4,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell5voltage,  l_capt: Cell 5,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell6voltage,  l_capt: Cell 6,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell7voltage,  l_capt: Cell 7,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell8voltage,  l_capt: Cell 8,  l_unit: V } }
+              - row: 0
+                column: 4
+                dir: [ LEFT ]
+                widgets:
+                  - obj:
+                      <<: !include battery-controller/lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell9voltage,  l_capt: Cell 9,  l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell10voltage, l_capt: Cell 10, l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell11voltage, l_capt: Cell 11, l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell12voltage, l_capt: Cell 12, l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell13voltage, l_capt: Cell 13, l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell14voltage, l_capt: Cell 14, l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell15voltage, l_capt: Cell 15, l_unit: V } }
+                        - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell16voltage, l_capt: Cell 16, l_unit: V } }
     - id: burnout_protection_page
       bg_color: 0x000000
       bg_opa: 1
@@ -553,3 +503,57 @@ lvgl:
       - lvgl.page.show: burnout_protection_page
       - delay: 1s
       - lvgl.pause
+
+switch:
+  - id: precharge_relay
+    platform: gpio
+    pin: GPIO21
+  - id: contactor_relay
+    platform: gpio
+    pin: GPIO14
+
+binary_sensor:
+  - id: precharge_sensor
+    platform: gpio
+    pin:
+      number: GPIO13
+      inverted: true
+  - id: precharge_button
+    platform: gpio
+    pin:
+      number: GPIO12
+      mode:
+        input: true
+        pullup: true
+    filters:
+      delayed_on: 20ms
+    on_press:
+      script.execute: precharge
+
+script:
+  - id: precharge
+    mode: single
+    then:
+      if: 
+        condition:
+          lambda: 'return !id(inverter_on);'
+        then:
+          - lvgl.label.update:
+              id: status_label
+              text: 'Precharging' 
+          - lvgl.led.update:
+              id: status_led
+              color: 0xFFFB00
+          - switch.turn_on: precharge_relay
+          - wait_until:
+              condition:
+                binary_sensor.is_on: precharge_sensor
+              timeout: 60s # remove on live
+          - switch.turn_on: contactor_relay
+          - switch.turn_off: precharge_relay
+          - lvgl.label.update:
+              id: status_label
+              text: 'On'
+          - lvgl.led.update:
+              id: status_led
+              color: on_color
