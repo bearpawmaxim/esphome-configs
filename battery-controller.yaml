@@ -13,6 +13,10 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  - id: contactor_on
+    type: bool
+    restore_value: true
+    initial_value: 'false'
 
 api:
   on_client_connected:
@@ -508,9 +512,28 @@ switch:
   - id: precharge_relay
     platform: gpio
     pin: GPIO21
+    internal: true
   - id: contactor_relay
     platform: gpio
     pin: GPIO14
+    internal: true
+  - id: on_switch
+    platform: template
+    restore_state: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - script.execute:
+          id: turn_on
+          precharge: !lambda |-
+            return id(inverter_on);
+      - globals.set:
+          id: contactor_on
+          value: 'true'
+    turn_off_action:
+      - script.execute: turn_off
+      - globals.set:
+          id: contactor_on
+          value: 'false'
 
 binary_sensor:
   - id: precharge_sensor
@@ -528,15 +551,27 @@ binary_sensor:
     filters:
       delayed_on: 20ms
     on_press:
-      script.execute: precharge
+      switch.toggle: on_switch
 
 script:
-  - id: precharge
+  - id: turn_off
     mode: single
+    then:
+      - switch.turn_off: contactor_relay
+      - lvgl.label.update:
+          id: status_label
+          text: 'Off'
+      - lvgl.led.update:
+          id: status_led
+          color: off_color
+  - id: turn_on
+    mode: single
+    parameters:
+      precharge: bool
     then:
       if: 
         condition:
-          lambda: 'return !id(inverter_on);'
+          lambda: 'return precharge;'
         then:
           - lvgl.label.update:
               id: status_label
