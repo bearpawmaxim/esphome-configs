@@ -13,10 +13,6 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
-  - id: contactor_on
-    type: bool
-    restore_value: true
-    initial_value: 'false'
 
 api:
   on_client_connected:
@@ -526,14 +522,8 @@ switch:
           id: turn_on
           precharge: !lambda |-
             return id(inverter_on);
-      - globals.set:
-          id: contactor_on
-          value: 'true'
     turn_off_action:
       - script.execute: turn_off
-      - globals.set:
-          id: contactor_on
-          value: 'false'
 
 binary_sensor:
   - id: precharge_sensor
