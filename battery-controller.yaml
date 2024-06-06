@@ -515,7 +515,6 @@ switch:
     internal: true
   - id: on_switch
     platform: template
-    restore_state: true
     restore_mode: RESTORE_DEFAULT_ON
     turn_on_action:
       - script.execute:
@@ -559,26 +558,26 @@ script:
     parameters:
       precharge: bool
     then:
-      if: 
-        condition:
-          lambda: 'return precharge;'
-        then:
-          - lvgl.label.update:
-              id: status_label
-              text: 'Precharging' 
-          - lvgl.led.update:
-              id: status_led
-              color: 0xFFFB00
-          - switch.turn_on: precharge_relay
-          - wait_until:
-              condition:
-                binary_sensor.is_on: precharge_sensor
-              timeout: 60s # remove on live
-          - switch.turn_on: contactor_relay
-          - switch.turn_off: precharge_relay
-          - lvgl.label.update:
-              id: status_label
-              text: 'On'
-          - lvgl.led.update:
-              id: status_led
-              color: on_color
+      - if: 
+          condition:
+            lambda: 'return precharge;'
+          then:
+            - lvgl.label.update:
+                id: status_label
+                text: 'Precharging' 
+            - lvgl.led.update:
+                id: status_led
+                color: 0xFFFB00
+            - switch.turn_on: precharge_relay
+            - wait_until:
+                condition:
+                  binary_sensor.is_on: precharge_sensor
+                timeout: 60s # remove on live
+            - switch.turn_off: precharge_relay
+      - switch.turn_on: contactor_relay
+      - lvgl.label.update:
+          id: status_label
+          text: 'On'
+      - lvgl.led.update:
+          id: status_led
+          color: on_color
