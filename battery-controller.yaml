@@ -13,6 +13,10 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  - id: is_on
+    type: bool
+    restore_value: true
+    initial_value: 'false'
 
 api:
   on_client_connected:
@@ -78,6 +82,30 @@ sensor:
     psram:
       name: "Free PSRAM"
 
+ota:
+  on_begin:
+    - script.execute: lvgl_resume
+    - lvgl.page.show: ota_page
+    - lvgl.arc.update:
+        id: ota_arc
+        value: 0
+    - lvgl.label.update:
+        id: ota_label
+        text: '0%'
+  on_progress:
+    - lvgl.arc.update:
+          id: ota_arc
+          value: !lambda return x;
+          indicator:
+            arc_color: !lambda |-
+              auto color = id(color_red).gradient(id(color_green), x * 2.55);
+              return lv_color_make(color.red, color.green, color.blue);
+    - lvgl.label.update:
+        id: ota_label
+        text:
+          format: "%f%%"
+          args: x
+
 i2c:
   sda: GPIO6
   scl: GPIO5
@@ -91,13 +119,7 @@ touchscreen:
       swap_xy: true
       mirror_x: true
     on_release:
-      - if:
-          condition: lvgl.is_paused
-          then:
-            - lvgl.resume
-            - lvgl.widget.show: header
-            - lvgl.page.show: main_page
-            - light.turn_on: backlight
+      - script.execute: lvgl_resume
 
 output:
   - platform: ledc
@@ -114,7 +136,7 @@ light:
 
 font:
   - file: battery-controller/SquareDotMatrix.ttf
-    id: font_soc
+    id: gauge_font
     bpp: 4
     size: 36
     glyphs: ['0','1','2','3','4','5','6','7','8','9','%',' ']
@@ -185,52 +207,19 @@ number:
     mode: slider
     on_value:
       then:
-        - lvgl.arc.update:
-            id: soc_arc
-            value: !lambda return x;
-            indicator:
-              arc_color: !lambda |-
-                auto color = id(color_red).gradient(id(color_green), x * 2.55);
-                return lv_color_make (color.red, color.green, color.blue);
-        - lvgl.label.update:
-            id: soc_label
-            text:
-              format: "%d%%"
-              args: (int)x
+        - script.execute:
+            id: lvgl_update_soc
+            soc: !lambda return x;
 
 interval:
   - interval: 1sec
     startup_delay: 5sec
     then:
-      - if:
-          condition:
-            not: lvgl.is_paused
-          then:
-            lvgl.label.update:
-              id: header_time
-              text: !lambda |-
-                if (!id(sntp_time->now()).is_valid()) {
-                  return "--:--:--";
-                }
-                static char time_buf[17];
-                auto time = id(sntp_time).now();
-                snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
-                return time_buf;
+      - script.execute: lvgl_update_time
   - interval: 1min
     startup_delay: 5sec
     then:
-      - if:
-          condition:
-            not: lvgl.is_paused
-          then:
-            lvgl.label.update:
-              id: header_date
-              text: !lambda |-
-                static const char* const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-                static char date_buf[16];
-                auto now = id(sntp_time).now();
-                snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
-                return date_buf;
+      - script.execute: lvgl_update_date
 
 lvgl:
   log_level: WARN
@@ -309,8 +298,7 @@ lvgl:
                       text_font: montserrat_16
 
   pages:
-    # - <<: !include battery-controller/main-page.lvgl.yaml
-    # - <<: !include battery-controller/voltages-page.lvgl.yaml
+    # Main page
     - id: main_page
       bg_color: 0x606672
       bg_grad_color: 0x33363E
@@ -319,81 +307,7 @@ lvgl:
       scrollable: false
       widgets:
         # SOC gauge
-        - obj:
-            width: 240
-            height: 240
-            x: 40
-            y: 40
-            scrollable: false
-            bg_color: 0xFFFFFF
-            bg_opa: 0
-            border_width: 0
-            widgets:
-              - arc:
-                  id: soc_arc
-                  width: 210
-                  height: 210
-                  align: CENTER
-                  min_value: 0
-                  max_value: 100
-                  value: 42
-                  radius: 210
-                  bg_color: 0x1E232D
-                  bg_opa: 1
-                  pad_left: 5
-                  pad_right: 5
-                  pad_top: 5
-                  pad_bottom: 5
-                  arc_color: 0x0F1215
-                  indicator:
-                    arc_color: 0x00FF00
-                    width: 12
-                  knob:
-                    bg_opa: 0
-              - obj:
-                  width: 168
-                  height: 168
-                  align: CENTER
-                  clickable: false
-                  scrollable: false
-                  radius: 168
-                  bg_color: 0x646464
-                  bg_grad_color: 0x3C414B
-                  bg_dither_mode: ORDERED
-                  bg_grad_dir: VER
-                  bg_opa: 1
-                  border_color: 0x2D323C
-                  border_width: 1
-                  shadow_color: 0x050A0F
-                  shadow_width: 40
-                  shadow_spread: 0
-                  shadow_ofs_x: 0
-                  shadow_ofs_y: 15
-                  widgets:
-                    - obj:
-                        width: 120
-                        height: 120
-                        align: CENTER
-                        clickable: false
-                        scrollable: false
-                        radius: 120
-                        bg_color: 0x0C191E
-                        bg_grad_color: 0x191C26
-                        bg_grad_dir: VER
-                        bg_dither_mode: ORDERED
-                        bg_opa: 1
-                        border_color: 0x5A646E
-                        widgets:
-                          - label:
-                              id: soc_label
-                              width: SIZE_CONTENT
-                              height: SIZE_CONTENT
-                              x: 0
-                              y: 0
-                              align: CENTER
-                              text_color: 0xFFFFFF
-                              text: '100%'
-                              text_font: font_soc
+        - <<: !include { file: battery-controller/lvgl-gauge.yaml, vars: { g_name: soc } }
         # Status led and label
         - obj:
             scrollable: false
@@ -492,17 +406,23 @@ lvgl:
                         - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell14voltage, l_capt: Cell 14, l_unit: V } }
                         - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell15voltage, l_capt: Cell 15, l_unit: V } }
                         - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell16voltage, l_capt: Cell 16, l_unit: V } }
-    - id: burnout_protection_page
+    # OTA page
+    - id: ota_page
+      bg_color: 0x606672
+      bg_grad_color: 0x33363E
+      bg_grad_dir: VER
+      bg_dither_mode: ORDERED
+      scrollable: false
+      widgets:
+        - <<: !include { file: battery-controller/lvgl-gauge.yaml, vars: { g_name: ota } }
+    # Blank page
+    - id: blank_page
       bg_color: 0x000000
       bg_opa: 1
   on_idle:
     timeout: !lambda "return (id(display_timeout).state * 1000);"
     then:
-      - light.turn_off: backlight
-      - lvgl.widget.hide: header
-      - lvgl.page.show: burnout_protection_page
-      - delay: 1s
-      - lvgl.pause
+      - script.execute: lvgl_pause
 
 switch:
   - id: precharge_relay
@@ -515,14 +435,21 @@ switch:
     internal: true
   - id: on_switch
     platform: template
-    restore_mode: RESTORE_DEFAULT_ON
+    restore_mode: DISABLED
+    lambda: return id(is_on);
     turn_on_action:
       - script.execute:
           id: turn_on
           precharge: !lambda |-
-            return id(inverter_on);
+            return !id(inverter_on);
+      - globals.set:
+          id: is_on
+          value: 'true'
     turn_off_action:
       - script.execute: turn_off
+      - globals.set:
+          id: is_on
+          value: 'false'
 
 binary_sensor:
   - id: precharge_sensor
@@ -537,22 +464,106 @@ binary_sensor:
       mode:
         input: true
         pullup: true
+      inverted: true
     filters:
-      delayed_on: 20ms
+      - delayed_on: 20ms
+      - delayed_off: 20ms
     on_press:
-      switch.toggle: on_switch
+      - script.execute: lvgl_resume
+    on_multi_click:
+      - timing:
+          - ON FOR AT LEAST 2S
+        then:
+          - switch.toggle: on_switch
 
 script:
+  - id: lvgl_update_time
+    then:
+      - if:
+          condition:
+            not: lvgl.is_paused
+          then:
+            lvgl.label.update:
+              id: header_time
+              text: !lambda |-
+                if (!id(sntp_time->now()).is_valid()) {
+                  return "--:--:--";
+                }
+                static char time_buf[17];
+                auto time = id(sntp_time).now();
+                snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
+                return time_buf;
+  - id: lvgl_update_date
+    then:
+      - if:
+          condition:
+            not: lvgl.is_paused
+          then:
+            lvgl.label.update:
+              id: header_date
+              text: !lambda |-
+                static const char* const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+                static char date_buf[16];
+                auto now = id(sntp_time).now();
+                snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
+                return date_buf;
+  - id: lvgl_update_soc
+    parameters:
+      soc: float
+    then:
+      - lvgl.arc.update:
+          id: soc_arc
+          value: !lambda return soc;
+          indicator:
+            arc_color: !lambda |-
+              auto color = id(color_red).gradient(id(color_green), soc * 2.55);
+              return lv_color_make(color.red, color.green, color.blue);
+      - lvgl.label.update:
+          id: soc_label
+          text:
+            format: "%f%%"
+            args: soc
+  - id: lvgl_pause
+    mode: single
+    then:
+      - light.turn_off: backlight
+      - lvgl.page.show: blank_page
+      - lvgl.widget.hide: header
+      - delay: 1s
+      - lvgl.pause
+  - id: lvgl_resume
+    mode: single
+    then:
+      - if:
+          condition:
+            lvgl.is_paused
+          then:
+            - lvgl.resume
+            - lvgl.page.show: main_page
+            - lvgl.widget.show: header
+            - light.turn_on: backlight
+  - id: update_led
+    mode: single
+    parameters:
+      l_text: string
+      l_color: esphome::Color
+    then:
+      - lvgl.label.update:
+          id: status_label
+          text: !lambda return l_text.c_str();
+      - lvgl.led.update:
+          id: status_led
+          color: !lambda |-
+            return lv_color_make(l_color.red, 
+              l_color.green, l_color.blue);
   - id: turn_off
     mode: single
     then:
       - switch.turn_off: contactor_relay
-      - lvgl.label.update:
-          id: status_label
-          text: 'Off'
-      - lvgl.led.update:
-          id: status_led
-          color: off_color
+      - script.execute:
+          id: update_led
+          l_text: 'Off'
+          l_color: off_color
   - id: turn_on
     mode: single
     parameters:
@@ -562,12 +573,10 @@ script:
           condition:
             lambda: 'return precharge;'
           then:
-            - lvgl.label.update:
-                id: status_label
-                text: 'Precharging' 
-            - lvgl.led.update:
-                id: status_led
-                color: 0xFFFB00
+            - script.execute:
+                id: update_led
+                l_text: 'Precharging'
+                l_color: 0xFFFB00
             - switch.turn_on: precharge_relay
             - wait_until:
                 condition:
@@ -575,9 +584,7 @@ script:
                 timeout: 60s # remove on live
             - switch.turn_off: precharge_relay
       - switch.turn_on: contactor_relay
-      - lvgl.label.update:
-          id: status_label
-          text: 'On'
-      - lvgl.led.update:
-          id: status_led
-          color: on_color
+      - script.execute:
+          id: update_led
+          l_text: 'On'
+          l_color: on_color

@@ -1,0 +1,75 @@
+- obj:
+    width: 240
+    height: 240
+    x: 40
+    y: 40
+    scrollable: false
+    bg_color: 0xFFFFFF
+    bg_opa: 0
+    border_width: 0
+    widgets:
+      - arc:
+          id: ${g_name}_arc
+          width: 210
+          height: 210
+          align: CENTER
+          min_value: 0
+          max_value: 100
+          value: 0
+          radius: 210
+          bg_color: 0x1E232D
+          bg_opa: 1
+          pad_left: 5
+          pad_right: 5
+          pad_top: 5
+          pad_bottom: 5
+          arc_color: 0x0F1215
+          indicator:
+            arc_color: 0x00FF00
+            width: 12
+          knob:
+            bg_opa: 0
+      - obj:
+          width: 168
+          height: 168
+          align: CENTER
+          clickable: false
+          scrollable: false
+          radius: 168
+          bg_color: 0x646464
+          bg_grad_color: 0x3C414B
+          bg_dither_mode: ORDERED
+          bg_grad_dir: VER
+          bg_opa: 1
+          border_color: 0x2D323C
+          border_width: 1
+          shadow_color: 0x050A0F
+          shadow_width: 40
+          shadow_spread: 0
+          shadow_ofs_x: 0
+          shadow_ofs_y: 15
+          widgets:
+            - obj:
+                width: 120
+                height: 120
+                align: CENTER
+                clickable: false
+                scrollable: false
+                radius: 120
+                bg_color: 0x0C191E
+                bg_grad_color: 0x191C26
+                bg_grad_dir: VER
+                bg_dither_mode: ORDERED
+                bg_opa: 1
+                border_color: 0x5A646E
+                widgets:
+                  - label:
+                      id: ${g_name}_label
+                      width: SIZE_CONTENT
+                      height: SIZE_CONTENT
+                      x: 0
+                      y: 0
+                      align: CENTER
+                      text_color: 0xFFFFFF
+                      text: '0%'
+                      text_font: gauge_font
