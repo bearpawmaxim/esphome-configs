@@ -17,6 +17,10 @@ globals:
     type: bool
     restore_value: true
     initial_value: 'false'
+  - id: display_lock
+    type: bool
+    restore_value: false
+    initial_value: 'false'
 
 api:
   on_client_connected:
@@ -81,30 +85,6 @@ sensor:
       name: "Loop Time"
     psram:
       name: "Free PSRAM"
-
-ota:
-  on_begin:
-    - script.execute: lvgl_resume
-    - lvgl.page.show: ota_page
-    - lvgl.arc.update:
-        id: ota_arc
-        value: 0
-    - lvgl.label.update:
-        id: ota_label
-        text: '0%'
-  on_progress:
-    - lvgl.arc.update:
-          id: ota_arc
-          value: !lambda return x;
-          indicator:
-            arc_color: !lambda |-
-              auto color = id(color_red).gradient(id(color_green), x * 2.55);
-              return lv_color_make(color.red, color.green, color.blue);
-    - lvgl.label.update:
-        id: ota_label
-        text:
-          format: "%f%%"
-          args: x
 
 i2c:
   sda: GPIO6
@@ -406,15 +386,6 @@ lvgl:
                         - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell14voltage, l_capt: Cell 14, l_unit: V } }
                         - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell15voltage, l_capt: Cell 15, l_unit: V } }
                         - <<: !include { file: battery-controller/lvgl-label-group.yaml, vars: { l_name: cell16voltage, l_capt: Cell 16, l_unit: V } }
-    # OTA page
-    - id: ota_page
-      bg_color: 0x606672
-      bg_grad_color: 0x33363E
-      bg_grad_dir: VER
-      bg_dither_mode: ORDERED
-      scrollable: false
-      widgets:
-        - <<: !include { file: battery-controller/lvgl-gauge.yaml, vars: { g_name: ota } }
     # Blank page
     - id: blank_page
       bg_color: 0x000000
@@ -457,6 +428,7 @@ binary_sensor:
     pin:
       number: GPIO13
       inverted: true
+    internal: true
   - id: precharge_button
     platform: gpio
     pin:
@@ -465,6 +437,7 @@ binary_sensor:
         input: true
         pullup: true
       inverted: true
+    internal: true
     filters:
       - delayed_on: 20ms
       - delayed_off: 20ms
@@ -511,26 +484,34 @@ script:
     parameters:
       soc: float
     then:
-      - lvgl.arc.update:
-          id: soc_arc
-          value: !lambda return soc;
-          indicator:
-            arc_color: !lambda |-
-              auto color = id(color_red).gradient(id(color_green), soc * 2.55);
-              return lv_color_make(color.red, color.green, color.blue);
-      - lvgl.label.update:
-          id: soc_label
-          text:
-            format: "%f%%"
-            args: soc
+      - if:
+          condition:
+            not: lvgl.is_paused
+          then:
+            - lvgl.arc.update:
+                id: soc_arc
+                value: !lambda return soc;
+                indicator:
+                  arc_color: !lambda |-
+                    auto color = id(color_red).gradient(id(color_green), soc * 2.55);
+                    return lv_color_make(color.red, color.green, color.blue);
+            - lvgl.label.update:
+                id: soc_label
+                text:
+                  format: "%f%%"
+                  args: soc
   - id: lvgl_pause
     mode: single
     then:
-      - light.turn_off: backlight
-      - lvgl.page.show: blank_page
-      - lvgl.widget.hide: header
-      - delay: 1s
-      - lvgl.pause
+      - if:
+          condition:
+            - lambda: return !id(display_lock);
+          then:
+            - light.turn_off: backlight
+            - lvgl.page.show: blank_page
+            - lvgl.widget.hide: header
+            - delay: 1s
+            - lvgl.pause
   - id: lvgl_resume
     mode: single
     then:
@@ -569,10 +550,13 @@ script:
     parameters:
       precharge: bool
     then:
-      - if: 
+      - if:
           condition:
             lambda: 'return precharge;'
           then:
+            - globals.set:
+                id: display_lock
+                value: 'true'
             - script.execute:
                 id: update_led
                 l_text: 'Precharging'
@@ -582,8 +566,13 @@ script:
                 condition:
                   binary_sensor.is_on: precharge_sensor
                 timeout: 60s # remove on live
+            - switch.turn_on: contactor_relay
             - switch.turn_off: precharge_relay
-      - switch.turn_on: contactor_relay
+            - globals.set:
+                id: display_lock
+                value: 'false'
+          else:
+            - switch.turn_on: contactor_relay
       - script.execute:
           id: update_led
           l_text: 'On'
