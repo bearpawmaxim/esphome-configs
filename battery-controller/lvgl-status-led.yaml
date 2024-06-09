@@ -1,0 +1,29 @@
+- obj:
+    scrollable: false
+    x: 0
+    y: 280
+    bg_opa: 0
+    border_opa: 0
+    width: 280
+    height: 40
+    widgets:
+      - led:
+          id: status_led
+          color: off_color
+          align: LEFT_MID
+          brightness: 100%
+          width: 10
+          height: 10
+      - label:
+          id: status_label
+          width: SIZE_CONTENT
+          height: 20
+          align_to:
+            id: status_led
+            align: OUT_RIGHT_MID
+            y: 2
+            x: 10
+          text: 'Off'
+          text_color: 0xD2CDC8
+          text_align: LEFT
+          text_font: montserrat_14

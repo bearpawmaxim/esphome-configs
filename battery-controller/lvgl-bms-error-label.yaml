@@ -1,0 +1,20 @@
+- obj:
+    scrollable: false
+    x: 0
+    y: 20
+    bg_opa: 0
+    border_opa: 0
+    width: 320
+    height: 40
+    widgets:
+      - label:
+          id: bms_errors_label
+          hidden: true
+          width: 320
+          height: 20
+          align: CENTER
+          text: ''
+          long_mode: SCROLL_CIRCULAR
+          text_color: off_color
+          text_align: LEFT
+          text_font: montserrat_14

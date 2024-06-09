@@ -1,0 +1,65 @@
+- obj:
+    id: header
+    bg_color: 0x14191E
+    height: 20
+    width: 100%
+    radius: 0
+    x: 0
+    y: 0
+    border_width: 0
+    scrollable: false
+    align: TOP_MID
+    pad_right: 0
+    widgets:
+      - label:
+          id: header_date
+          align: LEFT_MID
+          width: SIZE_CONTENT
+          height: SIZE_CONTENT
+          text: " "
+          text_color: 0xFFFFFF
+          text_font: montserrat_14
+      - obj:
+          bg_opa: 0
+          border_opa: 0
+          radius: 0
+          width: 160
+          height: 20
+          pad_all: 0
+          align: RIGHT_MID
+          scrollable: false
+          layout:
+            type: FLEX
+            flex_flow: ROW
+            flex_align_main: END
+            flex_align_cross: CENTER
+            flex_align_track: CENTER
+          widgets:
+            - label:
+                id: header_time
+                width: SIZE_CONTENT
+                height: SIZE_CONTENT
+                text: "--:--:--"
+                text_color: 0xFFFFFF
+                text_font: montserrat_14
+            - label:
+                id: api_connection
+                width: 16
+                height: 16
+                text: "\uF1EB"
+                text_color: off_color
+                text_font: montserrat_16
+            - label:
+                id: bms_connection
+                width: 16
+                height: 16
+                text: "\uF008"
+                text_color: off_color
+                text_font: montserrat_16
+            - label:
+                id: inverter_connection
+                width: 16
+                height: 16
+                text: "\uF0E7"
+                text_color: off_color
+                text_font: montserrat_16

@@ -16,7 +16,7 @@
           text_align: LEFT
           text: '${l_capt}'
       - label:
-          id: ${l_name}_label
+          id: ${l_name}_value_label
           width: SIZE_CONTENT
           height: SIZE_CONTENT
           text_color: 0x58D900
@@ -34,6 +34,6 @@
           text_align: RIGHT
           text: '${l_unit}'
           align_to:
-            id: ${l_name}_label
+            id: ${l_name}_value_label
             align: OUT_RIGHT_TOP
             x: 3

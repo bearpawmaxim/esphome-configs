@@ -3,6 +3,7 @@ substitutions:
 
 packages:
   device_common: !include .device_common.yaml
+  jkbms: !include battery-controller/jkbms.yaml
 
 globals:
   - id: inverter_on
@@ -17,10 +18,6 @@ globals:
     type: bool
     restore_value: true
     initial_value: 'false'
-  - id: display_lock
-    type: bool
-    restore_value: false
-    initial_value: 'false'
 
 api:
   on_client_connected:
@@ -33,6 +30,18 @@ esphome:
   friendly_name: battery-controller
   platformio_options:
     board_build.flash_mode: dio
+  includes:
+    - battery-controller/holding_gpio.h
+  on_boot:
+    - priority: 800
+      then:
+        - lambda: 'holding_gpio = new HoldingGpio(GPIO_NUM_14);'
+    - priority: 200
+      then:
+        - script.execute:
+            id: lvgl_update_led
+            l_text: !lambda 'return (const char *)(id(contactor_relay).state ? "On" : "Off");'
+            l_color: !lambda 'return (id(contactor_relay).state ? id(on_color) : id(off_color));'        
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -55,6 +64,7 @@ external_components:
     components: [ io_bus, i80, spi, ili9xxx ]
   - source: github://clydebarrow/esphome@lvgl
     components: [ lvgl ]
+  - source: github://syssi/esphome-jk-bms@main
 
 logger:
 
@@ -211,72 +221,7 @@ lvgl:
     - touchscreen_id: touch
   top_layer:
     widgets:
-      - obj:
-          id: header
-          bg_color: 0x14191E
-          height: 20
-          width: 100%
-          radius: 0
-          x: 0
-          y: 0
-          border_width: 0
-          scrollable: false
-          align: TOP_MID
-          pad_right: 0
-          widgets:
-            - label:
-                id: header_date
-                align: LEFT_MID
-                width: SIZE_CONTENT
-                height: SIZE_CONTENT
-                text: " "
-                text_color: 0xFFFFFF
-                text_font: montserrat_14
-            - obj:
-                bg_opa: 0
-                border_opa: 0
-                radius: 0
-                width: 160
-                height: 20
-                pad_all: 0
-                align: RIGHT_MID
-                scrollable: false
-                layout:
-                  type: FLEX
-                  flex_flow: ROW
-                  flex_align_main: END
-                  flex_align_cross: CENTER
-                  flex_align_track: CENTER
-                widgets:
-                  - label:
-                      id: header_time
-                      width: SIZE_CONTENT
-                      height: SIZE_CONTENT
-                      text: "--:--:--"
-                      text_color: 0xFFFFFF
-                      text_font: montserrat_14
-                  - label:
-                      id: api_connection
-                      width: 16
-                      height: 16
-                      text: "\uF1EB"
-                      text_color: off_color
-                      text_font: montserrat_16
-                  - label:
-                      id: bms_connection
-                      width: 16
-                      height: 16
-                      text: "\uF008"
-                      text_color: off_color
-                      text_font: montserrat_16
-                  - label:
-                      id: inverter_connection
-                      width: 16
-                      height: 16
-                      text: "\uF0E7"
-                      text_color: off_color
-                      text_font: montserrat_16
-
+      - <<: !include battery-controller/lvgl-header.yaml
   pages:
     # Main page
     - id: main_page
@@ -288,36 +233,10 @@ lvgl:
       widgets:
         # SOC gauge
         - <<: !include { file: battery-controller/lvgl-gauge.yaml, vars: { g_name: soc } }
-        # Status led and label
-        - obj:
-            scrollable: false
-            x: 0
-            y: 280
-            bg_opa: 0
-            border_opa: 0
-            width: 280
-            height: 40
-            widgets:
-              - led:
-                  id: status_led
-                  color: off_color
-                  align: LEFT_MID
-                  brightness: 100%
-                  width: 10
-                  height: 10
-              - label:
-                  id: status_label
-                  width: SIZE_CONTENT
-                  height: 20
-                  align_to:
-                    id: status_led
-                    align: OUT_RIGHT_MID
-                    y: 2
-                    x: 10
-                  text: 'Off'
-                  text_color: 0xD2CDC8
-                  text_align: LEFT
-                  text_font: montserrat_14
+        # Bms error label
+        - <<: !include battery-controller/lvgl-bms-error-label.yaml
+        # Contactor led and label
+        - <<: !include battery-controller/lvgl-status-led.yaml
         # Right panel
         - tileview:
             x: 320
@@ -391,7 +310,7 @@ lvgl:
       bg_color: 0x000000
       bg_opa: 1
   on_idle:
-    timeout: !lambda "return (id(display_timeout).state * 1000);"
+    timeout: !lambda 'return (id(display_timeout).state * 1000);'
     then:
       - script.execute: lvgl_pause
 
@@ -401,18 +320,22 @@ switch:
     pin: GPIO21
     internal: true
   - id: contactor_relay
-    platform: gpio
-    pin: GPIO14
+    platform: template
+    lambda: 'return holding_gpio->get_state();'
     internal: true
+    restore_mode: DISABLED
+    turn_on_action:
+      - lambda: 'holding_gpio->set_state(1);'
+    turn_off_action:
+      - lambda: 'holding_gpio->set_state(0);'
   - id: on_switch
     platform: template
     restore_mode: DISABLED
-    lambda: return id(is_on);
+    lambda: 'return id(contactor_relay).state;'
     turn_on_action:
       - script.execute:
           id: turn_on
-          precharge: !lambda |-
-            return !id(inverter_on);
+          precharge: !lambda 'return !id(inverter_on);'
       - globals.set:
           id: is_on
           value: 'true'
@@ -450,68 +373,82 @@ binary_sensor:
           - switch.toggle: on_switch
 
 script:
+  - id: lvgl_update_label_value
+    parameters:
+      name: string
+      value: string
+    then:
+      - lambda: |-
+          static std::map<const char*, lv_obj_t*> labels_map {
+            { "cell1voltage", id(cell1voltage_value_label) },
+            { "cell2voltage", id(cell2voltage_value_label) },
+            { "cell3voltage", id(cell3voltage_value_label) },
+            { "cell4voltage", id(cell4voltage_value_label) },
+            { "cell5voltage", id(cell5voltage_value_label) },
+            { "cell6voltage", id(cell6voltage_value_label) },
+            { "cell7voltage", id(cell7voltage_value_label) },
+            { "cell8voltage", id(cell8voltage_value_label) },
+            { "cell9voltage", id(cell9voltage_value_label) },
+            { "cell10voltage", id(cell10voltage_value_label) },
+            { "cell11voltage", id(cell11voltage_value_label) },
+            { "cell12voltage", id(cell12voltage_value_label) },
+            { "cell13voltage", id(cell13voltage_value_label) },
+            { "cell14voltage", id(cell14voltage_value_label) },
+            { "cell15voltage", id(cell15voltage_value_label) },
+            { "cell16voltage", id(cell16voltage_value_label) },
+            { "t1", id(t1_value_label) },
+            { "t2", id(t2_value_label) },
+            { "tmos", id(tmos_value_label) },
+          };
   - id: lvgl_update_time
     then:
-      - if:
-          condition:
-            not: lvgl.is_paused
-          then:
-            lvgl.label.update:
-              id: header_time
-              text: !lambda |-
-                if (!id(sntp_time->now()).is_valid()) {
-                  return "--:--:--";
-                }
-                static char time_buf[17];
-                auto time = id(sntp_time).now();
-                snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
-                return time_buf;
+      lvgl.label.update:
+        id: header_time
+        text: !lambda |-
+          if (!id(sntp_time->now()).is_valid()) {
+            return "--:--:--";
+          }
+          static char time_buf[17];
+          auto time = id(sntp_time).now();
+          snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
+          return time_buf;
   - id: lvgl_update_date
     then:
-      - if:
-          condition:
-            not: lvgl.is_paused
-          then:
-            lvgl.label.update:
-              id: header_date
-              text: !lambda |-
-                static const char* const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-                static char date_buf[16];
-                auto now = id(sntp_time).now();
-                snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
-                return date_buf;
+      lvgl.label.update:
+        id: header_date
+        text: !lambda |-
+          static const char* const mon_names[] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+          static char date_buf[16];
+          auto now = id(sntp_time).now();
+          snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
+          return date_buf;
   - id: lvgl_update_soc
     parameters:
-      soc: float
+      soc: int
     then:
-      - if:
-          condition:
-            not: lvgl.is_paused
-          then:
-            - lvgl.arc.update:
-                id: soc_arc
-                value: !lambda return soc;
-                indicator:
-                  arc_color: !lambda |-
-                    auto color = id(color_red).gradient(id(color_green), soc * 2.55);
-                    return lv_color_make(color.red, color.green, color.blue);
-            - lvgl.label.update:
-                id: soc_label
-                text:
-                  format: "%f%%"
-                  args: soc
+      - lvgl.arc.update:
+          id: soc_arc
+          value: !lambda return soc;
+          indicator:
+            arc_color: !lambda |-
+              auto color = id(color_red).gradient(id(color_green), soc * 2.55);
+              lv_color_hsv_t lv_hsv_color = lv_color_rgb_to_hsv(color.red, color.green, color.blue);
+              lv_hsv_color.s = 100;
+              lv_hsv_color.v = 100;
+              return lv_color_hsv_to_rgb(lv_hsv_color.h, lv_hsv_color.s, lv_hsv_color.v);
+      - lvgl.label.update:
+          id: soc_label
+          text:
+            format: "%d%%"
+            args: soc
   - id: lvgl_pause
     mode: single
     then:
-      - if:
-          condition:
-            - lambda: return !id(display_lock);
-          then:
-            - light.turn_off: backlight
-            - lvgl.page.show: blank_page
-            - lvgl.widget.hide: header
-            - delay: 1s
-            - lvgl.pause
+      - light.turn_off: backlight
+      - lvgl.page.show: blank_page
+      - lvgl.widget.hide: header
+      - delay: 1s
+      - lvgl.pause
   - id: lvgl_resume
     mode: single
     then:
@@ -523,7 +460,7 @@ script:
             - lvgl.page.show: main_page
             - lvgl.widget.show: header
             - light.turn_on: backlight
-  - id: update_led
+  - id: lvgl_update_led
     mode: single
     parameters:
       l_text: string
@@ -542,7 +479,7 @@ script:
     then:
       - switch.turn_off: contactor_relay
       - script.execute:
-          id: update_led
+          id: lvgl_update_led
           l_text: 'Off'
           l_color: off_color
   - id: turn_on
@@ -554,11 +491,8 @@ script:
           condition:
             lambda: 'return precharge;'
           then:
-            - globals.set:
-                id: display_lock
-                value: 'true'
             - script.execute:
-                id: update_led
+                id: lvgl_update_led
                 l_text: 'Precharging'
                 l_color: 0xFFFB00
             - switch.turn_on: precharge_relay
@@ -568,12 +502,9 @@ script:
                 timeout: 60s # remove on live
             - switch.turn_on: contactor_relay
             - switch.turn_off: precharge_relay
-            - globals.set:
-                id: display_lock
-                value: 'false'
           else:
             - switch.turn_on: contactor_relay
       - script.execute:
-          id: update_led
+          id: lvgl_update_led
           l_text: 'On'
           l_color: on_color
