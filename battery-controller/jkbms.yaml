@@ -18,10 +18,12 @@ binary_sensor:
       name: "JKBMS discharging"
     online_status:
       name: "JKBMS online status"
-      on_press:
-        - lvgl.widget.update:
-            id: bms_connection
-            text_color: '!lambda return x ? id(color_on) : id(color_off);'
+      on_state:
+        then:
+          - script.execute:
+              id: lvgl_update_status_icon
+              name: bms_connection
+              is_on: x
 
 sensor:
   - platform: jk_bms
@@ -41,117 +43,135 @@ sensor:
       name: "JKBMS cell voltage 1"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell1voltage,
-            value: x
+            id: lvgl_update_label_value
+            name: cell1voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_2:
       name: "JKBMS cell voltage 2"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell2voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell2voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_3:
       name: "JKBMS cell voltage 3"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell3voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell3voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_4:
       name: "JKBMS cell voltage 4"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell4voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell4voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_5:
       name: "JKBMS cell voltage 5"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell5voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell5voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_6:
       name: "JKBMS cell voltage 6"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell6voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell6voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_7:
       name: "JKBMS cell voltage 7"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell7voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell7voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_8:
       name: "JKBMS cell voltage 8"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell8voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell8voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_9:
       name: "JKBMS cell voltage 9"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell9voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell9voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_10:
       name: "JKBMS cell voltage 10"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell10voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell10voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_11:
       name: "JKBMS cell voltage 11"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell11voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell11voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_12:
       name: "JKBMS cell voltage 12"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell12voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell12voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_13:
       name: "JKBMS cell voltage 13"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell13voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell13voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_14:
       name: "JKBMS cell voltage 14"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell14voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell14voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_15:
       name: "JKBMS cell voltage 15"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell15voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell15voltage
+            value: value_accuracy_to_string(x, 3)
     cell_voltage_16:
       name: "JKBMS cell voltage 16"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: cell16voltage, l_value: x }
+            id: lvgl_update_label_value
+            name: cell16voltage
+            value: value_accuracy_to_string(x, 3)
     power_tube_temperature:
       name: "JKBMS power tube temperature"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: tmos, l_value: x }
+            id: lvgl_update_label_value
+            name: tmos
+            value: value_accuracy_to_string(x, 3)
     temperature_sensor_1:
       name: "JKBMS temperature sensor 1"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: t1, l_value: x }
+            id: lvgl_update_label_value
+            name: t1
+            value: value_accuracy_to_string(x, 3)
     temperature_sensor_2:
       name: "JKBMS temperature sensor 2"
       on_value:
         - script.execute:
-            id: lvgl_update_label
-            name: t2, l_value: x }
+            id: lvgl_update_label_value
+            name: t2
+            value: value_accuracy_to_string(x, 3)
     total_voltage:
       name: "JKBMS total voltage"
     current:
@@ -193,16 +213,16 @@ switch:
   - platform: jk_bms
     charging:
       name: "JKBMS charging"
-      on_turn_on:
-      on_turn_off:
-        - <<: !include { file: actions/update-switch-value.yaml, sw_name: charge, sw_value: x }
+      # on_turn_on:
+      # on_turn_off:
+      #   - <<: !include { file: actions/update-switch-value.yaml, sw_name: charge, sw_value: value_accuracy_to_string(x, 3) }
     discharging:
       name: "JKBMS discharging"
-      on_turn_on:
-      on_turn_off:
-        - <<: !include { file: actions/update-switch-value.yaml, sw_name: disacharge, sw_value: x }
-    balancer:
-      name: "JKBMS balancing"
-      on_turn_on:
-      on_turn_off:
-        - <<: !include { file: actions/update-switch-value.yaml, sw_name: balance, sw_value: x }
+      # on_turn_on:
+      # on_turn_off:
+      #   - <<: !include { file: actions/update-switch-value.yaml, sw_name: disacharge, sw_value: value_accuracy_to_string(x, 3) }
+    # balancing:
+    #  name: "JKBMS balancing"
+      # on_turn_on:
+      # on_turn_off:
+      #   - <<: !include { file: actions/update-switch-value.yaml, sw_name: balance, sw_value: value_accuracy_to_string(x, 3) }

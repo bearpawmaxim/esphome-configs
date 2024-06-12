@@ -57,7 +57,7 @@
                 text_color: off_color
                 text_font: montserrat_16
             - label:
-                id: inverter_connection
+                id: inv_connection
                 width: 16
                 height: 16
                 text: "\uF0E7"

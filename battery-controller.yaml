@@ -373,13 +373,36 @@ binary_sensor:
           - switch.toggle: on_switch
 
 script:
+  - id: lvgl_switch_update
+    parameters:
+      name: string
+      value: bool
+    then:
+      - lambda: |-
+          return;
+  - id: lvgl_update_status_icon
+    parameters:
+      name: string
+      is_on: bool
+    then:
+      - lambda: |-
+          static std::map<const char *, lv_obj_t*> icons_map {
+            { "api_connection", id(api_connection) },
+            { "bms_connection", id(bms_connection) },
+            { "inv_connection", id(inv_connection) }
+          };
+          auto iterator = icons_map.find(name.c_str());
+          if (iterator != icons_map.end()) {
+            lv_obj_t* icon = iterator->second;
+            lv_obj_set_style_text_color(icon, lv_color_from(is_on ? id(on_color) : id(off_color)), (int)LV_STATE_DEFAULT|(int)LV_PART_MAIN);
+          }
   - id: lvgl_update_label_value
     parameters:
       name: string
       value: string
     then:
       - lambda: |-
-          static std::map<const char*, lv_obj_t*> labels_map {
+          static std::map<const char *, lv_obj_t*> labels_map {
             { "cell1voltage", id(cell1voltage_value_label) },
             { "cell2voltage", id(cell2voltage_value_label) },
             { "cell3voltage", id(cell3voltage_value_label) },
@@ -398,8 +421,14 @@ script:
             { "cell16voltage", id(cell16voltage_value_label) },
             { "t1", id(t1_value_label) },
             { "t2", id(t2_value_label) },
-            { "tmos", id(tmos_value_label) },
+            { "tmos", id(tmos_value_label) }
           };
+          auto iterator = labels_map.find(name.c_str());
+          if (iterator != labels_map.end()) {
+            lv_obj_t* label = iterator->second;
+            lv_label_set_text(label, value.c_str());
+            lv_event_send(label, LV_EVENT_VALUE_CHANGED, nullptr);
+          }
   - id: lvgl_update_time
     then:
       lvgl.label.update:
