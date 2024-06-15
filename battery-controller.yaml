@@ -4,6 +4,7 @@ substitutions:
 packages:
   device_common: !include .device_common.yaml
   jkbms: !include battery-controller/jkbms.yaml
+  jkbms-faker: !include battery-controller/jkbms.faker.yaml
 
 globals:
   - id: inverter_on
@@ -14,16 +15,18 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
-  - id: is_on
-    type: bool
-    restore_value: true
-    initial_value: 'false'
 
 api:
   on_client_connected:
-    lvgl.widget.update:
-      id: api_connection
-      text_color: on_color
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: api_connection
+        is_on: true
+  on_client_disconnected:
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: api_connection
+        is_on: false
 
 esphome:
   name: battery-controller
@@ -186,20 +189,6 @@ number:
     max_value: 180
     step: 5
     mode: box
-  - platform: template
-    name: SOC test
-    optimistic: true
-    initial_value: 42
-    restore_value: true
-    min_value: 0
-    max_value: 100
-    step: 1
-    mode: slider
-    on_value:
-      then:
-        - script.execute:
-            id: lvgl_update_soc
-            soc: !lambda return x;
 
 interval:
   - interval: 1sec
@@ -214,7 +203,7 @@ interval:
 lvgl:
   log_level: WARN
   color_depth: 16
-  bg_color: 0x0F0F0F
+  bg_color: 0x000000
   text_font: unscii_8
   align: center
   touchscreens:
@@ -336,14 +325,8 @@ switch:
       - script.execute:
           id: turn_on
           precharge: !lambda 'return !id(inverter_on);'
-      - globals.set:
-          id: is_on
-          value: 'true'
     turn_off_action:
       - script.execute: turn_off
-      - globals.set:
-          id: is_on
-          value: 'false'
 
 binary_sensor:
   - id: precharge_sensor
@@ -379,56 +362,80 @@ script:
       value: bool
     then:
       - lambda: |-
-          return;
+          static std::map<std::string, lv_obj_t*> switch_map {
+            { "charging_sw", id(charge_sw) },
+            { "discharging_sw", id(discharge_sw) },
+            { "balancing_sw", id(balance_sw) }
+          };
+          auto iterator = switch_map.find(name);
+          if (iterator != switch_map.end()) {
+            lv_obj_t* sw = iterator->second;
+            if (value) {
+              lv_obj_add_state(sw, LV_STATE_CHECKED);
+            } else {
+              lv_obj_clear_state(sw, LV_STATE_CHECKED);
+            }
+            return;
+          }
+          ESP_LOGE("BMS", "Cannot find switch %s", name.c_str());
   - id: lvgl_update_status_icon
     parameters:
       name: string
       is_on: bool
     then:
       - lambda: |-
-          static std::map<const char *, lv_obj_t*> icons_map {
+          static std::map<std::string, lv_obj_t*> icons_map {
             { "api_connection", id(api_connection) },
             { "bms_connection", id(bms_connection) },
             { "inv_connection", id(inv_connection) }
           };
-          auto iterator = icons_map.find(name.c_str());
+          auto iterator = icons_map.find(name);
           if (iterator != icons_map.end()) {
             lv_obj_t* icon = iterator->second;
             lv_obj_set_style_text_color(icon, lv_color_from(is_on ? id(on_color) : id(off_color)), (int)LV_STATE_DEFAULT|(int)LV_PART_MAIN);
+            lv_event_send(icon, LV_EVENT_VALUE_CHANGED, nullptr);
+            return;
           }
+          ESP_LOGE("BMS", "Cannot find icon %s", name.c_str());
   - id: lvgl_update_label_value
     parameters:
       name: string
       value: string
     then:
       - lambda: |-
-          static std::map<const char *, lv_obj_t*> labels_map {
-            { "cell1voltage", id(cell1voltage_value_label) },
-            { "cell2voltage", id(cell2voltage_value_label) },
-            { "cell3voltage", id(cell3voltage_value_label) },
-            { "cell4voltage", id(cell4voltage_value_label) },
-            { "cell5voltage", id(cell5voltage_value_label) },
-            { "cell6voltage", id(cell6voltage_value_label) },
-            { "cell7voltage", id(cell7voltage_value_label) },
-            { "cell8voltage", id(cell8voltage_value_label) },
-            { "cell9voltage", id(cell9voltage_value_label) },
+          static std::map<std::string, lv_obj_t*> labels_map {
+            { "voltage",       id(voltage_value_label) },
+            { "current",       id(current_value_label) },
+            { "power",         id(power_value_label) },
+            { "capacity",      id(capacity_value_label) },
+            { "t1",            id(t1_value_label) },
+            { "t2",            id(t2_value_label) },
+            { "tmos",          id(tmos_value_label) },
+            { "cell1voltage",  id(cell1voltage_value_label) },
+            { "cell2voltage",  id(cell2voltage_value_label) },
+            { "cell3voltage",  id(cell3voltage_value_label) },
+            { "cell4voltage",  id(cell4voltage_value_label) },
+            { "cell5voltage",  id(cell5voltage_value_label) },
+            { "cell6voltage",  id(cell6voltage_value_label) },
+            { "cell7voltage",  id(cell7voltage_value_label) },
+            { "cell8voltage",  id(cell8voltage_value_label) },
+            { "cell9voltage",  id(cell9voltage_value_label) },
             { "cell10voltage", id(cell10voltage_value_label) },
             { "cell11voltage", id(cell11voltage_value_label) },
             { "cell12voltage", id(cell12voltage_value_label) },
             { "cell13voltage", id(cell13voltage_value_label) },
             { "cell14voltage", id(cell14voltage_value_label) },
             { "cell15voltage", id(cell15voltage_value_label) },
-            { "cell16voltage", id(cell16voltage_value_label) },
-            { "t1", id(t1_value_label) },
-            { "t2", id(t2_value_label) },
-            { "tmos", id(tmos_value_label) }
+            { "cell16voltage", id(cell16voltage_value_label) }
           };
-          auto iterator = labels_map.find(name.c_str());
+          auto iterator = labels_map.find(name);
           if (iterator != labels_map.end()) {
             lv_obj_t* label = iterator->second;
             lv_label_set_text(label, value.c_str());
-            lv_event_send(label, LV_EVENT_VALUE_CHANGED, nullptr);
+            //lv_event_send(label, LV_EVENT_VALUE_CHANGED, nullptr);
+            return;
           }
+          ESP_LOGE("BMS", "Cannot find label %s", name.c_str());
   - id: lvgl_update_time
     then:
       lvgl.label.update:
@@ -451,9 +458,17 @@ script:
           auto now = id(sntp_time).now();
           snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
           return date_buf;
+  - id: lvgl_update_error_label
+    parameters:
+      error: string
+    then:
+      - if:
+          condition:
+            lambda: return true;
+          then: []
   - id: lvgl_update_soc
     parameters:
-      soc: int
+      soc: float
     then:
       - lvgl.arc.update:
           id: soc_arc
@@ -469,7 +484,7 @@ script:
           id: soc_label
           text:
             format: "%d%%"
-            args: soc
+            args: (int)soc
   - id: lvgl_pause
     mode: single
     then:
