@@ -12,6 +12,13 @@ binary_sensor:
   - platform: jk_bms
     balancing:
       name: "JKBMS balancing"
+    balancing_switch:
+      name: "JKBMS balancing switch"
+      on_state:
+        - script.execute:
+            id: lvgl_update_switch_value
+            name: balancing_sw
+            value: !lambda return x;
     charging:
       name: "JKBMS charging"
     discharging:
@@ -23,7 +30,7 @@ binary_sensor:
           - script.execute:
               id: lvgl_update_status_icon
               name: bms_connection
-              is_on: !lambda 'return x;'
+              is_on: !lambda return x;
 
 sensor:
   - platform: jk_bms
@@ -145,42 +152,42 @@ sensor:
         - script.execute:
             id: lvgl_update_label_value
             name: tmos
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 0);
     temperature_sensor_1:
       name: "JKBMS temperature sensor 1"
       on_value:
         - script.execute:
             id: lvgl_update_label_value
             name: t1
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 0);
     temperature_sensor_2:
       name: "JKBMS temperature sensor 2"
       on_value:
         - script.execute:
             id: lvgl_update_label_value
             name: t2
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 0);
     total_voltage:
       name: "JKBMS total voltage"
       on_value:
         - script.execute:
             id: lvgl_update_label_value
             name: voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 2);
     current:
       name: "JKBMS current"
       on_value:
         - script.execute:
             id: lvgl_update_label_value
             name: current
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 0);
     power:
       name: "JKBMS power"
       on_value:
         - script.execute:
             id: lvgl_update_label_value
             name: power
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 0);
     capacity_remaining:
       name: "JKBMS capacity remaining"
       on_value:
@@ -193,7 +200,7 @@ sensor:
         - script.execute:
             id: lvgl_update_label_value
             name: capacity
-            value: !lambda return value_accuracy_to_string(x, 3);
+            value: !lambda return value_accuracy_to_string(x, 0);
     min_cell_voltage:
       name: "JKBMS min cell voltage"
     max_cell_voltage:
@@ -235,36 +242,36 @@ switch:
       name: "JKBMS charging"
       on_turn_on:
         - script.execute:
-            id: lvgl_switch_update
+            id: lvgl_update_switch_value
             name: charging_sw
             value: true
       on_turn_off:
         - script.execute:
-            id: lvgl_switch_update
+            id: lvgl_update_switch_value
             name: charging_sw
             value: false
     discharging:
       name: "JKBMS discharging"
       on_turn_on:
         - script.execute:
-            id: lvgl_switch_update
+            id: lvgl_update_switch_value
             name: discharging_sw
             value: true
       on_turn_off:
         - script.execute:
-            id: lvgl_switch_update
+            id: lvgl_update_switch_value
             name: discharging_sw
             value: false
     # balancer:
     #   name: "JKBMS balancing"
     #   on_turn_on:
     #     - script.execute:
-    #         id: lvgl_switch_update
+    #         id: lvgl_update_switch_value
     #         name: 'balancing_sw'
     #         value: true
     #   on_turn_off:
     #     - script.execute:
-    #         id: lvgl_switch_update
+    #         id: lvgl_update_switch_value
     #         name: 'balancing_sw'
     #         value: false
 
@@ -272,6 +279,10 @@ text_sensor:
   - platform: jk_bms
     errors:
       name: "JKBMS errors"
+      on_value:
+        - script.execute:
+            id: lvgl_update_error_label
+            error: !lambda return x;
     operation_mode:
       name: "JKBMS operation mode"
     battery_type:

@@ -20,6 +20,8 @@
           id: ${sw_name}_sw
           bg_color: 0xFF4F00
           align: CENTER
+          state:
+            disabled: ${sw_readonly}
           indicator:
             checked:
               bg_color: 0x58D900

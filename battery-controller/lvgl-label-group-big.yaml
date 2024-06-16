@@ -27,6 +27,7 @@
             id: ${l_name}_caption
             align: OUT_BOTTOM_LEFT
       - label:
+          id: ${l_name}_unit_label
           width: SIZE_CONTENT
           height: SIZE_CONTENT
           text_color: 0x58D900

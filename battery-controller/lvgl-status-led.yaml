@@ -25,5 +25,5 @@
             x: 10
           text: 'Off'
           text_color: 0xD2CDC8
-          text_align: LEFT
+          text_align: RIGHT
           text_font: montserrat_14

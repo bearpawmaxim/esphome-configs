@@ -28,7 +28,7 @@
             align: OUT_RIGHT_MID
             x: 10
       - label:
-          id: ${l_name}_unit
+          id: ${l_name}_unit_label
           text: ' ${l_unit}'
           width: SIZE_CONTENT
           height: SIZE_CONTENT
