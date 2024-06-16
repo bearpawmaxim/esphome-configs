@@ -361,8 +361,13 @@ script:
       name: string
       value: bool
     then:
+      - lvgl.widget.update:
+          id: charge_sw
+          state:
+            checked: !lambda return value;
       - lambda: |-
-          static std::map<std::string, lv_obj_t*> switch_map {
+          // TODO: Determine why the memory leasks with the switch.
+          /*static std::map<std::string, lv_obj_t*> switch_map {
             { "charging_sw", id(charge_sw) },
             { "discharging_sw", id(discharge_sw) },
             { "balancing_sw", id(balance_sw) }
@@ -377,7 +382,7 @@ script:
             }
             return;
           }
-          ESP_LOGE("BMS", "Cannot find switch %s", name.c_str());
+          ESP_LOGE("BMS", "Cannot find switch %s", name.c_str());*/
   - id: lvgl_update_status_icon
     parameters:
       name: string
@@ -432,7 +437,7 @@ script:
           if (iterator != labels_map.end()) {
             lv_obj_t* label = iterator->second;
             lv_label_set_text(label, value.c_str());
-            //lv_event_send(label, LV_EVENT_VALUE_CHANGED, nullptr);
+            lv_event_send(label, LV_EVENT_VALUE_CHANGED, nullptr);
             return;
           }
           ESP_LOGE("BMS", "Cannot find label %s", name.c_str());
