@@ -382,6 +382,23 @@ binary_sensor:
           - switch.toggle: on_switch
 
 script:
+  - id: lvgl_update_switch_value2
+    parameters:
+      sw: lv_obj_t*
+      value: bool
+    mode: queued
+    max_runs: 3
+    then:
+      - lambda: |-
+          if (id(lvgl0).is_paused()) {
+            lvgl_switch_values_cache->cache(sw, value);
+            return;
+          }
+          if (value) {
+            lv_obj_add_state(sw, LV_STATE_CHECKED);
+          } else {
+            lv_obj_clear_state(sw, LV_STATE_CHECKED);
+          }
   - id: lvgl_update_switch_value
     parameters:
       name: string
@@ -436,6 +453,18 @@ script:
             return;
           }
           ESP_LOGE("BMS", "Cannot find icon %s", name.c_str());
+  - id: lvgl_update_label_value2
+    parameters:
+      val_lbl: lv_obj_t*
+      unit_lbl: lv_obj_t*
+      value: string
+    mode: queued
+    max_runs: 30
+    then:
+      - lambda: |-
+          lv_label_set_text(val_lbl, value.c_str());
+          lv_event_send(val_lbl, LV_EVENT_VALUE_CHANGED, nullptr);
+          lv_obj_align_to(unit_lbl, val_lbl, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
   - id: lvgl_update_label_value
     parameters:
       name: string
