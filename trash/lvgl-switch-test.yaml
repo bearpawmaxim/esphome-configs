@@ -1,0 +1,177 @@
+substitutions:
+  device_name: lvgl-switch-test
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${device_name}
+  platformio_options:
+    board_build.flash_mode: dio
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: ESP32S3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: y
+      CONFIG_ESP32S3_DATA_CACHE_64KB: y
+      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
+      CONFIG_SPIRAM_RODATA: y
+
+psram:
+  mode: quad
+  speed: 80MHZ
+
+external_components:
+  - source: github://pr#6537
+    components: [ io_bus, i80, spi, ili9xxx ]
+  - source: github://clydebarrow/esphome@lvgl
+    components: [ lvgl ]
+
+logger:
+
+debug:
+
+sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
+    psram:
+      id: psram_free
+      name: "Free PSRAM"
+
+i2c:
+  sda: GPIO6
+  scl: GPIO5
+  id: touch_i2c
+
+touchscreen:
+  - platform: ft63x6
+    id: touch
+    interrupt_pin: GPIO7
+    transform:
+      swap_xy: true
+      mirror_x: true
+    on_release:
+      - lvgl.resume:
+
+output:
+  - platform: ledc
+    id: backlight_pwm
+    pin:
+      number: GPIO45
+      ignore_strapping_warning: true
+
+light:
+  - platform: monochromatic
+    id: backlight
+    output: backlight_pwm
+    restore_mode: ALWAYS_ON
+
+i80:
+  - id: i80bus
+    dc_pin: 
+      number: GPIO0
+      ignore_strapping_warning: true
+    wr_pin: GPIO47
+    data_pins:
+      - GPIO9
+      - number: GPIO46
+        ignore_strapping_warning: true
+      - number: GPIO3
+        ignore_strapping_warning: true
+      - GPIO8
+      - GPIO18
+      - GPIO17
+      - GPIO16
+      - GPIO15
+
+color:
+  - id: color_red
+    red_int: 255
+  - id: color_black
+    red: 0
+    green: 0
+    blue: 0
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto_20
+    size: 20
+
+display:
+  - platform: ili9xxx
+    id: display0
+    model: ST7796
+    bus_type: i80
+    reset_pin: GPIO4
+    pixel_mode: 16bit
+    color_order: bgr
+    invert_colors: true
+    dimensions:
+      width: 480
+      height: 320
+    transform:
+      swap_xy: true
+    auto_clear_enabled: false
+    lambda: |-
+      it.filled_rectangle(0, 0, 480, 100);
+      it.printf(10, 0, id(roboto_20), id(color_red), COLOR_OFF, display::TextAlign::BASELINE, "Paused: %s", id(lvgl0).is_paused() ? "YES" : "NO");
+      it.printf(10, 30, id(roboto_20), id(color_red), COLOR_OFF, display::TextAlign::BASELINE, "Free PSRAM is: %.1f", id(psram_free).state);
+
+number:
+  - platform: template
+    name: Screen timeout
+    optimistic: true
+    id: display_timeout
+    unit_of_measurement: "s"
+    initial_value: 10
+    restore_value: true
+    min_value: 10
+    max_value: 180
+    step: 5
+    mode: box
+
+globals:
+  - id: switch_state
+    type: bool
+    initial_value: 'true'
+
+interval:
+  - interval: 500ms
+    startup_delay: 5sec
+    then:
+      - lvgl.widget.update:
+          id: test_switch
+          state:
+            checked: !lambda return id(switch_state);
+      - lambda: id(switch_state) = !id(switch_state);
+  - interval: 5s
+    then:
+      - component.update: display0
+
+lvgl:
+  id: lvgl0
+  log_level: WARN
+  color_depth: 16
+  bg_color: 0x000000
+  text_font: unscii_8
+  align: center
+  touchscreens:
+    - touchscreen_id: touch
+  widgets:
+    - switch:
+        id: test_switch
+        align: CENTER
+  on_idle:
+    timeout: !lambda return (id(display_timeout).state * 1000);
+    then:
+      - lvgl.pause:

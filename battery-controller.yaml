@@ -15,6 +15,14 @@ globals:
     type: bool
     restore_value: false
     initial_value: 'false'
+  - id: current_tile_num
+    type: uint8_t
+    restore_value: false
+    initial_value: '0'
+  - id: enable_auto_tile_change
+    type: bool
+    restore_value: false
+    initial_value: 'true'
 
 api:
   on_client_connected:
@@ -35,13 +43,11 @@ esphome:
     board_build.flash_mode: dio
   includes:
     - battery-controller/holding_gpio.h
-    - battery-controller/lvgl_switch_values_cache.h
   on_boot:
     - priority: 800
       then:
         - lambda: |-
             holding_gpio = new HoldingGpio(GPIO_NUM_14);
-            lvgl_switch_values_cache = new LvglSwitchValuesCache();
     - priority: 200
       then:
         - script.execute:
@@ -192,25 +198,16 @@ number:
     max_value: 180
     step: 5
     mode: box
-  - platform: template
-    name: SOC Test
-    optimistic: true
-    id: soc_test
-    unit_of_measurement: '%'
-    initial_value: 50
-    min_value: 0
-    max_value: 100
-    step: 1
-    on_value:
-      - script.execute:
-          id: lvgl_update_soc
-          soc: !lambda return x;
 
 interval:
   - interval: 1sec
     startup_delay: 5sec
     then:
       - script.execute: lvgl_update_time
+  - interval: 5sec
+    startup_delay: 5sec
+    then:
+      - script.execute: lvgl_change_tile
   - interval: 1min
     startup_delay: 5sec
     then:
@@ -245,10 +242,15 @@ lvgl:
         - <<: !include battery-controller/lvgl-status-led.yaml
         # Right panel
         - tileview:
+            id: stats_tile
             x: 320
             y: 20
             height: 300
             width: 160
+            on_press:
+              - globals.set:
+                  id: enable_auto_tile_change
+                  value: 'false'
             tiles:
               - row: 0
                 column: 0
@@ -382,23 +384,23 @@ binary_sensor:
           - switch.toggle: on_switch
 
 script:
-  - id: lvgl_update_switch_value2
-    parameters:
-      sw: lv_obj_t*
-      value: bool
-    mode: queued
-    max_runs: 3
+  - id: lvgl_change_tile
+    mode: single
     then:
-      - lambda: |-
-          if (id(lvgl0).is_paused()) {
-            lvgl_switch_values_cache->cache(sw, value);
-            return;
-          }
-          if (value) {
-            lv_obj_add_state(sw, LV_STATE_CHECKED);
-          } else {
-            lv_obj_clear_state(sw, LV_STATE_CHECKED);
-          }
+      - if:
+          condition:
+            - lambda: 'return id(enable_auto_tile_change);'
+          then:
+            - lambda: 'ESP_LOGE("TILE", "Curr tile num is %d", id(current_tile_num));'
+            - globals.set:
+                id: current_tile_num
+                value: !lambda 'return (id(current_tile_num) + 1) % 5;'
+            - lambda: 'ESP_LOGE("TILE", "Next tile num is %d", id(current_tile_num));'
+            - lvgl.tileview.select:
+                id: stats_tile
+                animated: true
+                row: 0
+                column: !lambda 'return id(current_tile_num);'
   - id: lvgl_update_switch_value
     parameters:
       name: string
@@ -407,20 +409,14 @@ script:
     max_runs: 3
     then:
       - lambda: |-
-          // Updating the switch while lvgl is idle leads to a memory leaks.
-          // So the workaround with the cache was added.
           static const std::map<std::string, lv_obj_t*> switch_map {
-            { "charging_sw", id(charge_sw) },
-            { "discharging_sw", id(discharge_sw) },
-            { "balancing_sw", id(balance_sw) }
+            { "charge_sw",    id(charge_sw)    },
+            { "discharge_sw", id(discharge_sw) },
+            { "balance_sw",   id(balance_sw)   }
           };
           auto iterator = switch_map.find(name);
           if (iterator != switch_map.end()) {
             lv_obj_t* sw = iterator->second;
-            if (id(lvgl0).is_paused()) {
-              lvgl_switch_values_cache->cache(sw, value);
-              return;
-            }
             if (value) {
               lv_obj_add_state(sw, LV_STATE_CHECKED);
             } else {
@@ -429,9 +425,6 @@ script:
             return;
           }
           ESP_LOGE("BMS", "Cannot find switch %s", name.c_str());
-  - id: lvgl_update_cached_switch_values
-    then:
-      - lambda: lvgl_switch_values_cache->restore();
   - id: lvgl_update_status_icon
     parameters:
       name: string
@@ -453,18 +446,6 @@ script:
             return;
           }
           ESP_LOGE("BMS", "Cannot find icon %s", name.c_str());
-  - id: lvgl_update_label_value2
-    parameters:
-      val_lbl: lv_obj_t*
-      unit_lbl: lv_obj_t*
-      value: string
-    mode: queued
-    max_runs: 30
-    then:
-      - lambda: |-
-          lv_label_set_text(val_lbl, value.c_str());
-          lv_event_send(val_lbl, LV_EVENT_VALUE_CHANGED, nullptr);
-          lv_obj_align_to(unit_lbl, val_lbl, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
   - id: lvgl_update_label_value
     parameters:
       name: string
@@ -599,6 +580,9 @@ script:
       - lvgl.widget.hide: header
       - delay: 1s
       - lvgl.pause
+      - globals.set:
+          id: enable_auto_tile_change
+          value: 'false'
   - id: lvgl_resume
     mode: single
     then:
@@ -610,7 +594,9 @@ script:
             - lvgl.page.show: main_page
             - lvgl.widget.show: header
             - light.turn_on: backlight
-            - script.execute: lvgl_update_cached_switch_values
+            - globals.set:
+                id: enable_auto_tile_change
+                value: 'true'
   - id: lvgl_update_led
     mode: single
     parameters:
