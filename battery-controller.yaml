@@ -9,28 +9,24 @@ packages:
 globals:
   - id: inverter_on
     type: bool
-    restore_value: false
-    initial_value: 'false'
-  - id: bms_on
-    type: bool
-    restore_value: false
     initial_value: 'false'
   - id: current_tile_num
     type: uint8_t
-    restore_value: false
     initial_value: '0'
   - id: enable_auto_tile_change
     type: bool
-    restore_value: false
     initial_value: 'true'
+  - id: is_automatic_tile_change
+    type: bool
+    initial_value: 'false'
 
-api:
-  on_client_connected:
+wifi:
+  on_connect:
     - script.execute:
         id: lvgl_update_status_icon
         name: api_connection
         is_on: true
-  on_client_disconnected:
+  on_disconnect:
     - script.execute:
         id: lvgl_update_status_icon
         name: api_connection
@@ -247,10 +243,18 @@ lvgl:
             y: 20
             height: 300
             width: 160
-            on_press:
-              - globals.set:
-                  id: enable_auto_tile_change
-                  value: 'false'
+            on_scroll:
+              - if:
+                  condition:
+                    - lambda: return id(is_automatic_tile_change);
+                  then:
+                    - globals.set:
+                        id: is_automatic_tile_change
+                        value: 'false'
+                  else:
+                    - globals.set:
+                        id: enable_auto_tile_change
+                        value: 'false'
             tiles:
               - row: 0
                 column: 0
@@ -391,11 +395,15 @@ script:
           condition:
             - lambda: 'return id(enable_auto_tile_change);'
           then:
-            - lambda: 'ESP_LOGE("TILE", "Curr tile num is %d", id(current_tile_num));'
+            - globals.set:
+                id: is_automatic_tile_change
+                value: 'true'
             - globals.set:
                 id: current_tile_num
-                value: !lambda 'return (id(current_tile_num) + 1) % 5;'
-            - lambda: 'ESP_LOGE("TILE", "Next tile num is %d", id(current_tile_num));'
+                value: !lambda |-
+                  return (id(current_tile_num) + 1) < 5
+                    ? id(current_tile_num) + 1
+                    : 0;
             - lvgl.tileview.select:
                 id: stats_tile
                 animated: true
