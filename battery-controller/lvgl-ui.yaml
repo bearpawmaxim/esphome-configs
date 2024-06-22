@@ -1,0 +1,125 @@
+lvgl:
+  id: lvgl0
+  log_level: WARN
+  color_depth: 16
+  bg_color: 0x000000
+  text_font: unscii_8
+  align: center
+  touchscreens:
+    - touchscreen_id: touch
+  top_layer:
+    widgets:
+      - <<: !include lvgl-header.yaml
+  pages:
+    # Main page
+    - id: main_page
+      bg_color: 0x606672
+      bg_grad_color: 0x33363E
+      bg_grad_dir: VER
+      bg_dither_mode: ORDERED
+      scrollable: false
+      widgets:
+        # SOC gauge
+        - <<: !include { file: lvgl-gauge.yaml, vars: { g_name: soc } }
+        # Bms error label
+        - <<: !include lvgl-bms-error-label.yaml
+        # Contactor led and label
+        - <<: !include lvgl-status-led.yaml
+        # Right panel
+        - tileview:
+            id: stats_tile
+            x: 320
+            y: 20
+            height: 300
+            width: 160
+            on_value:
+              - script.execute:
+                  id: lvgl_set_active_tile_num
+                  tile: !lambda 'return tile;'
+              - lambda: 'ESP_LOGE("TILE", "Active tile is: %d", id(current_tile_num));'
+              - if:
+                  condition:
+                    - lambda: 'return id(is_automatic_tile_change);'
+                  then:
+                    - globals.set:
+                        id: is_automatic_tile_change
+                        value: 'false'
+                  else:
+                    - globals.set:
+                        id: enable_auto_tile_change
+                        value: 'false'
+            tiles:
+              - row: 0
+                column: 0
+                id: tile_general_1
+                dir: [ RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: voltage,  l_capt: Voltage,  l_unit: V  } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: current,  l_capt: Currrent, l_unit: A  } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: power,    l_capt: Power,    l_unit: W  } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: capacity, l_capt: Capacity, l_unit: Ah } }
+              - row: 0
+                column: 1
+                id: tile_general_2
+                dir: [ LEFT, RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t1,   l_capt: Temp 1,   l_unit: C } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t2,   l_capt: Temp 1,   l_unit: C } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: tmos, l_capt: MOS Temp, l_unit: C } }
+              - row: 0
+                column: 2
+                id: tile_switches
+                dir: [ LEFT, RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: charge,    sw_capt: Charge,    sw_readonly: false } }
+                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: discharge, sw_capt: Discharge, sw_readonly: false } }
+                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: balance,   sw_capt: Balance,   sw_readonly: true  } }
+              - row: 0
+                column: 3
+                id: tile_voltages_1
+                dir: [ LEFT, RIGHT ]
+                widgets:
+                  - obj:
+                      <<: !include lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell1voltage, l_capt: Cell 1, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell2voltage, l_capt: Cell 2, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell3voltage, l_capt: Cell 3, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell4voltage, l_capt: Cell 4, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell5voltage, l_capt: Cell 5, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell6voltage, l_capt: Cell 6, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell7voltage, l_capt: Cell 7, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell8voltage, l_capt: Cell 8, l_unit: V } }
+              - row: 0
+                column: 4
+                id: tile_voltages_2
+                dir: [ LEFT ]
+                widgets:
+                  - obj:
+                      <<: !include lvgl-tile-container.yaml
+                      widgets:
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell9voltage,  l_capt: Cell 9,  l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell10voltage, l_capt: Cell 10, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell11voltage, l_capt: Cell 11, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell12voltage, l_capt: Cell 12, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell13voltage, l_capt: Cell 13, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell14voltage, l_capt: Cell 14, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell15voltage, l_capt: Cell 15, l_unit: V } }
+                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell16voltage, l_capt: Cell 16, l_unit: V } }
+    # Blank page
+    - id: blank_page
+      bg_color: 0x000000
+      bg_opa: 1
+  on_idle:
+    timeout: !lambda return (id(display_timeout).state * 1000);
+    then:
+      - script.execute: lvgl_pause

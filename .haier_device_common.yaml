@@ -3,9 +3,6 @@ esphome:
   platform: ESP8266
   board: esp12e
 
-external_components:
-  - source: github://paveldn/haier-esphome@master
-
 packages:
   device_common: !include .device_common.yaml
 
@@ -90,7 +87,7 @@ select:
         - climate.haier.set_vertical_airflow:
             id: ${climate_id}
             vertical_airflow: !lambda |-
-              return esphome::haier::AirflowVerticalDirection(i);
+              return esphome::haier::VerticalSwingMode(i);
 
 text_sensor:
   - platform: template
