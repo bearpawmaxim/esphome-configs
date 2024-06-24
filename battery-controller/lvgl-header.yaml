@@ -46,20 +46,20 @@
                 id: api_connection
                 width: 16
                 height: 16
-                text: "\uF1EB"
+                text: "\U000F16BD"
                 text_color: off_color
-                text_font: montserrat_16
+                text_font: mdi_font
             - label:
                 id: bms_connection
                 width: 16
                 height: 16
-                text: "\uF008"
+                text: "\U000F010C"
                 text_color: off_color
-                text_font: montserrat_16
+                text_font: mdi_font
             - label:
                 id: inv_connection
                 width: 16
                 height: 16
-                text: "\uF0E7"
+                text: "\U000F0F92"
                 text_color: off_color
-                text_font: montserrat_16
+                text_font: mdi_font

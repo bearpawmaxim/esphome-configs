@@ -85,14 +85,13 @@ uart:
     rx_pin: GPIO11
     baud_rate: 115200
   - id: inverter_uart
-    tx_pin: GPIO42
-    rx_pin: GPIO1
+    tx_pin: GPIO43
+    rx_pin: GPIO44
     baud_rate: 9600
 
 modbus:
   - id: inverter_modbus
     uart_id: inverter_uart
-    flow_control_pin: GPIO2
 
 sensor:
   - platform: debug
@@ -139,6 +138,15 @@ font:
     bpp: 4
     size: 36
     glyphs: ['0','1','2','3','4','5','6','7','8','9','%',' ']
+  - file: battery-controller/MaterialDesignIcons.ttf
+    id: mdi_font
+    bpp: 4
+    size: 18
+    glyphs: [
+      "\U000F010C", # bms
+      "\U000F0F92", # inverter
+      "\U000F16BD"  # wifi
+    ]
 
 color:
   - id: color_red
