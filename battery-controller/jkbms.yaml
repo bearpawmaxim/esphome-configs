@@ -273,10 +273,6 @@ text_sensor:
             error: !lambda return x;
     operation_mode:
       name: "JKBMS operation mode"
-    battery_type:
-      name: "JKBMS battery type"
-    password:
-      name: "JKBMS password"
     device_type:
       name: "JKBMS device type"
     software_version:
