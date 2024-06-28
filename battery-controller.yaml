@@ -5,6 +5,7 @@ packages:
   device_common: !include .device_common.yaml
   jkbms: !include battery-controller/jkbms.yaml
   jkbms-faker: !include battery-controller/jkbms.faker.yaml
+  powmr: !include battery-controller/powmr.yaml
   lvgl-ui: !include battery-controller/lvgl-ui.yaml
 
 globals:
@@ -40,6 +41,7 @@ esphome:
     board_build.flash_mode: dio
   includes:
     - battery-controller/holding_gpio.h
+    - battery-controller/powmr_utils.h
   on_boot:
     - priority: 800
       then:
@@ -88,10 +90,6 @@ uart:
     tx_pin: GPIO43
     rx_pin: GPIO44
     baud_rate: 9600
-
-modbus:
-  - id: inverter_modbus
-    uart_id: inverter_uart
 
 sensor:
   - platform: debug
