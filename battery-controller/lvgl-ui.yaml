@@ -40,7 +40,6 @@ lvgl:
               - script.execute:
                   id: lvgl_set_active_tile_num
                   tile: !lambda 'return tile;'
-              - lambda: 'ESP_LOGE("TILE", "Active tile is: %d", id(current_tile_num));'
               - if:
                   condition:
                     - lambda: 'return id(is_automatic_tile_change);'
@@ -90,7 +89,7 @@ lvgl:
               - row: 0
                 column: 3
                 id: tile_voltages
-                dir: [ LEFT, RIGHT ]
+                dir: [ LEFT ]
                 widgets:
                   - obj:
                       <<: !include lvgl-tile-container.yaml

@@ -306,7 +306,6 @@ script:
                     : 0;
             - lambda: |-
                 lv_obj_set_tile_id(id(stats_tile), id(current_tile_num), 0, LV_ANIM_ON);
-            - lambda: 'ESP_LOGE("TILE", "Change end");'
   - id: lvgl_set_active_tile_num
     mode: single
     parameters:

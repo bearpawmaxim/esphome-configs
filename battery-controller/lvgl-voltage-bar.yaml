@@ -15,7 +15,7 @@
           height: SIZE_CONTENT
           text_align: RIGHT
           text_color: label_heading_color
-          text_font: montserrat_10
+          text_font: montserrat_12
           align_to:
             id: ${b_name}_value_bar
             align: OUT_LEFT_MID
@@ -24,7 +24,7 @@
           id: ${b_name}_value_bar
           x: 20
           width: 95
-          height: 10
+          height: 12
           min_value: 0
           max_value: 110
           animated: false
@@ -36,7 +36,7 @@
           width: SIZE_CONTENT
           height: SIZE_CONTENT
           text_color: label_value_color
-          text_font: montserrat_10
+          text_font: montserrat_12
           text_align: RIGHT
           text: '0.000'
           align_to:
