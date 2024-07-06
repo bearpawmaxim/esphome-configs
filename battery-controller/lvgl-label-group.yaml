@@ -13,14 +13,14 @@
           width: SIZE_CONTENT
           height: SIZE_CONTENT
           text_align: RIGHT
-          text_color: 0xFFFFFF
+          text_color: label_heading_color
           text_font: montserrat_12
       - label:
           id: ${l_name}_value_label
           text: '000'
           width: SIZE_CONTENT
           height: SIZE_CONTENT
-          text_color: 0x58D900
+          text_color: label_value_color
           text_font: montserrat_12
           text_align: LEFT
           align_to:
@@ -32,7 +32,7 @@
           text: ' ${l_unit}'
           width: SIZE_CONTENT
           height: SIZE_CONTENT
-          text_color: 0x58D900
+          text_color: label_value_color
           text_font: montserrat_12
           text_align: LEFT
           align_to:

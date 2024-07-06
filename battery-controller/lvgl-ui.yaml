@@ -32,6 +32,10 @@ lvgl:
             y: 20
             height: 300
             width: 160
+            bg_color: 0x202831
+            bg_grad_color: 0x101215
+            bg_dither_mode: ORDERED
+            bg_grad_dir: VER
             on_value:
               - script.execute:
                   id: lvgl_set_active_tile_num
@@ -85,36 +89,28 @@ lvgl:
                         - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: balance,   sw_capt: Balance,   sw_readonly: true  } }
               - row: 0
                 column: 3
-                id: tile_voltages_1
+                id: tile_voltages
                 dir: [ LEFT, RIGHT ]
                 widgets:
                   - obj:
                       <<: !include lvgl-tile-container.yaml
                       widgets:
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell1voltage, l_capt: Cell 1, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell2voltage, l_capt: Cell 2, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell3voltage, l_capt: Cell 3, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell4voltage, l_capt: Cell 4, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell5voltage, l_capt: Cell 5, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell6voltage, l_capt: Cell 6, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell7voltage, l_capt: Cell 7, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell8voltage, l_capt: Cell 8, l_unit: V } }
-              - row: 0
-                column: 4
-                id: tile_voltages_2
-                dir: [ LEFT ]
-                widgets:
-                  - obj:
-                      <<: !include lvgl-tile-container.yaml
-                      widgets:
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell9voltage,  l_capt: Cell 9,  l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell10voltage, l_capt: Cell 10, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell11voltage, l_capt: Cell 11, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell12voltage, l_capt: Cell 12, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell13voltage, l_capt: Cell 13, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell14voltage, l_capt: Cell 14, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell15voltage, l_capt: Cell 15, l_unit: V } }
-                        - <<: !include { file: lvgl-label-group.yaml, vars: { l_name: cell16voltage, l_capt: Cell 16, l_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell1voltage,  b_capt: 1, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell2voltage,  b_capt: 2, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell3voltage,  b_capt: 3, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell4voltage,  b_capt: 4, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell5voltage,  b_capt: 5, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell6voltage,  b_capt: 6, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell7voltage,  b_capt: 7, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell8voltage,  b_capt: 8, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell9voltage,  b_capt: 9, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell10voltage, b_capt: 10, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell11voltage, b_capt: 11, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell12voltage, b_capt: 12, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell13voltage, b_capt: 13, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell14voltage, b_capt: 14, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell15voltage, b_capt: 15, b_unit: V } }
+                        - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell16voltage, b_capt: 16, b_unit: V } }
     # Blank page
     - id: blank_page
       bg_color: 0x000000

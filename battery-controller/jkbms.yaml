@@ -38,114 +38,114 @@ sensor:
       name: "JKBMS cell voltage 1"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell1voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 1
+            value: !lambda return x;
     cell_voltage_2:
       name: "JKBMS cell voltage 2"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell2voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 2
+            value: !lambda return x;
     cell_voltage_3:
       name: "JKBMS cell voltage 3"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell3voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 3
+            value: !lambda return x;
     cell_voltage_4:
       name: "JKBMS cell voltage 4"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell4voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 4
+            value: !lambda return x;
     cell_voltage_5:
       name: "JKBMS cell voltage 5"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell5voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 5
+            value: !lambda return x;
     cell_voltage_6:
       name: "JKBMS cell voltage 6"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell6voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 6
+            value: !lambda return x;
     cell_voltage_7:
       name: "JKBMS cell voltage 7"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell7voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 7
+            value: !lambda return x;
     cell_voltage_8:
       name: "JKBMS cell voltage 8"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell8voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 8
+            value: !lambda return x;
     cell_voltage_9:
       name: "JKBMS cell voltage 9"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell9voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 9
+            value: !lambda return x;
     cell_voltage_10:
       name: "JKBMS cell voltage 10"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell10voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 10
+            value: !lambda return x;
     cell_voltage_11:
       name: "JKBMS cell voltage 11"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell11voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 11
+            value: !lambda return x;
     cell_voltage_12:
       name: "JKBMS cell voltage 12"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell12voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 12
+            value: !lambda return x;
     cell_voltage_13:
       name: "JKBMS cell voltage 13"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell13voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 13
+            value: !lambda return x;
     cell_voltage_14:
       name: "JKBMS cell voltage 14"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell14voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 14
+            value: !lambda return x;
     cell_voltage_15:
       name: "JKBMS cell voltage 15"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell15voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 15
+            value: !lambda return x;
     cell_voltage_16:
       name: "JKBMS cell voltage 16"
       on_value:
         - script.execute:
-            id: lvgl_update_label_value
-            name: cell16voltage
-            value: !lambda return value_accuracy_to_string(x, 3);
+            id: lvgl_update_cell_voltage_value
+            cell_num: 16
+            value: !lambda return x;
     power_tube_temperature:
       name: "JKBMS power tube temperature"
       on_value:
@@ -206,8 +206,10 @@ sensor:
     max_cell_voltage:
       name: "JKBMS max cell voltage"
     min_voltage_cell:
+      id: jkbms_min_voltage_cell
       name: "JKBMS min voltage cell"
     max_voltage_cell:
+      id: jkbms_max_voltage_cell
       name: "JKBMS max voltage cell"
     delta_cell_voltage:
       name: "JKBMS delta cell voltage"

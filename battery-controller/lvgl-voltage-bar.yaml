@@ -1,0 +1,45 @@
+- obj:
+    width: 100%
+    height: SIZE_CONTENT
+    bg_opa: 0
+    border_opa: 0
+    radius: 0
+    align: CENTER
+    scrollable: false
+    pad_all: 0
+    widgets:
+      - label:
+          id: ${b_name}_heading_label
+          text: '${b_capt}:'
+          width: SIZE_CONTENT
+          height: SIZE_CONTENT
+          text_align: RIGHT
+          text_color: label_heading_color
+          text_font: montserrat_10
+          align_to:
+            id: ${b_name}_value_bar
+            align: OUT_LEFT_MID
+            x: -2
+      - bar:
+          id: ${b_name}_value_bar
+          x: 20
+          width: 95
+          height: 10
+          min_value: 0
+          max_value: 110
+          animated: false
+          radius: 2
+          indicator:
+            radius: 2
+      - label:
+          id: ${b_name}_value_label
+          width: SIZE_CONTENT
+          height: SIZE_CONTENT
+          text_color: label_value_color
+          text_font: montserrat_10
+          text_align: RIGHT
+          text: '0.000'
+          align_to:
+            id: ${b_name}_value_bar
+            align: OUT_RIGHT_MID
+            x: 2
