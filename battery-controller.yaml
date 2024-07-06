@@ -143,7 +143,7 @@ font:
     glyphs: [
       "\U000F010C", # bms
       "\U000F0F92", # inverter
-      "\U000F16BD"  # wifi
+      "\U000F05A9"  # wifi
     ]
 
 color:

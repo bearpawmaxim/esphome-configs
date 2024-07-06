@@ -46,7 +46,7 @@
                 id: api_connection
                 width: 16
                 height: 16
-                text: "\U000F16BD"
+                text: "\U000F05A9"
                 text_color: off_color
                 text_font: mdi_font
             - label:
