@@ -48,9 +48,7 @@ lvgl:
                         id: is_automatic_tile_change
                         value: 'false'
                   else:
-                    - globals.set:
-                        id: enable_auto_tile_change
-                        value: 'false'
+                    - component.suspend: change_tile_interval
             tiles:
               - row: 0
                 column: 0

@@ -79,6 +79,7 @@ esphome:
 http_request:
   useragent: esphome/device
   timeout: 10s
+  verify_ssl: false
 
 status_led:
   pin: GPIO25

@@ -1,0 +1,81 @@
+substitutions:
+  device_name: battery-status-display
+  device_name_underscore: battery_status_display
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp32-c3-devkitm-1
+
+external_components:
+  - source: github://clydebarrow/esphome@lvgl
+    components: [ lvgl ]
+
+packages:
+  device_common: !include .device_common.yaml
+
+logger:
+  baud_rate: 460800
+  hardware_uart: USB_CDC
+
+spi:
+  mosi_pin: GPIO7
+  clk_pin: GPIO6
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+
+output:
+  - platform: ledc
+    pin: GPIO3
+    id: gpio_3_backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: gpio_3_backlight_pwm
+    name: "Display Backlight"
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+display:
+  - platform: ili9xxx
+    model: GC9A01A
+    id: watchface
+    cs_pin: GPIO10
+    dc_pin: GPIO2
+    dimensions:
+      width: 240
+      height: 240
+    rotation: 270
+    update_interval: never
+
+touchscreen:
+  id: cst816d
+  platform: cst816
+  interrupt_pin: GPIO0
+  reset_pin: GPIO1
+  transform:
+    swap_xy: true
+    mirror_y: true
+
+lvgl:
+  log_level: INFO
+  color_depth: 16
+  bg_color: 0x0F0F0F
+  text_font: unscii_8
+  touchscreens:
+    - touchscreen_id: cst816d
+  align: center
+  style_definitions:
+    - id: date_style
+      text_font: unscii_8
+      align: center
+      text_color: 0x000000
+      bg_opa: cover
+      radius: 4
+      pad_all: 2
+  widgets:
+    - label:
+        text: 'it works!'
+        
