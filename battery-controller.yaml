@@ -574,6 +574,7 @@ script:
   - id: turn_off
     mode: single
     then:
+      # todo: check whether inverter is off
       - switch.turn_off: contactor_relay
       - script.execute:
           id: lvgl_update_led
