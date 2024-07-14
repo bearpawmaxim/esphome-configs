@@ -37,7 +37,7 @@ esphome:
   platformio_options:
     board_build.flash_mode: dio
   includes:
-    - battery-controller/holding_gpio.h
+    - includes/holding_gpio.h
     - battery-controller/powmr_utils.h
   on_boot:
     - priority: 800
