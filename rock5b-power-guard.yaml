@@ -12,6 +12,8 @@ esphome:
   name: ${device_name}
   platform: ESP8266
   board: d1_mini
+  on_boot:
+    - script.execute: handle_power_sensor
 
 web_server:
   port: 80
@@ -27,10 +29,15 @@ switch:
     pin: D1
     id: "${device_name_underscore}_relay"
     name: "${device_name} relay"
-    #internal: true
-    restore_mode: ALWAYS_ON
+    internal: true
+    restore_mode: DISABLED
 
 binary_sensor:
+  - platform: template
+    id: "${device_name_underscore}_relay_on"
+    name: "${device_name} relay on"
+    lambda: return id("${device_name_underscore}_relay").state;
+    update_interval: 10s
   - platform: gpio
     id: "${device_name_underscore}_external_power"
     pin: 
@@ -56,14 +63,14 @@ script:
       - wait_until:
           condition:
             binary_sensor.is_on: "${device_name_underscore}_rock5b_is_on"
-          timeout: 120s
+          timeout: 60s
   - id: turn_off_rock5b
     mode: single
     then:
       - wait_until:
           condition:
             binary_sensor.is_off: "${device_name_underscore}_rock5b_is_on"
-          timeout: 120s
+          timeout: 180s
       - switch.turn_off: "${device_name_underscore}_relay"
   - id: wait_and_sleep
     mode: single
@@ -73,16 +80,27 @@ script:
   - id: handle_power_sensor
     mode: single
     then:
-      - lambda: |-
-          auto power_state = id(${device_name_underscore}_external_power).state;
-          if (power_state) {
-            ESP_LOGD("WATCHER", "Power is on");
-            auto reset_reason = system_get_rst_info()->reason;
-            if (reset_reason == 5) {
-              // awaked from deep sleep.
-              id(turn_on_rock5b).execute();
-            }
-          } else {
-            ESP_LOGD("WATCHER", "Power is off");
-            id(wait_and_sleep).execute();
-          }
+      - if:
+          condition:
+            - binary_sensor.is_on: "${device_name_underscore}_external_power"
+          then:
+            - if:
+                condition:
+                  - script.is_running: turn_off_rock5b
+                then:
+                  - lambda: ESP_LOGW("PWATCHER", "Turn off script is running. Stopping it.");
+                  - script.stop: turn_off_rock5b
+            - lambda: ESP_LOGW("PWATCHER", "Power is available");
+            - script.execute: turn_on_rock5b
+            - script.wait: turn_on_rock5b
+          else:
+            - lambda: ESP_LOGW("PWATCHER", "Power is unavailable");
+            - if:
+                condition:
+                  - binary_sensor.is_on: "${device_name_underscore}_rock5b_is_on"
+                then:
+                  - lambda: ESP_LOGW("PWATCHER", "ROCK5B is alive. Waiting for it to turn off.");
+                  - script.execute: turn_off_rock5b
+                  - script.wait: turn_off_rock5b
+            - lambda: ESP_LOGW("PWATCHER", "ROCK5B is off. Entering the deep sleep.");
+            - script.execute: wait_and_sleep
