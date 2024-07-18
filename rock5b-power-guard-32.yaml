@@ -1,0 +1,96 @@
+substitutions:
+    device_name: "rock5b-power-guard"
+    device_name_underscore: "rock5b_power_guard"
+
+packages:
+  device_common: !include .device_common.yaml
+
+deep_sleep:
+  sleep_duration: 120s
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: upesy_wroom
+  on_boot:
+    - script.execute: handle_power_sensor
+
+web_server:
+  port: 80
+  version: 3
+
+status_led:
+  pin:
+    number: GPIO16 #D4
+    inverted: true
+
+switch:
+  - platform: gpio
+    pin: GPIO22 #D1
+    id: "${device_name_underscore}_relay"
+    name: "${device_name} relay"
+    # internal: true
+    restore_mode: DISABLED
+
+binary_sensor:
+  - platform: gpio
+    id: "${device_name_underscore}_external_power"
+    pin: 
+      number: GPIO23 #D7
+      inverted: true
+    name: "${device_name} external power"
+    publish_initial_state: true
+    on_state:
+      - script.execute: handle_power_sensor
+  - platform: gpio
+    id: "${device_name_underscore}_rock5b_is_on"
+    pin:
+      number: GPIO19 #D6
+      inverted: true
+    name: "${device_name} rock5b is on"
+    publish_initial_state: true
+
+script:
+  - id: turn_on_rock5b
+    mode: single
+    then:
+      - switch.turn_on: "${device_name_underscore}_relay"
+      - wait_until:
+          condition:
+            binary_sensor.is_on: "${device_name_underscore}_rock5b_is_on"
+          timeout: 60s
+  - id: turn_off_rock5b
+    mode: single
+    then:
+      - wait_until:
+          condition:
+            binary_sensor.is_off: "${device_name_underscore}_rock5b_is_on"
+          timeout: 180s
+      - switch.turn_off: "${device_name_underscore}_relay"
+  - id: handle_power_sensor
+    mode: single
+    then:
+      - if:
+          condition:
+            - binary_sensor.is_on: "${device_name_underscore}_external_power"
+          then:
+            - if:
+                condition:
+                  - script.is_running: turn_off_rock5b
+                then:
+                  - lambda: ESP_LOGW("PWATCHER", "Turn off script is running. Stopping it.");
+                  - script.stop: turn_off_rock5b
+            - lambda: ESP_LOGW("PWATCHER", "Power is available");
+            - script.execute: turn_on_rock5b
+            - script.wait: turn_on_rock5b
+          else:
+            - lambda: ESP_LOGW("PWATCHER", "Power is unavailable");
+            - if:
+                condition:
+                  - binary_sensor.is_on: "${device_name_underscore}_rock5b_is_on"
+                then:
+                  - lambda: ESP_LOGW("PWATCHER", "ROCK5B is alive. Waiting for it to turn off.");
+                  - script.execute: turn_off_rock5b
+                  - script.wait: turn_off_rock5b
+            - lambda: ESP_LOGW("PWATCHER", "ROCK5B is off. Entering the deep sleep.");
+            - deep_sleep.enter:
