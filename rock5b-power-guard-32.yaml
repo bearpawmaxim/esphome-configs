@@ -30,21 +30,16 @@ esp32:
   framework:
     type: esp-idf
 
-web_server:
-  port: 80
-  version: 3
-
 status_led:
   pin:
     number: GPIO2 #D4
-    inverted: true
 
 switch:
   - platform: template
     id: "${device_name_underscore}_relay"
     name: "${device_name} relay"
     lambda: 'return holding_gpio->get_state();'
-    # internal: true
+    internal: true
     restore_mode: DISABLED
     turn_on_action:
       - lambda: 'holding_gpio->set_state(1);'

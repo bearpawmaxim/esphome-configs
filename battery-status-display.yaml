@@ -1,0 +1,135 @@
+substitutions:
+  device_name: battery-status-display
+  device_name_underscore: battery_status_display
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp32-c3-devkitm-1
+
+external_components:
+  - source: github://clydebarrow/esphome@lvgl
+    components: [ lvgl ]
+
+packages:
+  device_common: !include .device_common.yaml
+
+logger:
+  baud_rate: 460800
+  hardware_uart: USB_CDC
+
+spi:
+  mosi_pin: GPIO7
+  clk_pin: GPIO6
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+
+output:
+  - platform: ledc
+    pin: GPIO3
+    id: gpio_3_backlight_pwm
+
+light:
+  - platform: monochromatic
+    output: gpio_3_backlight_pwm
+    name: "Display Backlight"
+    id: backlight
+    restore_mode: ALWAYS_ON
+
+display:
+  - platform: ili9xxx
+    model: GC9A01A
+    id: watchface
+    cs_pin: GPIO10
+    dc_pin: GPIO2
+    dimensions:
+      width: 240
+      height: 240
+    rotation: 90
+    update_interval: never
+
+touchscreen:
+  id: cst816d
+  platform: cst816
+  interrupt_pin: GPIO0
+  reset_pin: GPIO1
+  # transform:
+  #   swap_xy: false
+  #   mirror_y: true
+  #   mirror_x: true
+
+lvgl:
+  log_level: INFO
+  color_depth: 16
+  bg_color: 0x0F0F0F
+  text_font: unscii_8
+  touchscreens:
+    - touchscreen_id: cst816d
+  align: center
+  style_definitions:
+    - id: date_style
+      text_font: unscii_8
+      align: center
+      text_color: 0x000000
+      bg_opa: cover
+      radius: 4
+      pad_all: 2
+  widgets:
+    - tileview:
+        id: example_tileview
+        x: 0
+        y: 0
+        height: 240
+        width: 240
+        bg_color: 0x202831
+        bg_grad_color: 0x101215
+        bg_dither_mode: ORDERED
+        bg_grad_dir: VER
+        align: CENTER
+        on_value:
+          - lambda: 'ESP_LOGW("TILE", "Tile was scrolled");'
+        tiles:
+          - row: 0
+            column: 0
+            id: tile_1
+            dir: [ RIGHT ]
+            align: CENTER
+            widgets:
+              - btn:
+                  width: 70
+                  height: 20
+                  widgets:
+                    - label:
+                        align: center
+                        text: "Scroll!"
+                  on_value:
+                    then:
+                      lvgl.tileview.select:
+                        id: example_tileview
+                        row: 0
+                        column: 1
+              - label:
+                  text: "Tile 1"
+          - row: 0
+            column: 1
+            id: tile_2
+            dir: [ LEFT ]
+            align: CENTER
+            widgets:
+              - btn:
+                  width: 70
+                  height: 20
+                  widgets:
+                    - label:
+                        align: center
+                        text: "Scroll!"
+                  on_value:
+                    then:
+                      lvgl.tileview.select:
+                        id: example_tileview
+                        row: 0
+                        column: 0
+              - label:
+                  text: "Tile 2"
