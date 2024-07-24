@@ -4,7 +4,7 @@ substitutions:
 packages:
   device_common: !include .device_common.yaml
   jkbms: !include battery-controller/jkbms.yaml
-  jkbms-faker: !include battery-controller/jkbms.faker.yaml
+  # jkbms-faker: !include battery-controller/jkbms.faker.yaml
   powmr: !include battery-controller/powmr.yaml
   lvgl-ui: !include battery-controller/lvgl-ui.yaml
 
@@ -75,6 +75,7 @@ external_components:
   - source: github://syssi/esphome-jk-bms@main
 
 logger:
+  baud_rate: 0
 
 debug:
 
@@ -135,7 +136,7 @@ font:
     id: gauge_font
     bpp: 4
     size: 36
-    glyphs: ['0','1','2','3','4','5','6','7','8','9','%',' ']
+    glyphs: ['0','1','2','3','4','5','6','7','8','9','%',' ','n','a']
   - file: battery-controller/MaterialDesignIcons.ttf
     id: mdi_font
     bpp: 4
@@ -420,7 +421,9 @@ script:
           auto bar_it = bars_map.find(cell_num);
           if (bar_it != bars_map.end()) {
             lv_obj_t* value_bar = bar_it->second;
-            uint8_t real_value = static_cast<uint8_t>((value - 2.5) * 100.0f);
+            uint8_t real_value = isnan(value)
+              ? 0
+              : static_cast<uint8_t>((value - 2.5) * 100.0f);
             lv_bar_set_value(value_bar, real_value, LV_ANIM_OFF);
             auto bar_color = is_min_voltage_cell || is_max_voltage_cell
               ? (is_min_voltage_cell
@@ -531,7 +534,7 @@ script:
           id: soc_label
           text:
             format: "%d%%"
-            args: (int)soc
+            args: '(int)(isnan(soc) ? 0 : soc)'
   - id: lvgl_pause
     mode: single
     then:
