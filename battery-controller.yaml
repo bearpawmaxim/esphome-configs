@@ -70,7 +70,7 @@ psram:
 external_components:
   - source: github://pr#6537
     components: [ io_bus, i80, spi, ili9xxx ]
-  - source: github://clydebarrow/esphome@lvgl
+  - source: github://pr#7184
     components: [ lvgl ]
   - source: github://syssi/esphome-jk-bms@main
 
