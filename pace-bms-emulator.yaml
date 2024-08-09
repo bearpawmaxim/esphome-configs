@@ -1,0 +1,212 @@
+substitutions:
+  device_name: pace-bms-emulator
+  name: PACE BMS Emulator
+  
+packages:
+  pace_bms_common: !include .pace-bms-base.yaml
+
+switch:
+  - platform: template
+    id: pbms_emul_cell_ovp_warn
+    name: "${name} Cell overvoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cell_uvp_warn
+    name: "${name} Cell undervoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_pack_ovp_warn
+    name: "${name} Pack overvoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_pack_uvp_warn
+    name: "${name} Pack undervoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cell_cocp_warn
+    name: "${name} Charging overcurrent"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cell_docp_warn
+    name: "${name} Discharging overcurrent"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_r7_warn
+    name: "${name} Reserve (Bit 7)"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_r8_warn
+    name: "${name} Reserve (Bit 8)"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cotp_warn
+    name: "${name} Charging overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dotp_warn
+    name: "${name} Discharging overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cutp_warn
+    name: "${name} Charging undertemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dutp_warn
+    name: "${name} Discharging undertemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_eotp_warn
+    name: "${name} Environment overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_eutp_warn
+    name: "${name} Environment undertemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_motp_warn
+    name: "${name} MOSFET overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_lowsoc_warn
+    name: "${name} Low state of charge"
+    optimistic: true
+
+number:
+  - platform: template
+    id: pbms_emul_c
+    name: "${name} Current"
+    optimistic: true
+    min_value: -230
+    max_value: 230
+    step: 1
+  - platform: template
+    id: pbms_emul_v
+    name: "${name} Voltage"
+    optimistic: true
+    min_value: 40
+    max_value: 60
+    step: 1
+
+modbus:
+  - id: !extend modbus0
+    role: server
+
+modbus_controller:
+  - id: bms0
+    address: 0x01
+    modbus_id: modbus0
+    server_registers:
+      # Current
+      - address: 0x00
+        value_type: S_WORD
+        read_lambda: |-
+          return id(pbms_emul_c).state * 100;
+      # Voltage
+      - address: 0x01
+        value_type: U_WORD
+        read_lambda: |-
+          return id(pbms_emul_v).state * 100;
+      # SOC
+      - address: 0x02
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # SOH
+      - address: 0x03
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Remain capacity
+      - address: 0x04
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Full capacity
+      - address: 0x05
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Design capacity
+      - address: 0x06
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Charge cycles count
+      - address: 0x07
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Reserver. Must be empty.
+      - address: 0x08
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Warning flags.
+      - address: 0x09
+        value_type: U_WORD
+        read_lambda: |-
+          uint16_t register_data = 0;
+          if (id(pbms_emul_cell_ovp_warn).state) {
+            register_data |= 1 << 0;
+          }
+          if (id(pbms_emul_cell_uvp_warn).state) {
+            register_data |= 1 << 1;
+          }
+          if (id(pbms_emul_pack_ovp_warn).state) {
+            register_data |= 1 << 2;
+          }
+          if (id(pbms_emul_pack_uvp_warn).state) {
+            register_data |= 1 << 3;
+          }
+          if (id(pbms_emul_cell_cocp_warn).state) {
+            register_data |= 1 << 4;
+          }
+          if (id(pbms_emul_cell_docp_warn).state) {
+            register_data |= 1 << 5;
+          }
+          if (id(pbms_emul_r7_warn).state) {
+            register_data |= 1 << 6;
+          }
+          if (id(pbms_emul_r8_warn).state) {
+            register_data |= 1 << 7;
+          }
+          if (id(pbms_emul_cotp_warn).state) {
+            register_data |= 1 << 8;
+          }
+          if (id(pbms_emul_dotp_warn).state) {
+            register_data |= 1 << 9;
+          }
+          if (id(pbms_emul_cutp_warn).state) {
+            register_data |= 1 << 10;
+          }
+          if (id(pbms_emul_dutp_warn).state) {
+            register_data |= 1 << 11;
+          }
+          if (id(pbms_emul_eotp_warn).state) {
+            register_data |= 1 << 12;
+          }
+          if (id(pbms_emul_cutp_warn).state) {
+            register_data |= 1 << 13;
+          }
+          if (id(pbms_emul_motp_warn).state) {
+            register_data |= 1 << 14;
+          }
+          if (id(pbms_emul_lowsoc_warn).state) {
+            register_data |= 1 << 15;
+          }
+          return register_data;
+      # Protection flags.
+      - address: 0x0A
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Fault/status flags.
+      - address: 0x0B
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;
+      # Balance status bits per cell.
+      - address: 0x0C
+        value_type: U_WORD
+        read_lambda: |-
+          return 0;

@@ -1,0 +1,35 @@
+esphome:
+  name: ${device_name}
+  platformio_options:
+    board_build.flash_mode: dio
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+packages:
+  device_common: !include .device_common.yaml
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+status_led:
+  pin:
+    number: GPIO2
+    inverted: yes
+
+uart:
+  id: uart_0
+  rx_pin: GPIO16
+  tx_pin: GPIO17
+  baud_rate: 9600
+  debug:
+    direction: BOTH
+    dummy_receiver: false
+
+modbus:
+  - id: modbus0
+    uart_id: uart_0
+    send_wait_time: 200ms
