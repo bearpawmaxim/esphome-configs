@@ -5,70 +5,217 @@ substitutions:
 packages:
   pace_bms_common: !include .pace-bms-base.yaml
 
+esphome:
+  includes:
+    - includes/string_utils.h
+
+globals:
+  - id: bms_version_info
+    type: std::string
+    initial_value: '""'
+  - id: bms_serial_num
+    type: std::string
+    initial_value: '""'
+  - id: pack_serial_num
+    type: std::string
+    initial_value: '""'
+
 switch:
+  # Warning flags
   - platform: template
     id: pbms_emul_cell_ovp_warn
-    name: "${name} Cell overvoltage"
+    name: "${name} WARN: Cell overvoltage"
     optimistic: true
   - platform: template
     id: pbms_emul_cell_uvp_warn
-    name: "${name} Cell undervoltage"
+    name: "${name} WARN: Cell undervoltage"
     optimistic: true
   - platform: template
     id: pbms_emul_pack_ovp_warn
-    name: "${name} Pack overvoltage"
+    name: "${name} WARN: Pack overvoltage"
     optimistic: true
   - platform: template
     id: pbms_emul_pack_uvp_warn
-    name: "${name} Pack undervoltage"
+    name: "${name} WARN: Pack undervoltage"
     optimistic: true
   - platform: template
     id: pbms_emul_cell_cocp_warn
-    name: "${name} Charging overcurrent"
+    name: "${name} WARN: Charging overcurrent"
     optimistic: true
   - platform: template
     id: pbms_emul_cell_docp_warn
-    name: "${name} Discharging overcurrent"
+    name: "${name} WARN: Discharging overcurrent"
     optimistic: true
   - platform: template
     id: pbms_emul_r7_warn
-    name: "${name} Reserve (Bit 7)"
+    name: "${name} WARN: Reserve (Bit 7)"
     optimistic: true
   - platform: template
     id: pbms_emul_r8_warn
-    name: "${name} Reserve (Bit 8)"
+    name: "${name} WARN: Reserve (Bit 8)"
     optimistic: true
   - platform: template
     id: pbms_emul_cotp_warn
-    name: "${name} Charging overtemperature"
+    name: "${name} WARN: Charging overtemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_dotp_warn
-    name: "${name} Discharging overtemperature"
+    name: "${name} WARN: Discharging overtemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_cutp_warn
-    name: "${name} Charging undertemperature"
+    name: "${name} WARN: Charging undertemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_dutp_warn
-    name: "${name} Discharging undertemperature"
+    name: "${name} WARN: Discharging undertemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_eotp_warn
-    name: "${name} Environment overtemperature"
+    name: "${name} WARN: Environment overtemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_eutp_warn
-    name: "${name} Environment undertemperature"
+    name: "${name} WARN: Environment undertemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_motp_warn
-    name: "${name} MOSFET overtemperature"
+    name: "${name} WARN: MOSFET overtemperature"
     optimistic: true
   - platform: template
     id: pbms_emul_lowsoc_warn
-    name: "${name} Low state of charge"
+    name: "${name} WARN: Low state of charge"
+    optimistic: true
+  # Protection flags
+  - platform: template
+    id: pbms_emul_cell_ov_prot
+    name: "${name} PROT: Cell overvoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cell_uv_prot
+    name: "${name} PROT: Cell undervoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_pack_ov_prot
+    name: "${name} PROT: Pack overvoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_pack_uv_prot
+    name: "${name} PROT: Pack undervoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_chg_ovc_prot
+    name: "${name} PROT: Charging overcurrent"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dicscg_ovc_prot
+    name: "${name} PROT: Discharging overcurrent"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_short_circuit_prot
+    name: "${name} PROT: Short circuit"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cov_prot
+    name: "${name} PROT: Charging overvoltage"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cot_prot
+    name: "${name} PROT: Charging overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dot_prot
+    name: "${name} PROT: Discharging overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cut_prot
+    name: "${name} PROT: Charging undertemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dut_prot
+    name: "${name} PROT: Discharging undertemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_mot_prot
+    name: "${name} PROT: MOSFET overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_eot_prot
+    name: "${name} PROT: Environment overtemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_eut_prot
+    name: "${name} PROT: Environment undertemperature"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_reserve16
+    name: "${name} PROT: Reserved (Bit 16)"
+    optimistic: true
+  # Fault flags
+  - platform: template
+    id: pbms_emul_chg_mos_fault
+    name: "${name} FAULT: Charging MOSFET fault"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dschg_mos_fault
+    name: "${name} FAULT: Discharging MOSFET fault"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_tsens_fault
+    name: "${name} FAULT: Temperature sensor"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_reserved_b4_fault
+    name: "${name} FAULT: Reserved (Bit 4)"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_cell_fault
+    name: "${name} FAULT: Battery cell fault"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_sampl_comm_fault
+    name: "${name} FAULT: Front end sampling communication fault"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_reserved_b7_fault
+    name: "${name} FAULT: Reserved (Bit 7)"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_reserved_b8_fault
+    name: "${name} FAULT: Reserved (Bit 8)"
+    optimistic: true
+  # Status flags
+  - platform: template
+    id: pbms_emul_chg_status
+    name: "${name} STAT: CHG"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_dschg_status
+    name: "${name} STAT: DCHG"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_mos_chg_status
+    name: "${name} STAT: MOSFET_CHG"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_mos_dschg_status
+    name: "${name} STAT: MOSFET_DCHG"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_limit_chg_status
+    name: "${name} STAT: LIMIT_CHG"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_reserved_b13_status
+    name: "${name} STAT: Reserve (Bit 13)"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_chg_inversed_status
+    name: "${name} STAT: Charger inversed"
+    optimistic: true
+  - platform: template
+    id: pbms_emul_heat_status
+    name: "${name} STAT: Heating"
     optimistic: true
 
 number:
@@ -87,6 +234,32 @@ number:
     max_value: 60
     step: 1
 
+text:
+  - platform: template
+    id: pmbs_emul_ver_info
+    name: "${name} Version info"
+    mode: text
+    optimistic: true
+    on_value:
+      lambda: |-
+        id(bms_version_info) = x;
+  - platform: template
+    id: pmbs_emul_bms_sn
+    name: "${name} BMS SN"
+    mode: text
+    optimistic: true
+    on_value:
+      lambda: |-
+        id(bms_serial_num) = x;
+  - platform: template
+    id: pmbs_emul_pack_sn
+    name: "${name} PACK SN"
+    mode: text
+    optimistic: true
+    on_value:
+      lambda: |-
+        id(pack_serial_num) = x;
+
 modbus:
   - id: !extend modbus0
     role: server
@@ -96,117 +269,193 @@ modbus_controller:
     address: 0x01
     modbus_id: modbus0
     server_registers:
-      # Current
-      - address: 0x00
+      - address: 0x00 # Current
         value_type: S_WORD
         read_lambda: |-
           return id(pbms_emul_c).state * 100;
-      # Voltage
-      - address: 0x01
+      - address: 0x01 # Voltage
         value_type: U_WORD
         read_lambda: |-
           return id(pbms_emul_v).state * 100;
-      # SOC
-      - address: 0x02
+      - address: 0x02 # SOC
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # SOH
-      - address: 0x03
+      - address: 0x03 # SOH
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Remain capacity
-      - address: 0x04
+      - address: 0x04 # Remain capacity
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Full capacity
-      - address: 0x05
+      - address: 0x05 # Full capacity
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Design capacity
-      - address: 0x06
+      - address: 0x06 # Design capacity
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Charge cycles count
-      - address: 0x07
+      - address: 0x07 # Charge cycles count
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Reserver. Must be empty.
-      - address: 0x08
+      - address: 0x08 # Reserved. Must be empty.
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Warning flags.
-      - address: 0x09
+      - address: 0x09 # Warning flags.
         value_type: U_WORD
         read_lambda: |-
+          static const Switch* const sensors[16] = {
+            id(pbms_emul_cell_ovp_warn),
+            id(pbms_emul_cell_uvp_warn),
+            id(pbms_emul_pack_ovp_warn),
+            id(pbms_emul_pack_uvp_warn),
+            id(pbms_emul_cell_cocp_warn),
+            id(pbms_emul_cell_docp_warn),
+            id(pbms_emul_r7_warn),
+            id(pbms_emul_r8_warn),
+            id(pbms_emul_cotp_warn),
+            id(pbms_emul_dotp_warn),
+            id(pbms_emul_cutp_warn),
+            id(pbms_emul_dutp_warn),
+            id(pbms_emul_eotp_warn),
+            id(pbms_emul_cutp_warn),
+            id(pbms_emul_motp_warn),
+            id(pbms_emul_lowsoc_warn)
+          };
           uint16_t register_data = 0;
-          if (id(pbms_emul_cell_ovp_warn).state) {
-            register_data |= 1 << 0;
-          }
-          if (id(pbms_emul_cell_uvp_warn).state) {
-            register_data |= 1 << 1;
-          }
-          if (id(pbms_emul_pack_ovp_warn).state) {
-            register_data |= 1 << 2;
-          }
-          if (id(pbms_emul_pack_uvp_warn).state) {
-            register_data |= 1 << 3;
-          }
-          if (id(pbms_emul_cell_cocp_warn).state) {
-            register_data |= 1 << 4;
-          }
-          if (id(pbms_emul_cell_docp_warn).state) {
-            register_data |= 1 << 5;
-          }
-          if (id(pbms_emul_r7_warn).state) {
-            register_data |= 1 << 6;
-          }
-          if (id(pbms_emul_r8_warn).state) {
-            register_data |= 1 << 7;
-          }
-          if (id(pbms_emul_cotp_warn).state) {
-            register_data |= 1 << 8;
-          }
-          if (id(pbms_emul_dotp_warn).state) {
-            register_data |= 1 << 9;
-          }
-          if (id(pbms_emul_cutp_warn).state) {
-            register_data |= 1 << 10;
-          }
-          if (id(pbms_emul_dutp_warn).state) {
-            register_data |= 1 << 11;
-          }
-          if (id(pbms_emul_eotp_warn).state) {
-            register_data |= 1 << 12;
-          }
-          if (id(pbms_emul_cutp_warn).state) {
-            register_data |= 1 << 13;
-          }
-          if (id(pbms_emul_motp_warn).state) {
-            register_data |= 1 << 14;
-          }
-          if (id(pbms_emul_lowsoc_warn).state) {
-            register_data |= 1 << 15;
+          for (uint8_t i = 0; i < 16; i ++) {
+            if (sensors[i]->state) {
+              register_data |= 1 << i;
+            }
           }
           return register_data;
-      # Protection flags.
-      - address: 0x0A
+      - address: 0x0A # Protection flags.
+        value_type: U_WORD
+        read_lambda: |-
+          static const Switch* const sensors[16] = {
+            id(pbms_emul_cell_ov_prot),
+            id(pbms_emul_cell_uv_prot),
+            id(pbms_emul_pack_ov_prot),
+            id(pbms_emul_pack_uv_prot),
+            id(pbms_emul_chg_ovc_prot),
+            id(pbms_emul_dicscg_ovc_prot),
+            id(pbms_emul_short_circuit_prot),
+            id(pbms_emul_cov_prot),
+            id(pbms_emul_cot_prot),
+            id(pbms_emul_dot_prot),
+            id(pbms_emul_cut_prot),
+            id(pbms_emul_dut_prot),
+            id(pbms_emul_mot_prot),
+            id(pbms_emul_eot_prot),
+            id(pbms_emul_eut_prot),
+            id(pbms_emul_reserve16)
+          };
+          uint16_t register_data = 0;
+          for (uint8_t i = 0; i < 16; i ++) {
+            if (sensors[i]->state) {
+              register_data |= 1 << i;
+            }
+          }
+          return register_data;
+      - address: 0x0B # Fault/status flags.
+        value_type: U_WORD
+        read_lambda: |-
+          static const Switch* const sensors[16] = {
+            id(pbms_emul_chg_mos_fault),
+            id(pbms_emul_dschg_mos_fault),
+            id(pbms_emul_tsens_fault),
+            id(pbms_emul_reserved_b4_fault),
+            id(pbms_emul_cell_fault),
+            id(pbms_emul_sampl_comm_fault),
+            id(pbms_emul_reserved_b7_fault),
+            id(pbms_emul_reserved_b8_fault),
+            id(pbms_emul_chg_status),
+            id(pbms_emul_dschg_status),
+            id(pbms_emul_mos_chg_status),
+            id(pbms_emul_mos_dschg_status),
+            id(pbms_emul_limit_chg_status),
+            id(pbms_emul_reserved_b13_status),
+            id(pbms_emul_chg_inversed_status),
+            id(pbms_emul_heat_status)
+          };
+          uint16_t register_data = 0;
+          for (uint8_t i = 0; i < 16; i ++) {
+            if (sensors[i]->state) {
+              register_data |= 1 << i;
+            }
+          }
+          return register_data;
+      - address: 0x0C # Balance status bits per cell.
         value_type: U_WORD
         read_lambda: |-
           return 0;
-      # Fault/status flags.
-      - address: 0x0B
-        value_type: U_WORD
+
+      # Version information registers (20 bytes)
+      - address: 0x96 # Version info 0-4
+        value_type: U_DWORD
         read_lambda: |-
-          return 0;
-      # Balance status bits per cell.
-      - address: 0x0C
-        value_type: U_WORD
+          return get_string_chars(id(bms_version_info), 0);
+      - address: 0x98 # Version info 5-8
+        value_type: U_DWORD
         read_lambda: |-
-          return 0;
+          return get_string_chars(id(bms_version_info), 4);
+      - address: 0x9A # Version info 9-12
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_version_info), 8);
+      - address: 0x9C # Version info 13-16
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_version_info), 12);
+      - address: 0x9E # Version info 17-20
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_version_info), 16);
+
+      # BMS SN information (20 bytes)
+      - address: 0xA0 # BMS SN 0-4
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_serial_num), 0);
+      - address: 0xA2 # BMS SN 5-8
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_serial_num), 4);
+      - address: 0xA4 # BMS SN 9-12
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_serial_num), 8);
+      - address: 0xA6 # BMS SN 13-16
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_serial_num), 12);
+      - address: 0xA8 # BMS SN 17-20
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(bms_serial_num), 16);
+
+      # PACK SN information (20 bytes)
+      - address: 0xAA # PACK SN 0-4
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(pack_serial_num), 0);
+      - address: 0xAC # PACK SN 5-8
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(pack_serial_num), 4);
+      - address: 0xAE # PACK SN 9-12
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(pack_serial_num), 8);
+      - address: 0xB0 # PACK SN 13-16
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(pack_serial_num), 12);
+      - address: 0xB2 # PACK SN 17-20
+        value_type: U_DWORD
+        read_lambda: |-
+          return get_string_chars(id(pack_serial_num), 16);

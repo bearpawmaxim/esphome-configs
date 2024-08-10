@@ -1605,7 +1605,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: bms0
     name: "${name} version information"
-    skip_updates: 60
+    #skip_updates: 60
     address: 150
     register_type: holding
     register_count: 10
@@ -1615,7 +1615,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: bms0
     name: "${name} bms serial number"
-    skip_updates: 60
+    #skip_updates: 60
     address: 160
     register_type: holding
     register_count: 10
@@ -1625,7 +1625,7 @@ text_sensor:
   - platform: modbus_controller
     modbus_controller_id: bms0
     name: "${name} battery pack serial number"
-    skip_updates: 60
+    #skip_updates: 60
     address: 170
     register_type: holding
     register_count: 10
