@@ -1,0 +1,9 @@
+- platform: template
+  id: pbms_emul_temp_${item}
+  name: "${name} Temperature: ${item}"
+  optimistic: true
+  min_value: -30
+  max_value: 80
+  unit_of_measurement: "˚C"
+  device_class: temperature
+  step: 1

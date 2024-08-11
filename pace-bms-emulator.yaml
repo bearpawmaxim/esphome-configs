@@ -12,211 +12,67 @@ esphome:
 globals:
   - id: bms_version_info
     type: std::string
-    initial_value: '""'
+    initial_value: "{ 70, 97, 107, 101, 80, 97, 99, 101, 66, 109, 115, 0 }"
   - id: bms_serial_num
     type: std::string
-    initial_value: '""'
+    initial_value: "{ 70, 97, 107, 101, 80, 97, 99, 101, 66, 109, 115, 48, 48, 48, 48, 48, 48, 48, 49, 0 }"
   - id: pack_serial_num
     type: std::string
-    initial_value: '""'
+    initial_value: "{ 70, 97, 107, 101, 80, 97, 99, 107, 83, 78, 48, 48, 48, 48, 48, 48, 48, 49, 0 }"
 
 switch:
   # Warning flags
-  - platform: template
-    id: pbms_emul_cell_ovp_warn
-    name: "${name} WARN: Cell overvoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cell_uvp_warn
-    name: "${name} WARN: Cell undervoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_pack_ovp_warn
-    name: "${name} WARN: Pack overvoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_pack_uvp_warn
-    name: "${name} WARN: Pack undervoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cell_cocp_warn
-    name: "${name} WARN: Charging overcurrent"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cell_docp_warn
-    name: "${name} WARN: Discharging overcurrent"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_r7_warn
-    name: "${name} WARN: Reserve (Bit 7)"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_r8_warn
-    name: "${name} WARN: Reserve (Bit 8)"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cotp_warn
-    name: "${name} WARN: Charging overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dotp_warn
-    name: "${name} WARN: Discharging overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cutp_warn
-    name: "${name} WARN: Charging undertemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dutp_warn
-    name: "${name} WARN: Discharging undertemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_eotp_warn
-    name: "${name} WARN: Environment overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_eutp_warn
-    name: "${name} WARN: Environment undertemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_motp_warn
-    name: "${name} WARN: MOSFET overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_lowsoc_warn
-    name: "${name} WARN: Low state of charge"
-    optimistic: true
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:   cell_ovp_warn, s_h_name:             "WARN: Cell overvoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:   cell_uvp_warn, s_h_name:            "WARN: Cell undervoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:   pack_ovp_warn, s_h_name:             "WARN: Pack overvoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:   pack_uvp_warn, s_h_name:            "WARN: Pack undervoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:    chg_ovc_warn, s_h_name:         "WARN: Charging overcurrent" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: dischg_ovc_warn, s_h_name:      "WARN: Discharging overcurrent" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:         r7_warn, s_h_name:              "WARN: Reserve (Bit 7)" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:         r8_warn, s_h_name:              "WARN: Reserve (Bit 8)" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       cotp_warn, s_h_name:     "WARN: Charging overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       dotp_warn, s_h_name:  "WARN: Discharging overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       cutp_warn, s_h_name:    "WARN: Charging undertemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       dutp_warn, s_h_name: "WARN: Discharging undertemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       eotp_warn, s_h_name:  "WARN: Environment overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       eutp_warn, s_h_name: "WARN: Environment undertemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       motp_warn, s_h_name:       "WARN: MOSFET overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:     lowsoc_warn, s_h_name:          "WARN: Low state of charge" } }
   # Protection flags
-  - platform: template
-    id: pbms_emul_cell_ov_prot
-    name: "${name} PROT: Cell overvoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cell_uv_prot
-    name: "${name} PROT: Cell undervoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_pack_ov_prot
-    name: "${name} PROT: Pack overvoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_pack_uv_prot
-    name: "${name} PROT: Pack undervoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_chg_ovc_prot
-    name: "${name} PROT: Charging overcurrent"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dicscg_ovc_prot
-    name: "${name} PROT: Discharging overcurrent"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_short_circuit_prot
-    name: "${name} PROT: Short circuit"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cov_prot
-    name: "${name} PROT: Charging overvoltage"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cot_prot
-    name: "${name} PROT: Charging overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dot_prot
-    name: "${name} PROT: Discharging overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cut_prot
-    name: "${name} PROT: Charging undertemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dut_prot
-    name: "${name} PROT: Discharging undertemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_mot_prot
-    name: "${name} PROT: MOSFET overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_eot_prot
-    name: "${name} PROT: Environment overtemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_eut_prot
-    name: "${name} PROT: Environment undertemperature"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_reserve16
-    name: "${name} PROT: Reserved (Bit 16)"
-    optimistic: true
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       cell_ov_prot, s_h_name:             "PROT: Cell overvoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       cell_uv_prot, s_h_name:            "PROT: Cell undervoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       pack_ov_prot, s_h_name:             "PROT: Pack overvoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       pack_uv_prot, s_h_name:            "PROT: Pack undervoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       chg_ovc_prot, s_h_name:         "PROT: Charging overcurrent" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:    dicscg_ovc_prot, s_h_name:      "PROT: Discharging overcurrent" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: short_circuit_prot, s_h_name:                "PROT: Short circuit" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           cov_prot, s_h_name:         "PROT: Charging overvoltage" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           cot_prot, s_h_name:     "PROT: Charging overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           dot_prot, s_h_name:  "PROT: Discharging overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           cut_prot, s_h_name:    "PROT: Charging undertemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           dut_prot, s_h_name: "PROT: Discharging undertemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           mot_prot, s_h_name:       "PROT: MOSFET overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           eot_prot, s_h_name:  "PROT: Environment overtemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:           eut_prot, s_h_name: "PROT: Environment undertemperature" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:          reserve16, s_h_name:            "PROT: Reserved (Bit 16)" } }
   # Fault flags
-  - platform: template
-    id: pbms_emul_chg_mos_fault
-    name: "${name} FAULT: Charging MOSFET fault"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dschg_mos_fault
-    name: "${name} FAULT: Discharging MOSFET fault"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_tsens_fault
-    name: "${name} FAULT: Temperature sensor"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_reserved_b4_fault
-    name: "${name} FAULT: Reserved (Bit 4)"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_cell_fault
-    name: "${name} FAULT: Battery cell fault"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_sampl_comm_fault
-    name: "${name} FAULT: Front end sampling communication fault"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_reserved_b7_fault
-    name: "${name} FAULT: Reserved (Bit 7)"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_reserved_b8_fault
-    name: "${name} FAULT: Reserved (Bit 8)"
-    optimistic: true
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:     chg_mos_fault, s_h_name:                  "FAULT: Charging MOSFET fault" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:   dschg_mos_fault, s_h_name:               "FAULT: Discharging MOSFET fault" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:       tsens_fault, s_h_name:                     "FAULT: Temperature sensor" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: reserved_b4_fault, s_h_name:                       "FAULT: Reserved (Bit 4)" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:        cell_fault, s_h_name:                     "FAULT: Battery cell fault" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:  sampl_comm_fault, s_h_name: "FAULT: Front end sampling communication fault" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: reserved_b7_fault, s_h_name:                       "FAULT: Reserved (Bit 7)" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: reserved_b8_fault, s_h_name:                       "FAULT: Reserved (Bit 8)" } }
   # Status flags
-  - platform: template
-    id: pbms_emul_chg_status
-    name: "${name} STAT: CHG"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_dschg_status
-    name: "${name} STAT: DCHG"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_mos_chg_status
-    name: "${name} STAT: MOSFET_CHG"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_mos_dschg_status
-    name: "${name} STAT: MOSFET_DCHG"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_limit_chg_status
-    name: "${name} STAT: LIMIT_CHG"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_reserved_b13_status
-    name: "${name} STAT: Reserve (Bit 13)"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_chg_inversed_status
-    name: "${name} STAT: Charger inversed"
-    optimistic: true
-  - platform: template
-    id: pbms_emul_heat_status
-    name: "${name} STAT: Heating"
-    optimistic: true
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:          chg_status, s_h_name:              "STAT: CHG" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:        dschg_status, s_h_name:             "STAT: DCHG" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:      mos_chg_status, s_h_name:       "STAT: MOSFET_CHG" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:    mos_dschg_status, s_h_name:      "STAT: MOSFET_DCHG" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:    limit_chg_status, s_h_name:        "STAT: LIMIT_CHG" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: reserved_b13_status, s_h_name: "STAT: Reserve (Bit 13)" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name: chg_inversed_status, s_h_name: "STAT: Charger inversed" } }
+  - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:         heat_status, s_h_name:          "STAT: Heating" } }
 
 number:
   - platform: template
@@ -233,6 +89,44 @@ number:
     min_value: 40
     max_value: 60
     step: 1
+  - platform: template
+    id: pbms_emul_cycles_count
+    name: "${name} Cycles count"
+    optimistic: true
+    min_value: 0
+    max_value: 6000
+    step: 1
+  # SOC & SOH sensord
+  - <<: !include { file: pace-bms-emulator/percentage-template-sensor.yaml, vars: { name: "${name}", s_name: SOC } }
+  - <<: !include { file: pace-bms-emulator/percentage-template-sensor.yaml, vars: { name: "${name}", s_name: SOH } }
+  # Capacity template sensord
+  - <<: !include { file: pace-bms-emulator/ampere-hour-template-sensor.yaml, vars: { name: "${name}", s_name: remain_cap, s_h_name: Remaining capacity } }
+  - <<: !include { file: pace-bms-emulator/ampere-hour-template-sensor.yaml, vars: { name: "${name}", s_name:   full_cap, s_h_name:      Full capacity } }
+  - <<: !include { file: pace-bms-emulator/ampere-hour-template-sensor.yaml, vars: { name: "${name}", s_name: design_cap, s_h_name:    Design capacity } }
+  # Cell voltage template sensors
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  1 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  2 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  3 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  4 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  5 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  6 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  7 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  8 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num:  9 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 10 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 11 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 12 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 13 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 14 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 15 } }
+  - <<: !include { file: pace-bms-emulator/cell-voltage-template-sensor.yaml, vars: { name: "${name}", cell_num: 16 } }
+  # Temperature template sensors
+  - <<: !include { file: pace-bms-emulator/temperature-template-sensor.yaml, vars: { name: "${name}", item:       Cell1 } }
+  - <<: !include { file: pace-bms-emulator/temperature-template-sensor.yaml, vars: { name: "${name}", item:       Cell2 } }
+  - <<: !include { file: pace-bms-emulator/temperature-template-sensor.yaml, vars: { name: "${name}", item:       Cell3 } }
+  - <<: !include { file: pace-bms-emulator/temperature-template-sensor.yaml, vars: { name: "${name}", item:       Cell4 } }
+  - <<: !include { file: pace-bms-emulator/temperature-template-sensor.yaml, vars: { name: "${name}", item:         MOS } }
+  - <<: !include { file: pace-bms-emulator/temperature-template-sensor.yaml, vars: { name: "${name}", item: Environment } }
 
 text:
   - platform: template
@@ -280,27 +174,18 @@ modbus_controller:
       - address: 0x02 # SOC
         value_type: U_WORD
         read_lambda: |-
-          return 0;
+          return id(pbms_emul_SOC).state;
       - address: 0x03 # SOH
         value_type: U_WORD
         read_lambda: |-
-          return 0;
-      - address: 0x04 # Remain capacity
-        value_type: U_WORD
-        read_lambda: |-
-          return 0;
-      - address: 0x05 # Full capacity
-        value_type: U_WORD
-        read_lambda: |-
-          return 0;
-      - address: 0x06 # Design capacity
-        value_type: U_WORD
-        read_lambda: |-
-          return 0;
+          return id(pbms_emul_SOH).state;
+      - <<: !include { file: pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x04, sensor: pbms_emul_remain_cap } }
+      - <<: !include { file: pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x05, sensor: pbms_emul_full_cap } }
+      - <<: !include { file: pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x06, sensor: pbms_emul_design_cap } }
       - address: 0x07 # Charge cycles count
         value_type: U_WORD
         read_lambda: |-
-          return 0;
+          return id(pbms_emul_cycles_count).state;
       - address: 0x08 # Reserved. Must be empty.
         value_type: U_WORD
         read_lambda: |-
@@ -313,8 +198,8 @@ modbus_controller:
             id(pbms_emul_cell_uvp_warn),
             id(pbms_emul_pack_ovp_warn),
             id(pbms_emul_pack_uvp_warn),
-            id(pbms_emul_cell_cocp_warn),
-            id(pbms_emul_cell_docp_warn),
+            id(pbms_emul_chg_ovc_warn),
+            id(pbms_emul_dischg_ovc_warn),
             id(pbms_emul_r7_warn),
             id(pbms_emul_r8_warn),
             id(pbms_emul_cotp_warn),
@@ -393,69 +278,60 @@ modbus_controller:
         value_type: U_WORD
         read_lambda: |-
           return 0;
-
+      # Cell voltages
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x0F, sensor:  pbms_emul_cell_v_1 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x10, sensor:  pbms_emul_cell_v_2 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x11, sensor:  pbms_emul_cell_v_3 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x12, sensor:  pbms_emul_cell_v_4 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x13, sensor:  pbms_emul_cell_v_5 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x14, sensor:  pbms_emul_cell_v_6 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x15, sensor:  pbms_emul_cell_v_7 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x16, sensor:  pbms_emul_cell_v_8 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x17, sensor:  pbms_emul_cell_v_9 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x18, sensor: pbms_emul_cell_v_10 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x19, sensor: pbms_emul_cell_v_11 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x1A, sensor: pbms_emul_cell_v_12 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x1B, sensor: pbms_emul_cell_v_13 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x1C, sensor: pbms_emul_cell_v_14 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x1D, sensor: pbms_emul_cell_v_15 } }
+      - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x1E, sensor: pbms_emul_cell_v_16 } }
+      # Temperature sensors
+      - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x1F, sensor:       pbms_emul_temp_Cell1 } }
+      - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x20, sensor:       pbms_emul_temp_Cell2 } }
+      - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x21, sensor:       pbms_emul_temp_Cell3 } }
+      - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x22, sensor:       pbms_emul_temp_Cell4 } }
+      - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x23, sensor:         pbms_emul_temp_MOS } }
+      - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x24, sensor: pbms_emul_temp_Environment } }
       # Version information registers (20 bytes)
-      - address: 0x96 # Version info 0-4
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_version_info), 0);
-      - address: 0x98 # Version info 5-8
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_version_info), 4);
-      - address: 0x9A # Version info 9-12
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_version_info), 8);
-      - address: 0x9C # Version info 13-16
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_version_info), 12);
-      - address: 0x9E # Version info 17-20
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_version_info), 16);
-
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x96, sensor: bms_version_info, offset: 0 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x97, sensor: bms_version_info, offset: 2 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x98, sensor: bms_version_info, offset: 4 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x99, sensor: bms_version_info, offset: 6 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9A, sensor: bms_version_info, offset: 8 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9B, sensor: bms_version_info, offset: 10 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9C, sensor: bms_version_info, offset: 12 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9D, sensor: bms_version_info, offset: 14 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9E, sensor: bms_version_info, offset: 16 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9F, sensor: bms_version_info, offset: 18 } }
       # BMS SN information (20 bytes)
-      - address: 0xA0 # BMS SN 0-4
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_serial_num), 0);
-      - address: 0xA2 # BMS SN 5-8
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_serial_num), 4);
-      - address: 0xA4 # BMS SN 9-12
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_serial_num), 8);
-      - address: 0xA6 # BMS SN 13-16
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_serial_num), 12);
-      - address: 0xA8 # BMS SN 17-20
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(bms_serial_num), 16);
-
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA0, sensor: bms_serial_num, offset: 0 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA1, sensor: bms_serial_num, offset: 2 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA2, sensor: bms_serial_num, offset: 4 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA3, sensor: bms_serial_num, offset: 6 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA4, sensor: bms_serial_num, offset: 8 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA5, sensor: bms_serial_num, offset: 10 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA6, sensor: bms_serial_num, offset: 12 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA7, sensor: bms_serial_num, offset: 14 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA8, sensor: bms_serial_num, offset: 16 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA9, sensor: bms_serial_num, offset: 18 } }
       # PACK SN information (20 bytes)
-      - address: 0xAA # PACK SN 0-4
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(pack_serial_num), 0);
-      - address: 0xAC # PACK SN 5-8
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(pack_serial_num), 4);
-      - address: 0xAE # PACK SN 9-12
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(pack_serial_num), 8);
-      - address: 0xB0 # PACK SN 13-16
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(pack_serial_num), 12);
-      - address: 0xB2 # PACK SN 17-20
-        value_type: U_DWORD
-        read_lambda: |-
-          return get_string_chars(id(pack_serial_num), 16);
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAA, sensor: pack_serial_num, offset: 0 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAB, sensor: pack_serial_num, offset: 2 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAC, sensor: pack_serial_num, offset: 4 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAD, sensor: pack_serial_num, offset: 6 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAE, sensor: pack_serial_num, offset: 8 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAF, sensor: pack_serial_num, offset: 10 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB0, sensor: pack_serial_num, offset: 12 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB1, sensor: pack_serial_num, offset: 14 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB2, sensor: pack_serial_num, offset: 16 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB3, sensor: pack_serial_num, offset: 18 } }

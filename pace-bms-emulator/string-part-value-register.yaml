@@ -1,0 +1,4 @@
+- address: ${addr}
+  value_type: U_WORD
+  read_lambda: |-
+    return pack_chars16(${sensor}->value(), ${offset});
