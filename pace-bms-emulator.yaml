@@ -7,18 +7,18 @@ packages:
 
 esphome:
   includes:
-    - includes/string_utils.h
+    - pace-bms-emulator/utils.h
 
 globals:
   - id: bms_version_info
     type: std::string
-    initial_value: "{ 70, 97, 107, 101, 80, 97, 99, 101, 66, 109, 115, 0 }"
+    initial_value: '"FakePaceBms"'
   - id: bms_serial_num
     type: std::string
-    initial_value: "{ 70, 97, 107, 101, 80, 97, 99, 101, 66, 109, 115, 48, 48, 48, 48, 48, 48, 48, 49, 0 }"
+    initial_value: '"FakeBmsSN001"'
   - id: pack_serial_num
     type: std::string
-    initial_value: "{ 70, 97, 107, 101, 80, 97, 99, 107, 83, 78, 48, 48, 48, 48, 48, 48, 48, 49, 0 }"
+    initial_value: '"FakePackSN001"'
 
 switch:
   # Warning flags
@@ -193,7 +193,7 @@ modbus_controller:
       - address: 0x09 # Warning flags.
         value_type: U_WORD
         read_lambda: |-
-          static const Switch* const sensors[16] = {
+          static const Switch* sensors[16] = {
             id(pbms_emul_cell_ovp_warn),
             id(pbms_emul_cell_uvp_warn),
             id(pbms_emul_pack_ovp_warn),
@@ -211,17 +211,11 @@ modbus_controller:
             id(pbms_emul_motp_warn),
             id(pbms_emul_lowsoc_warn)
           };
-          uint16_t register_data = 0;
-          for (uint8_t i = 0; i < 16; i ++) {
-            if (sensors[i]->state) {
-              register_data |= 1 << i;
-            }
-          }
-          return register_data;
+          return pack_flags16(sensors, 16);
       - address: 0x0A # Protection flags.
         value_type: U_WORD
         read_lambda: |-
-          static const Switch* const sensors[16] = {
+          static const Switch* sensors[16] = {
             id(pbms_emul_cell_ov_prot),
             id(pbms_emul_cell_uv_prot),
             id(pbms_emul_pack_ov_prot),
@@ -239,17 +233,11 @@ modbus_controller:
             id(pbms_emul_eut_prot),
             id(pbms_emul_reserve16)
           };
-          uint16_t register_data = 0;
-          for (uint8_t i = 0; i < 16; i ++) {
-            if (sensors[i]->state) {
-              register_data |= 1 << i;
-            }
-          }
-          return register_data;
+          return pack_flags16(sensors, 16);
       - address: 0x0B # Fault/status flags.
         value_type: U_WORD
         read_lambda: |-
-          static const Switch* const sensors[16] = {
+          static const Switch* sensors[16] = {
             id(pbms_emul_chg_mos_fault),
             id(pbms_emul_dschg_mos_fault),
             id(pbms_emul_tsens_fault),
@@ -267,13 +255,7 @@ modbus_controller:
             id(pbms_emul_chg_inversed_status),
             id(pbms_emul_heat_status)
           };
-          uint16_t register_data = 0;
-          for (uint8_t i = 0; i < 16; i ++) {
-            if (sensors[i]->state) {
-              register_data |= 1 << i;
-            }
-          }
-          return register_data;
+          return pack_flags16(sensors, 16);
       - address: 0x0C # Balance status bits per cell.
         value_type: U_WORD
         read_lambda: |-
