@@ -193,67 +193,69 @@ modbus_controller:
       - address: 0x09 # Warning flags.
         value_type: U_WORD
         read_lambda: |-
-          static const Switch* sensors[16] = {
-            id(pbms_emul_cell_ovp_warn),
-            id(pbms_emul_cell_uvp_warn),
-            id(pbms_emul_pack_ovp_warn),
-            id(pbms_emul_pack_uvp_warn),
-            id(pbms_emul_chg_ovc_warn),
-            id(pbms_emul_dischg_ovc_warn),
-            id(pbms_emul_r7_warn),
-            id(pbms_emul_r8_warn),
-            id(pbms_emul_cotp_warn),
-            id(pbms_emul_dotp_warn),
-            id(pbms_emul_cutp_warn),
-            id(pbms_emul_dutp_warn),
-            id(pbms_emul_eotp_warn),
-            id(pbms_emul_cutp_warn),
-            id(pbms_emul_motp_warn),
-            id(pbms_emul_lowsoc_warn)
+          static const bool sensors[16] = {
+            id(pbms_emul_cell_ovp_warn).state,       // Cell overvoktage warning.
+            id(pbms_emul_cell_uvp_warn).state,       // Cell undervoltage warning.
+            id(pbms_emul_pack_ovp_warn).state,       // Pack overvoltage warning.
+            id(pbms_emul_pack_uvp_warn).state,       // Pack undervoltage warning.
+            id(pbms_emul_chg_ovc_warn).state,        // Charging overcurrent warning.
+            id(pbms_emul_dischg_ovc_warn).state,     // Discharge overcurrent warning.
+            id(pbms_emul_r7_warn).state,             // Reserved. Do not set.
+            id(pbms_emul_r8_warn).state,             // Reserved. Do not set.
+            id(pbms_emul_cotp_warn).state,           // Charging overtemperature warning.
+            id(pbms_emul_dotp_warn).state,           // Discharging overtemperature warning.
+            id(pbms_emul_cutp_warn).state,           // Charging undertemperature warning.
+            id(pbms_emul_dutp_warn).state,           // Discharging undertemperature warning.
+            id(pbms_emul_eotp_warn).state,           // Environment overtemperature warning.
+            id(pbms_emul_eutp_warn).state,           // Environment undertemperature warning.
+            id(pbms_emul_motp_warn).state,           // MOSFET overtemperature warning.
+            id(pbms_emul_lowsoc_warn).state          // Low SOC warning.
           };
           return pack_flags16(sensors, 16);
       - address: 0x0A # Protection flags.
         value_type: U_WORD
         read_lambda: |-
-          static const Switch* sensors[16] = {
-            id(pbms_emul_cell_ov_prot),
-            id(pbms_emul_cell_uv_prot),
-            id(pbms_emul_pack_ov_prot),
-            id(pbms_emul_pack_uv_prot),
-            id(pbms_emul_chg_ovc_prot),
-            id(pbms_emul_dicscg_ovc_prot),
-            id(pbms_emul_short_circuit_prot),
-            id(pbms_emul_cov_prot),
-            id(pbms_emul_cot_prot),
-            id(pbms_emul_dot_prot),
-            id(pbms_emul_cut_prot),
-            id(pbms_emul_dut_prot),
-            id(pbms_emul_mot_prot),
-            id(pbms_emul_eot_prot),
-            id(pbms_emul_eut_prot),
-            id(pbms_emul_reserve16)
+          static const bool sensors[16] = {
+            id(pbms_emul_cell_ov_prot).state,        // Cell overvoktage protection.
+            id(pbms_emul_cell_uv_prot).state,        // Cell undervoltage protection.
+            id(pbms_emul_pack_ov_prot).state,        // Pack overvoltage protection.
+            id(pbms_emul_pack_uv_prot).state,        // Pack undervoltage protection.
+            id(pbms_emul_chg_ovc_prot).state,        // Charging overcurrent protection.
+            id(pbms_emul_dicscg_ovc_prot).state,     // Discharging overcurrent protection.
+            id(pbms_emul_short_circuit_prot).state,  // Short circuit protection.
+            id(pbms_emul_cov_prot).state,            // Charging overvoltage protection.
+            id(pbms_emul_cot_prot).state,            // Charging overtemperature protection.
+            id(pbms_emul_dot_prot).state,            // Discharging overtemperature protection.
+            id(pbms_emul_cut_prot).state,            // Charging undertemperature protection.
+            id(pbms_emul_dut_prot).state,            // Discharging undertemperature protection.
+            id(pbms_emul_mot_prot).state,            // MOSFET overtemperature protection.
+            id(pbms_emul_eot_prot).state,            // Environment overtemperature protection.
+            id(pbms_emul_eut_prot).state,            // Environment undertemperature protection.
+            id(pbms_emul_reserve16).state            // Reserved. Do not set.
           };
           return pack_flags16(sensors, 16);
       - address: 0x0B # Fault/status flags.
         value_type: U_WORD
         read_lambda: |-
-          static const Switch* sensors[16] = {
-            id(pbms_emul_chg_mos_fault),
-            id(pbms_emul_dschg_mos_fault),
-            id(pbms_emul_tsens_fault),
-            id(pbms_emul_reserved_b4_fault),
-            id(pbms_emul_cell_fault),
-            id(pbms_emul_sampl_comm_fault),
-            id(pbms_emul_reserved_b7_fault),
-            id(pbms_emul_reserved_b8_fault),
-            id(pbms_emul_chg_status),
-            id(pbms_emul_dschg_status),
-            id(pbms_emul_mos_chg_status),
-            id(pbms_emul_mos_dschg_status),
-            id(pbms_emul_limit_chg_status),
-            id(pbms_emul_reserved_b13_status),
-            id(pbms_emul_chg_inversed_status),
-            id(pbms_emul_heat_status)
+          static const bool sensors[16] = {
+            // Faults
+            id(pbms_emul_chg_mos_fault).state,       // Charge MOSFET fault.
+            id(pbms_emul_dschg_mos_fault).state,     // Discharge MOSFET fault.
+            id(pbms_emul_tsens_fault).state,         // Temperature sensor fault.
+            id(pbms_emul_reserved_b4_fault).state,   // Reserved. Do not set.
+            id(pbms_emul_cell_fault).state,          // Cell fault.
+            id(pbms_emul_sampl_comm_fault).state,    // Sample communications fault.
+            id(pbms_emul_reserved_b7_fault).state,   // Reserved. Do not set.
+            id(pbms_emul_reserved_b8_fault).state,   // Reserved. Do not set.
+            // Statuses
+            id(pbms_emul_chg_status).state,          // Charging.
+            id(pbms_emul_dschg_status).state,        // Discharging.
+            id(pbms_emul_mos_chg_status).state,      // Charging enabled.
+            id(pbms_emul_mos_dschg_status).state,    // Discharging enabled.
+            id(pbms_emul_limit_chg_status).state,    // Charging current limit.
+            id(pbms_emul_reserved_b13_status).state, // Reserved. Do not set.
+            id(pbms_emul_chg_inversed_status).state, // Charger inverted.
+            id(pbms_emul_heat_status).state          // Heating.
           };
           return pack_flags16(sensors, 16);
       - address: 0x0C # Balance status bits per cell.
