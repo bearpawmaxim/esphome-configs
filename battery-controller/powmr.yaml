@@ -3,6 +3,10 @@ substitutions:
   update_interval: 30s # Minimum 10s recommended to avoid duplicate command errors
   select_skip_updates: "2"
 
+esphome:
+  includes:
+    - battery-controller/powmr_utils.h
+
 modbus:
   - id: inverter_modbus
     uart_id: inverter_uart
@@ -16,6 +20,14 @@ modbus_controller:
     offline_skip_updates: 100
     command_throttle: 1s
     update_interval: ${update_interval}
+
+interval:
+  - interval: 5sec
+    id: update_inverter_state_interval
+    then:
+      - lambda: |-
+          id(inverter_on) = !id(inverter_modbus_controller)->
+            get_module_offline();
 
 sensor:
   ###################################
