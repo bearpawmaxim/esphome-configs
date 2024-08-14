@@ -7,6 +7,7 @@ packages:
   # jkbms-faker: !include battery-controller/jkbms.faker.yaml
   # powmr: !include battery-controller/powmr.yaml
   lvgl-ui: !include battery-controller/lvgl-ui.yaml
+  # pace-bms: !include battery-controller/pace-bms-emulator.yaml
 
 globals:
   - id: inverter_on
