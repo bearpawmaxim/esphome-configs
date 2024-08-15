@@ -31,4 +31,4 @@ light:
     green: out_g
     blue: out_b
 
-// ESP_LOGW("COL", "Color:  R=%d, G=%d, B=%d", id(clr).red, id(clr).green, id(clr).blue);
+# ESP_LOGW("COL", "Color:  R=%d, G=%d, B=%d", id(clr).red, id(clr).green, id(clr).blue);

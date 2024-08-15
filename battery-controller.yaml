@@ -7,13 +7,14 @@ substitutions:
   inverter_fctl: GPIO2
 
 packages:
+  colot_input: !include .light_color_input.yaml
   device_common: !include .device_common.yaml
   jkbms: !include 
     file: battery-controller/jkbms.yaml
     vars:
       jkbms_tx: ${jkbms_tx}
       jkbms_rx: ${jkbms_rx}
-  # jkbms-faker: !include battery-controller/jkbms.faker.yaml
+  jkbms-faker: !include battery-controller/jkbms.faker.yaml
   # powmr: !include
   #   file: battery-controller/powmr.yaml
   #   vars:
@@ -138,6 +139,14 @@ light:
     id: backlight
     output: backlight_pwm
     restore_mode: ALWAYS_ON
+  - platform: rgb
+    id: !extend color_set
+    on_state:
+      - delay: 200ms
+      - lvgl.widget.update:
+          id: soc_inner_circle
+          border_color: !lambda |-
+            return lv_color_make(id(clr).red, id(clr).green, id(clr).blue);
 
 i80:
   - id: i80bus

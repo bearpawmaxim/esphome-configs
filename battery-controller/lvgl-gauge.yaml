@@ -50,6 +50,7 @@
           shadow_ofs_y: 15
           widgets:
             - obj:
+                id: ${g_name}_inner_circle
                 width: 120
                 height: 120
                 align: CENTER
