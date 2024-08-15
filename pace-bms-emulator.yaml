@@ -287,35 +287,35 @@ modbus_controller:
       - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x23, sensor:         pbms_emul_temp_MOS } }
       - <<: !include { file: pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x24, sensor: pbms_emul_temp_Environment } }
       # Version information registers (20 bytes)
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x96, sensor: bms_version_info, offset:  0 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x97, sensor: bms_version_info, offset:  2 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x98, sensor: bms_version_info, offset:  4 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x99, sensor: bms_version_info, offset:  6 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9A, sensor: bms_version_info, offset:  8 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9B, sensor: bms_version_info, offset: 10 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9C, sensor: bms_version_info, offset: 12 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9D, sensor: bms_version_info, offset: 14 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9E, sensor: bms_version_info, offset: 16 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9F, sensor: bms_version_info, offset: 18 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x96, str_var: bms_version_info, offset:  0 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x97, str_var: bms_version_info, offset:  2 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x98, str_var: bms_version_info, offset:  4 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x99, str_var: bms_version_info, offset:  6 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9A, str_var: bms_version_info, offset:  8 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9B, str_var: bms_version_info, offset: 10 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9C, str_var: bms_version_info, offset: 12 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9D, str_var: bms_version_info, offset: 14 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9E, str_var: bms_version_info, offset: 16 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x9F, str_var: bms_version_info, offset: 18 } }
       # BMS SN information (20 bytes)
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA0, sensor: bms_serial_num,   offset:  0 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA1, sensor: bms_serial_num,   offset:  2 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA2, sensor: bms_serial_num,   offset:  4 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA3, sensor: bms_serial_num,   offset:  6 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA4, sensor: bms_serial_num,   offset:  8 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA5, sensor: bms_serial_num,   offset: 10 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA6, sensor: bms_serial_num,   offset: 12 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA7, sensor: bms_serial_num,   offset: 14 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA8, sensor: bms_serial_num,   offset: 16 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA9, sensor: bms_serial_num,   offset: 18 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA0, str_var: bms_serial_num,   offset:  0 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA1, str_var: bms_serial_num,   offset:  2 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA2, str_var: bms_serial_num,   offset:  4 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA3, str_var: bms_serial_num,   offset:  6 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA4, str_var: bms_serial_num,   offset:  8 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA5, str_var: bms_serial_num,   offset: 10 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA6, str_var: bms_serial_num,   offset: 12 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA7, str_var: bms_serial_num,   offset: 14 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA8, str_var: bms_serial_num,   offset: 16 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xA9, str_var: bms_serial_num,   offset: 18 } }
       # PACK SN information (20 bytes)
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAA, sensor: pack_serial_num,  offset:  0 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAB, sensor: pack_serial_num,  offset:  2 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAC, sensor: pack_serial_num,  offset:  4 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAD, sensor: pack_serial_num,  offset:  6 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAE, sensor: pack_serial_num,  offset:  8 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAF, sensor: pack_serial_num,  offset: 10 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB0, sensor: pack_serial_num,  offset: 12 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB1, sensor: pack_serial_num,  offset: 14 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB2, sensor: pack_serial_num,  offset: 16 } }
-      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB3, sensor: pack_serial_num,  offset: 18 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAA, str_var: pack_serial_num,  offset:  0 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAB, str_var: pack_serial_num,  offset:  2 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAC, str_var: pack_serial_num,  offset:  4 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAD, str_var: pack_serial_num,  offset:  6 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAE, str_var: pack_serial_num,  offset:  8 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xAF, str_var: pack_serial_num,  offset: 10 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB0, str_var: pack_serial_num,  offset: 12 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB1, str_var: pack_serial_num,  offset: 14 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB2, str_var: pack_serial_num,  offset: 16 } }
+      - <<: !include { file: pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0xB3, str_var: pack_serial_num,  offset: 18 } }
