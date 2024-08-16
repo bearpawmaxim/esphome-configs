@@ -1,5 +1,5 @@
 globals:
-  - id: bg_color
+  - id: lv_bg_color
     type: lv_color_t
 
 font:
@@ -217,16 +217,16 @@ script:
           } else {
             cl = id(off_color);
           }
-          id(bg_color) = lv_color_make(cl.red, cl.green, cl.blue);
+          id(lv_bg_color) = lv_color_make(cl.red, cl.green, cl.blue);
       - lvgl.widget.update:
           id: soc_inner_circle_background
-          bg_color: !lambda return id(bg_color);
+          bg_color: !lambda return id(lv_bg_color);
       - lvgl.widget.update:
           id: soc_inner_circle
-          border_color: !lambda return id(bg_color);
+          border_color: !lambda return id(lv_bg_color);
       - lvgl.widget.update:
           id: bg_img_bottom
-          bg_color: !lambda return id(bg_color);
+          bg_color: !lambda return id(lv_bg_color);
   - id: lvgl_change_tile
     mode: single
     then:
