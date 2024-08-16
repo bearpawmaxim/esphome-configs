@@ -200,42 +200,24 @@ interval:
     startup_delay: 5sec
     then:
       - script.execute: lvgl_update_date
-  - id: roll_colors
-    interval: 1000ms
-    then:
-      - script.execute:
-          id: lvgl_update_background_colors
-          operation: 0
-      - delay: 1000ms
-      - script.execute:
-          id: lvgl_update_background_colors
-          operation: 1
-      - delay: 1000ms
-      - script.execute:
-          id: lvgl_update_background_colors
-          operation: 2
 
 script:
-  - id: lvgl_update_background_colors
+  - id: lvgl_update_accent_color
     mode: single
     parameters:
-      operation: uint8_t # 0 - discharging, 1 - charging, 2 - balancing
+      current_val: float
+      is_balancing: bool
     then:
       - lambda: |-
-          Color color;
-          switch(operation) {
-            case 0:
-              color = id(balancing_color);
-              break;
-            case 1:
-              color = id(on_color);
-              break;
-            case 2:
-            default:
-              color = id(off_color);
-              break;
+          Color cl;
+          if (current_val > 0) {
+            cl = is_balancing
+              ? id(balancing_color)
+              : id(on_color);
+          } else {
+            cl = id(off_color);
           }
-          id(bg_color) = lv_color_make(color.red, color.green, color.blue);
+          id(bg_color) = lv_color_make(cl.red, cl.green, cl.blue);
       - lvgl.widget.update:
           id: soc_inner_circle_background
           bg_color: !lambda return id(bg_color);

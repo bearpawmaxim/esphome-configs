@@ -18,6 +18,12 @@ binary_sensor:
   - platform: jk_bms
     balancing:
       name: "JKBMS balancing"
+      id: jkbms_balancing
+    #   on_state:
+    #     - script.execute:
+    #         id: lvgl_update_accent_color
+    #         current_val: !lambda return id(jkbms_current).state;
+    #         is_balancing: !lambda return id(jkbms_balancing).state;
     balancing_switch:
       name: "JKBMS balancing switch"
       on_state:
@@ -28,9 +34,19 @@ binary_sensor:
     charging:
       id: jkbms_charging
       name: "JKBMS charging"
+    #   on_state:
+    #     - script.execute:
+    #         id: lvgl_update_accent_color
+    #         current_val: !lambda return id(jkbms_current).state;
+    #         is_balancing: !lambda return id(jkbms_balancing).state;
     discharging:
       id: jkbms_discharging
       name: "JKBMS discharging"
+    #   on_state:
+    #     - script.execute:
+    #         id: lvgl_update_accent_color
+    #         current_val: !lambda return id(jkbms_current).state;
+    #         is_balancing: !lambda return id(jkbms_balancing).state;
     online_status:
       name: "JKBMS online status"
       on_state:
@@ -210,6 +226,10 @@ sensor:
             id: lvgl_update_label_value
             name: current
             value: !lambda return value_accuracy_to_string(x, 0);
+        - script.execute:
+            id: lvgl_update_accent_color
+            current_val: !lambda return x;
+            is_balancing: !lambda return id(jkbms_balancing).state;
     power:
       name: "JKBMS power"
       on_value:
