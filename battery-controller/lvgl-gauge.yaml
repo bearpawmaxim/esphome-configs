@@ -50,27 +50,39 @@
           shadow_ofs_y: 15
           widgets:
             - obj:
-                id: ${g_name}_inner_circle
+                id: ${g_name}_inner_circle_background
                 width: 120
                 height: 120
                 align: CENTER
                 clickable: false
                 scrollable: false
                 radius: 120
-                bg_color: 0x0C191E
-                bg_grad_color: 0x191C26
-                bg_grad_dir: VER
-                bg_dither_mode: ORDERED
+                bg_color: 0x00ffbd
                 bg_opa: 1
-                border_color: 0x5A646E
+                border_opa: 0
                 widgets:
-                  - label:
-                      id: ${g_name}_label
-                      width: SIZE_CONTENT
-                      height: SIZE_CONTENT
-                      x: 0
-                      y: 0
+                  - obj:
+                      id: ${g_name}_inner_circle
+                      width: 120
+                      height: 120
                       align: CENTER
-                      text_color: 0xFFFFFF
-                      text: '0%'
-                      text_font: gauge_font
+                      clickable: false
+                      scrollable: false
+                      radius: 120
+                      bg_color: 0x0C191E
+                      bg_grad_color: 0x191C26
+                      bg_grad_dir: VER
+                      bg_dither_mode: ORDERED
+                      bg_opa: 0.93
+                      border_color: 0x5A646E
+                      widgets:
+                        - label:
+                            id: ${g_name}_label
+                            width: SIZE_CONTENT
+                            height: SIZE_CONTENT
+                            x: 0
+                            y: 0
+                            align: CENTER
+                            text_color: 0xFFFFFF
+                            text: '0%'
+                            text_font: gauge_font

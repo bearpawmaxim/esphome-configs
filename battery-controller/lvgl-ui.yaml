@@ -1,3 +1,7 @@
+globals:
+  - id: bg_color
+    type: lv_color_t
+
 font:
   - file: battery-controller/SquareDotMatrix.ttf
     id: gauge_font
@@ -23,6 +27,10 @@ color:
     hex: FF4F00
   - id: on_color
     hex: 58D900
+  - id: balancing_color
+    red_int: 145
+    green_int: 245
+    blue_int: 242
   - id: std_cell_voltage_color
     hex: 58D900
   - id: min_cell_voltage_color
@@ -33,6 +41,12 @@ color:
     hex: FFFFFF
   - id: label_value_color
     hex: 58D900
+
+image:
+  - id: bg_img
+    file: battery-controller/hexagons-320.png
+    type: RGB565
+    use_transparency: true
 
 lvgl:
   id: lvgl0
@@ -55,6 +69,23 @@ lvgl:
       bg_dither_mode: ORDERED
       scrollable: false
       widgets:
+        - obj:
+            id: bg_img_bottom
+            x: 0
+            y: 0
+            width: 320
+            height: 320
+            bg_color: 0x000000
+            bg_opa: 0.3
+            border_opa: 0
+            radius: 0
+            scrollable: false
+            align: TOP_LEFT
+            pad_all: 0
+            widgets:
+              - image:
+                  src: bg_img
+                  x: -2
         # SOC gauge
         - <<: !include { file: lvgl-gauge.yaml, vars: { g_name: soc } }
         # Bms error label
@@ -169,8 +200,51 @@ interval:
     startup_delay: 5sec
     then:
       - script.execute: lvgl_update_date
+  - id: roll_colors
+    interval: 1000ms
+    then:
+      - script.execute:
+          id: lvgl_update_background_colors
+          operation: 0
+      - delay: 1000ms
+      - script.execute:
+          id: lvgl_update_background_colors
+          operation: 1
+      - delay: 1000ms
+      - script.execute:
+          id: lvgl_update_background_colors
+          operation: 2
 
 script:
+  - id: lvgl_update_background_colors
+    mode: single
+    parameters:
+      operation: uint8_t # 0 - discharging, 1 - charging, 2 - balancing
+    then:
+      - lambda: |-
+          Color color;
+          switch(operation) {
+            case 0:
+              color = id(balancing_color);
+              break;
+            case 1:
+              color = id(on_color);
+              break;
+            case 2:
+            default:
+              color = id(off_color);
+              break;
+          }
+          id(bg_color) = lv_color_make(color.red, color.green, color.blue);
+      - lvgl.widget.update:
+          id: soc_inner_circle_background
+          bg_color: !lambda return id(bg_color);
+      - lvgl.widget.update:
+          id: soc_inner_circle
+          border_color: !lambda return id(bg_color);
+      - lvgl.widget.update:
+          id: bg_img_bottom
+          bg_color: !lambda return id(bg_color);
   - id: lvgl_change_tile
     mode: single
     then:

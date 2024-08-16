@@ -38,6 +38,9 @@ globals:
   - id: is_automatic_tile_change
     type: bool
     initial_value: 'false'
+  - id: clr_num
+    type: uint8_t
+    initial_value: '0'
 
 wifi:
   on_connect:
