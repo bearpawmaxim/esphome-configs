@@ -1,6 +1,8 @@
 globals:
   - id: lv_bg_color
     type: lv_color_t
+  - id: lv_soc_color
+    type: lv_color_t
 
 font:
   - file: battery-controller/SquareDotMatrix.ttf
@@ -227,6 +229,9 @@ script:
       - lvgl.widget.update:
           id: bg_img_bottom
           bg_color: !lambda return id(lv_bg_color);
+      - lvgl.widget.update:
+          id: soc_lower_label
+          text_color: !lambda return id(lv_bg_color);
   - id: lvgl_change_tile
     mode: single
     then:
@@ -445,25 +450,46 @@ script:
                 text: !lambda return error.c_str();
           else:
             - lvgl.widget.hide: bms_errors_label
+  - id: lvgl_update_soc_gauge_labels
+    mode: single
+    parameters:
+      voltage_val: float
+      current_val: float
+    then:
+      - lvgl.label.update:
+          id: soc_upper_label
+          text:
+            format: "%.2fV"
+            args: '(float)(isnan(voltage_val) ? 0 : voltage_val)'
+      - lvgl.label.update:
+          id: soc_lower_label
+          text:
+            format: "%.0fA"
+            args: '(float)(isnan(current_val) ? 0 : current_val)'
   - id: lvgl_update_soc
     parameters:
       soc: float
     then:
+      - lambda: |-
+          lv_color_hsv_t lv_hsv_color = {};
+          lv_hsv_color.h = soc;
+          lv_hsv_color.s = 100;
+          lv_hsv_color.v = 100;
+          id(lv_soc_color) = lv_color_hsv_to_rgb(lv_hsv_color.h,
+            lv_hsv_color.s, lv_hsv_color.v);
       - lvgl.arc.update:
           id: soc_arc
           value: !lambda return soc;
           indicator:
-            arc_color: !lambda |-
-              lv_color_hsv_t lv_hsv_color = {};
-              lv_hsv_color.h = soc;
-              lv_hsv_color.s = 100;
-              lv_hsv_color.v = 100;
-              return lv_color_hsv_to_rgb(lv_hsv_color.h, lv_hsv_color.s, lv_hsv_color.v);
+            arc_color: !lambda return id(lv_soc_color);
       - lvgl.label.update:
-          id: soc_label
+          id: soc_center_label
           text:
             format: "%d%%"
             args: '(int)(isnan(soc) ? 0 : soc)'
+      - lvgl.widget.update:
+          id: soc_upper_label
+          text_color: !lambda return id(lv_soc_color);
   - id: lvgl_pause
     mode: single
     then:

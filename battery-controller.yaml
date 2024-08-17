@@ -14,7 +14,7 @@ packages:
     vars:
       jkbms_tx: ${jkbms_tx}
       jkbms_rx: ${jkbms_rx}
-  jkbms-faker: !include battery-controller/jkbms.faker.yaml
+  # jkbms-faker: !include battery-controller/jkbms.faker.yaml
   # powmr: !include
   #   file: battery-controller/powmr.yaml
   #   vars:

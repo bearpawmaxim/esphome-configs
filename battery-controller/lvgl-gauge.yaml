@@ -77,7 +77,17 @@
                       border_color: 0x5A646E
                       widgets:
                         - label:
-                            id: ${g_name}_label
+                            id: ${g_name}_upper_label
+                            width: SIZE_CONTENT
+                            height: SIZE_CONTENT
+                            x: 0
+                            y: -35
+                            align: CENTER
+                            text_color: 0xFFFFFF
+                            text: '00.00V'
+                            text_font: montserrat_16
+                        - label:
+                            id: ${g_name}_center_label
                             width: SIZE_CONTENT
                             height: SIZE_CONTENT
                             x: 0
@@ -86,3 +96,13 @@
                             text_color: 0xFFFFFF
                             text: '0%'
                             text_font: gauge_font
+                        - label:
+                            id: ${g_name}_lower_label
+                            width: SIZE_CONTENT
+                            height: SIZE_CONTENT
+                            x: 0
+                            y: 35
+                            align: CENTER
+                            text_color: 0xFFFFFF
+                            text: '0A'
+                            text_font: montserrat_16
