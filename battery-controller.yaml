@@ -7,7 +7,6 @@ substitutions:
   inverter_fctl: GPIO2
 
 packages:
-  colot_input: !include .light_color_input.yaml
   device_common: !include .device_common.yaml
   jkbms: !include 
     file: battery-controller/jkbms.yaml
@@ -142,14 +141,6 @@ light:
     id: backlight
     output: backlight_pwm
     restore_mode: ALWAYS_ON
-  - platform: rgb
-    id: !extend color_set
-    on_state:
-      - delay: 200ms
-      - lvgl.widget.update:
-          id: soc_inner_circle
-          border_color: !lambda |-
-            return lv_color_make(id(clr).red, id(clr).green, id(clr).blue);
 
 i80:
   - id: i80bus
@@ -183,19 +174,6 @@ display:
     transform:
       swap_xy: true
     auto_clear_enabled: false
-
-number:
-  - platform: template
-    name: Screen timeout
-    optimistic: true
-    id: display_timeout
-    unit_of_measurement: "s"
-    initial_value: 45
-    restore_value: true
-    min_value: 10
-    max_value: 180
-    step: 5
-    mode: box
 
 button:
   - id: turn_on_screen

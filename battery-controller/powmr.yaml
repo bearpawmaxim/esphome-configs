@@ -34,6 +34,10 @@ interval:
       - lambda: |-
           id(inverter_on) = !id(inverter_modbus_controller)->
             get_module_offline();
+      - script.execute:
+          id: lvgl_update_status_icon
+          name: inv_connection
+          is_on: !lambda return id(inverter_on);
 
 sensor:
   ###################################

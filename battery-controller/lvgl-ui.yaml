@@ -186,6 +186,19 @@ lvgl:
     then:
       - script.execute: lvgl_pause
 
+number:
+  - platform: template
+    name: Screen timeout
+    optimistic: true
+    id: display_timeout
+    unit_of_measurement: "s"
+    initial_value: 45
+    restore_value: true
+    min_value: 10
+    max_value: 180
+    step: 5
+    mode: box
+
 interval:
   - interval: 1sec
     id: update_time_interval

@@ -24,15 +24,19 @@ modbus:
     uart_id: inverter_uart
     send_wait_time: 200ms
     role: server
-    flow_control_pin: ${inverter_fctl}
+    # flow_control_pin: ${inverter_fctl}
 
 interval:
   - interval: 5sec
     id: update_inverter_state_interval
     then:
-      - lambda: |-
-          id(inverter_on) = !id(bms_emul_modbus_controller)->
-            get_module_offline();
+      # - lambda: |-
+      #     id(inverter_on) = !id(bms_emul_modbus_controller)->
+      #       get_module_offline();
+      - script.execute:
+          id: lvgl_update_status_icon
+          name: inv_connection
+          is_on: !lambda return id(inverter_on);
 
 # TODO: Add ds18b20 ?
 number:
@@ -61,18 +65,30 @@ modbus_controller:
       - address: 0x00 # Current
         value_type: S_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           return id(jkbms_current).state * 100;
       - address: 0x01 # Voltage
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           return id(jkbms_total_voltage).state * 100;
       - address: 0x02 # SOC
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           return id(jkbms_soc).state;
       - address: 0x03 # SOH
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           // Percentage between 4000 4000 cycles - current cycles count
           return 100 - (id(jkbms_charge_cycles_count).state / 40);
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x04, sensor: jkbms_capacity_remaining_ah } }
@@ -81,6 +97,9 @@ modbus_controller:
       - address: 0x07 # Charge cycles count
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           return id(jkbms_charge_cycles_count).state;
       - address: 0x08 # Reserved. Must be empty.
         value_type: U_WORD
@@ -89,6 +108,9 @@ modbus_controller:
       - address: 0x09 # Warning flags.
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           float max_pack_temp = std::max(
             id(jkbms_bat_temp1).state,
             id(jkbms_bat_temp2).state
@@ -144,6 +166,9 @@ modbus_controller:
       - address: 0x0A # Protection flags.
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           uint16_t error_bits = id(jkbms_error_bitmask).state;
           bool low_capacity = error_bits & (1 << 0);
           bool mos_overtemperature = error_bits & (1 << 1);
@@ -181,6 +206,9 @@ modbus_controller:
       - address: 0x0B # Fault/status flags.
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           uint16_t error_bits = id(jkbms_error_bitmask).state;
           bool cell_pressure_difference = error_bits & (1 << 7);
           static const bool sensors[16] = {
@@ -207,6 +235,9 @@ modbus_controller:
       - address: 0x0C # Balance status bits per cell.
         value_type: U_WORD
         read_lambda: |-
+          if (!id(inverter_on)) {
+            id(inverter_on) = true;
+          }
           return 0;
       # Cell voltages
       - <<: !include { file: ../pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x0F, sensor:  jkbms_cell_voltage_1 } }
