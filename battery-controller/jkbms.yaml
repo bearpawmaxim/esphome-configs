@@ -210,7 +210,7 @@ sensor:
         - script.execute:
             id: lvgl_update_label_value
             name: current
-            value: !lambda return value_accuracy_to_string(x, 0);
+            value: !lambda return value_accuracy_to_string(x, 2);
         - script.execute:
             id: lvgl_update_accent_color
             current_val: !lambda return x;
@@ -240,7 +240,7 @@ sensor:
         - script.execute:
             id: lvgl_update_label_value
             name: capacity
-            value: !lambda return value_accuracy_to_string(x, 0);
+            value: !lambda return value_accuracy_to_string(x, 2);
     min_cell_voltage:
       id: jkbms_min_cell_voltage
       name: "JKBMS min cell voltage"

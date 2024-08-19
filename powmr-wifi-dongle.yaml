@@ -1,0 +1,15 @@
+substitutions:
+  device_name: "powmr-wifi-dongle"
+
+packages:
+  device_common: !include .device_common.yaml
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+
+# Enable logging
+logger:
+  baud_rate: 0
+

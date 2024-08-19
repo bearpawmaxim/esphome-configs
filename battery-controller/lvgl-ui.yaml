@@ -150,9 +150,9 @@ lvgl:
                   - obj:
                       <<: !include lvgl-tile-container.yaml
                       widgets:
-                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: charge,    sw_capt: Charge,    sw_readonly: false } }
-                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: discharge, sw_capt: Discharge, sw_readonly: false } }
-                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: balance,   sw_capt: Balance,   sw_readonly: true  } }
+                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: charge,    sw_capt: Charge,    sw_readonly: true } }
+                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: discharge, sw_capt: Discharge, sw_readonly: true } }
+                        - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: balance,   sw_capt: Balance,   sw_readonly: true } }
               - row: 0
                 column: 3
                 id: tile_voltages
@@ -477,7 +477,7 @@ script:
       - lvgl.label.update:
           id: soc_lower_label
           text:
-            format: "%.0fA"
+            format: "%.2fA"
             args: '(float)(isnan(current_val) ? 0 : current_val)'
   - id: lvgl_update_soc
     parameters:

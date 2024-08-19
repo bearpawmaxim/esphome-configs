@@ -14,14 +14,14 @@ esphome:
     - battery-controller/pace_bms_utils.h
 
 uart:
-  - id: inverter_uart
-    tx_pin: ${inverter_tx}
-    rx_pin: ${inverter_rx}
+  - id: bms_emul_uart
+    tx_pin: ${bms_emul_tx}
+    rx_pin: ${bms_emul_rx}
     baud_rate: 9600
 
 modbus:
   - id: bms_emul_modbus
-    uart_id: inverter_uart
+    uart_id: bms_emul_uart
     send_wait_time: 200ms
     role: server
     # flow_control_pin: ${inverter_fctl}
@@ -239,6 +239,8 @@ modbus_controller:
             id(inverter_on) = true;
           }
           return 0;
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x0D } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x0E } }
       # Cell voltages
       - <<: !include { file: ../pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x0F, sensor:  jkbms_cell_voltage_1 } }
       - <<: !include { file: ../pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x10, sensor:  jkbms_cell_voltage_2 } }
@@ -260,9 +262,33 @@ modbus_controller:
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x1F, sensor:     jkbms_bat_temp1 } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x20, sensor:     jkbms_bat_temp2 } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x21, sensor:     jkbms_bat_temp1 } }
-      - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x22, sensor:     jkbms_bat_temp1 } }
+      - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x22, sensor:     jkbms_bat_temp2 } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x23, sensor:      jkbms_mos_temp } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x24, sensor: jkbms_fake_env_temp } }
+      # Reserved
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x25 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x26 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x27 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x28 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x29 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x2A } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x2B } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x2C } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x2D } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x2E } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x2F } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x30 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x31 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x32 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x33 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x34 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x35 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x36 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x37 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x38 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x39 } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x3A } }
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x3B } }
       # Version information registers (20 bytes)
       - <<: !include { file: ../pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x96, str_var: bms_version_info, offset:  0 } }
       - <<: !include { file: ../pace-bms-emulator/string-part-value-register.yaml, vars: { addr: 0x97, str_var: bms_version_info, offset:  2 } }

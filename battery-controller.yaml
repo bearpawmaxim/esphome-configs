@@ -2,9 +2,9 @@ substitutions:
   device_name: battery-controller
   jkbms_tx: GPIO10
   jkbms_rx: GPIO11
-  inverter_tx: GPIO42
-  inverter_rx: GPIO1
-  inverter_fctl: GPIO2
+  bms_emul_tx: GPIO42
+  bms_emul_rx: GPIO1
+  bms_emul_fctl: GPIO2
 
 packages:
   device_common: !include .device_common.yaml
@@ -23,9 +23,9 @@ packages:
   pace-bms: !include
     file: battery-controller/pace-bms-emulator.yaml
     vars:
-      inverter_tx:   ${inverter_tx}
-      inverter_rx:   ${inverter_rx}
-      inverter_fctl: ${inverter_fctl}
+      bms_emul_tx:   ${bms_emul_tx}
+      bms_emul_rx:   ${bms_emul_rx}
+      bms_emul_fctl: ${bms_emul_fctl}
 
 globals:
   - id: inverter_on
@@ -97,6 +97,11 @@ external_components:
 
 logger:
   baud_rate: 0
+  level: DEBUG
+  logs:
+    sensor: ERROR
+    modbus: DEBUG
+    modbus_controller: DEBUG
 
 debug:
 
