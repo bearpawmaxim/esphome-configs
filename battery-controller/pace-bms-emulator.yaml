@@ -18,6 +18,12 @@ uart:
     tx_pin: ${bms_emul_tx}
     rx_pin: ${bms_emul_rx}
     baud_rate: 9600
+    debug:
+      direction: BOTH
+      dummy_receiver: false
+      sequence:
+        - lambda: |-
+            UARTDebug::log_hex(direction, bytes, ':');
 
 modbus:
   - id: bms_emul_modbus

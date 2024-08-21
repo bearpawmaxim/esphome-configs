@@ -20,22 +20,22 @@ packages:
   #     inverter_tx: GPIO43
   #     inverter_rx: GPIO44
   lvgl-ui: !include battery-controller/lvgl-ui.yaml
-  # pace-bms: !include
-  #  file: battery-controller/pace-bms-emulator.yaml
-  #  vars:
-  #    bms_emul_tx:   ${bms_emul_tx}
-  #    bms_emul_rx:   ${bms_emul_rx}
-  #    bms_emul_fctl: ${bms_emul_fctl}
+  pace-bms: !include
+   file: battery-controller/pace-bms-emulator.yaml
+   vars:
+     bms_emul_tx:   ${bms_emul_tx}
+     bms_emul_rx:   ${bms_emul_rx}
+     bms_emul_fctl: ${bms_emul_fctl}
 
-uart:
-  - id: dbg485
-    rx_pin: GPIO01
-    baud_rate: 9600
-    debug:
-      direction: RX
-      dummy_receiver: true
-      sequence:
-        - lambda: UARTDebug::log_hex(esphome::uart::UARTDirection::UART_DIRECTION_RX, bytes, ':');
+# uart:
+#   - id: dbg485
+#     rx_pin: GPIO01
+#     baud_rate: 9600
+#     debug:
+#       direction: RX
+#       dummy_receiver: true
+#       sequence:
+#         - lambda: UARTDebug::log_hex(esphome::uart::UARTDirection::UART_DIRECTION_RX, bytes, ':');
 
 globals:
   - id: inverter_on
@@ -101,8 +101,6 @@ psram:
 external_components:
   - source: github://pr#6537
     components: [ io_bus, i80, spi, ili9xxx ]
-  - source: github://pr#7184
-    components: [ lvgl ]
   - source: github://syssi/esphome-jk-bms@main
 
 logger:

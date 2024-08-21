@@ -13,3 +13,7 @@ esphome:
 logger:
   baud_rate: 0
 
+# leds:
+# NET - GPIO4
+# COM - GPIO5
+# SRV - GPIO0
