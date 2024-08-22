@@ -12,4 +12,4 @@ layout:
   flex_align_main: SPACE_AROUND
   flex_align_track: CENTER
   flex_align_cross: SPACE_AROUND
-pad_row: 0
+  pad_row: 0
