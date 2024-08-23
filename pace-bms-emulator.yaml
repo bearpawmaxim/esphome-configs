@@ -20,6 +20,32 @@ globals:
     type: std::string
     initial_value: '"FakePackSN001"'
 
+# uart:
+#   - id: uart_0
+#     rx_pin: GPIO16
+#     tx_pin: GPIO17
+#     baud_rate: 9600
+#     debug:
+#       direction: BOTH
+#       dummy_receiver: true
+#       sequence:
+#         - lambda: UARTDebug::log_hex(direction, bytes, ':');
+#         - lambda: |-
+#             std::vector<uint8_t> payload = {
+#               0x01, 0x03, 0x52, 0xFF, 0xC7, 0x15, 0xFA, 0x00, 
+#               0x64, 0x00, 0x64, 0x79, 0x18, 0x79, 0x18, 0x79, 
+#               0x18, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x33, 0x00, 
+#               0x00, 0x0F, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 
+#               0xFF, 0x0D, 0xB3, 0x0D, 0xFC, 0x0D, 0xFA, 0x0D, 
+#               0xFA, 0x0D, 0xFC, 0x0D, 0xFA, 0x0D, 0xFC, 0x0D, 
+#               0xFC, 0x0D, 0xFA, 0x0D, 0xFC, 0x0D, 0xFC, 0x0D, 
+#               0xFC, 0x0D, 0x13, 0x0D, 0x13, 0x0D, 0x11, 0x0D, 
+#               0x13, 0x01, 0x22, 0x01, 0x22, 0x01, 0x22, 0x01, 
+#               0x22, 0x01, 0x5E, 0x00, 0xFA, 0xFF, 0xFF, 0xFF, 
+#               0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xE8, 0x8F
+#             };
+#             id(uart_0).write_array(payload.data(), payload.size());
+
 switch:
   # Warning flags
   - <<: !include { file: pace-bms-emulator/bit-flag-template-switch.yaml, vars: { name: "${name}", s_name:   cell_ovp_warn, s_h_name:             "WARN: Cell overvoltage" } }
@@ -186,10 +212,7 @@ modbus_controller:
         value_type: U_WORD
         read_lambda: |-
           return id(pbms_emul_cycles_count).state;
-      - address: 0x08 # Reserved. Must be empty.
-        value_type: U_WORD
-        read_lambda: |-
-          return 0;
+      - <<: !include { file: pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x08 } }
       - address: 0x09 # Warning flags.
         value_type: U_WORD
         read_lambda: |-
@@ -262,6 +285,8 @@ modbus_controller:
         value_type: U_WORD
         read_lambda: |-
           return 0;
+      - <<: !include { file: pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x0D } }
+      - <<: !include { file: pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x0E } }
       # Cell voltages
       - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x0F, sensor:  pbms_emul_cell_v_1 } }
       - <<: !include { file: pace-bms-emulator/cell-voltage-value-register.yaml, vars: { addr: 0x10, sensor:  pbms_emul_cell_v_2 } }

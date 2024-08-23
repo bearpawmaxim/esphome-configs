@@ -1,4 +1,4 @@
 - address: ${addr}
-  value_type: S_WORD
+  value_type: U_WORD
   read_lambda: |-
-    return id(${sensor}).state * 100.0f;
+    return (uint16_t)(id(${sensor}).state * 100.0f);

@@ -18,19 +18,19 @@ uart:
     tx_pin: ${bms_emul_tx}
     rx_pin: ${bms_emul_rx}
     baud_rate: 9600
-    # debug:
-    #   direction: BOTH
-    #   dummy_receiver: false
-    #   sequence:
-    #     - lambda: |-
-    #         UARTDebug::log_hex(direction, bytes, ':');
+    debug:
+      direction: BOTH
+      dummy_receiver: false
+      sequence:
+        - lambda: |-
+            UARTDebug::log_hex(direction, bytes, ':');
 
 modbus:
   - id: bms_emul_modbus
     uart_id: bms_emul_uart
     send_wait_time: 200ms
     role: server
-    # flow_control_pin: ${inverter_fctl}
+    flow_control_pin: ${bms_emul_fctl}
 
 interval:
   - interval: 5sec
@@ -88,7 +88,7 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          return id(jkbms_soc).state;
+          return (uint16_t)(id(jkbms_soc).state);
       - address: 0x03 # SOH
         value_type: U_WORD
         read_lambda: |-
@@ -96,7 +96,7 @@ modbus_controller:
             id(inverter_on) = true;
           }
           // Percentage between 4000 4000 cycles - current cycles count
-          return 100 - (id(jkbms_charge_cycles_count).state / 40);
+          return (uint16_t)(100 - (id(jkbms_charge_cycles_count).state / 40));
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x04, sensor: jkbms_capacity_remaining_ah } }
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x05, sensor:       jkbms_actual_capacity } }
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x06, sensor:       jkbms_actual_capacity } }
@@ -106,11 +106,8 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          return id(jkbms_charge_cycles_count).state;
-      - address: 0x08 # Reserved. Must be empty.
-        value_type: U_WORD
-        read_lambda: |-
-          return 0;
+          return (uint16_t)id(jkbms_charge_cycles_count).state;
+      - <<: !include { file: ../pace-bms-emulator/dummy-zero-register.yaml, vars: { addr: 0x08 } }
       - address: 0x09 # Warning flags.
         value_type: U_WORD
         read_lambda: |-

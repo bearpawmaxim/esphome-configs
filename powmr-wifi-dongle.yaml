@@ -9,7 +9,6 @@ esphome:
   platform: ESP8266
   board: esp01_1m
 
-# Enable logging
 logger:
   baud_rate: 0
 
@@ -17,3 +16,23 @@ logger:
 # NET - GPIO4
 # COM - GPIO5
 # SRV - GPIO0
+status_led:
+  pin:
+    number: GPIO4
+    inverted: yes
+
+output:
+  - platform: gpio
+    id: com_led
+    pin:
+      number: GPIO5
+      inverted: true
+  - platform: gpio
+    id: src_led
+    pin:
+      number: GPIO0
+      inverted: true
+
+# uart:
+# TX  - GPIO1
+# RX  - GPIO3
