@@ -74,14 +74,14 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          return id(jkbms_current).state * 100;
+          return (int16_t)(id(jkbms_current).state * 100);
       - address: 0x01 # Voltage
         value_type: U_WORD
         read_lambda: |-
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          return id(jkbms_total_voltage).state * 100;
+          return (uint16_t)(id(jkbms_total_voltage).state * 100);
       - address: 0x02 # SOC
         value_type: U_WORD
         read_lambda: |-
@@ -182,7 +182,7 @@ modbus_controller:
           bool discharging_overcurrent = error_bits & (1 << 6);
           bool cell_pressure_difference = error_bits & (1 << 7);
           bool overtemperature_alarm_in_the_battery_box = error_bits & (1 << 8);
-          bool battery_low_temperature = error_bits & (1 << 9);
+          bool battery_undertemperature = error_bits & (1 << 9);
           bool cell_overvoltage = error_bits & (1 << 10);
           bool cell_undervoltage = error_bits & (1 << 11);
           bool protection_309_A = error_bits & (1 << 12);
@@ -198,8 +198,8 @@ modbus_controller:
             charging_overvoltage,                 // Charging overvoltage protection.
             battery_overtemperature,              // Charging overtemperature protection.
             battery_overtemperature,              // Discharging overtemperature protection.
-            battery_low_temperature,              // Charging undertemperature protection.
-            battery_low_temperature,              // Discharging undertemperature protection.
+            battery_undertemperature,             // Charging undertemperature protection.
+            battery_undertemperature,             // Discharging undertemperature protection.
             mos_overtemperature,                  // MOSFET overtemperature protection.
             false,                                // Environment overtemperature protection.
             false,                                // Environment undertemperature protection.
