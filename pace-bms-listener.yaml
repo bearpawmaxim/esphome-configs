@@ -1489,8 +1489,7 @@ text_sensor:
           "Low state of charge",           // 1000 0000 0000 0000 (16)
       };
       std::string values = "";
-
-      uint16_t mask = modbus_controller::word_from_hex_str("0033", 0);
+      uint16_t mask = modbus_controller::word_from_hex_str("0000", 0);
       if (mask) {
         for (int i = 0; i < WARNINGS_SIZE; i++) {
           if (mask & (1 << i)) {
@@ -1535,7 +1534,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint16_t mask = modbus_controller::word_from_hex_str(x, 0);
+      uint16_t mask = modbus_controller::word_from_hex_str("0084", 0);
       if (mask) {
         for (int i = 0; i < PROTECTIONS_SIZE; i++) {
           if (mask & (1 << i)) {
@@ -1572,7 +1571,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint16_t mask = modbus_controller::word_from_hex_str("0F00", 0);
+      uint16_t mask = modbus_controller::word_from_hex_str("0C00", 0);
       if (mask) {
         for (int i = 0; i < FAULTS_SIZE; i++) {
           if (mask & (1 << i)) {
@@ -1609,7 +1608,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint16_t mask = modbus_controller::word_from_hex_str("0f00", 0);
+      uint16_t mask = modbus_controller::word_from_hex_str("0C00", 0);
       if (mask) {
         for (int i = 8; i < (STATUS_SIZE+8); i++) {
           if (mask & (1 << i)) {
