@@ -1571,7 +1571,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint16_t mask = modbus_controller::word_from_hex_str("0C00", 0);
+      uint16_t mask = modbus_controller::word_from_hex_str("0E00", 0);
       if (mask) {
         for (int i = 0; i < FAULTS_SIZE; i++) {
           if (mask & (1 << i)) {
@@ -1608,7 +1608,7 @@ text_sensor:
       };
       std::string values = "";
 
-      uint16_t mask = modbus_controller::word_from_hex_str("0C00", 0);
+      uint16_t mask = modbus_controller::word_from_hex_str("0E00", 0);
       if (mask) {
         for (int i = 8; i < (STATUS_SIZE+8); i++) {
           if (mask & (1 << i)) {
