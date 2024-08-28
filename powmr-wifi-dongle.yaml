@@ -3,8 +3,8 @@ substitutions:
   inverter_voltage_offset: "0"
   update_interval: 30s # Minimum 10s recommended to avoid duplicate command errors
   select_skip_updates: "2"
-  uart_tx_pin: GPIO1
-  uart_rx_pin: GPIO3
+  inverter_tx: GPIO1
+  inverter_rx: GPIO3
   inverter_maximum_power: "10200"
   friendly_name: POWMR WiFi dongle
 
@@ -15,12 +15,8 @@ globals:
 
 packages:
   device_common: !include .device_common.yaml
-  inv_8851:
-    url: https://github.com/lufton/esphome-inv-8851
-    ref: main
-    files:
-      - packages/core.yaml
-      - packages/inverter.yaml
+  # core_inv: !include powmr-wifi-dongle/core.yaml
+  # inv: !include powmr-wifi-dongle/inverter.yaml
       # - packages/grid.yaml
       # - packages/temperature.yaml
       # - packages/battery.yaml
@@ -28,7 +24,6 @@ packages:
       # - packages/pv.yaml
       # - packages/parallel.yaml
       # - packages/bms-48v.yaml
-    refresh: 0s
 
 esphome:
   name: ${device_name}
@@ -75,3 +70,32 @@ status_led:
 #     id: srv_led
 #     output: srv_led_out
 #     internal: true
+
+uart:
+  - id: inverter_uart
+    tx_pin: ${inverter_tx}
+    rx_pin: ${inverter_rx}
+    baud_rate: 9600
+
+modbus:
+  - id: inverter_modbus
+    uart_id: inverter_uart
+    send_wait_time: 250ms
+
+modbus_controller:
+  - id: inverter_modbus_controller
+    address: 0x05
+    modbus_id: inverter_modbus
+    setup_priority: -10
+    offline_skip_updates: 100
+    command_throttle: 1s
+    update_interval: ${update_interval}
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: inverter_modbus_controller
+    name: "POWMR Grid Active"
+    id: powmr_grid_active
+    address: 4554
+    register_type: holding
+    bitmask: 0x8000

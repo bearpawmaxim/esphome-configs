@@ -294,8 +294,10 @@ modbus_controller:
           bool cell_pressure_difference = error_bits & (1 << 7);
           float current = id(jkbms_current).state;
           bool is_zero_current = std::abs(current) > 0;
-          bool is_charging = is_zero_current && current > 0;
-          bool is_discharging = is_zero_current && current < 0;
+          bool is_charging_en = id(jkbms_charging);
+          bool is_charging = !is_zero_current && is_charging_en && current > 0;
+          bool is_discharging_en = id(jkbms_discharging);
+          bool is_discharging = !is_zero_current && is_discharging_en && current < 0;
           static const bool sensors[16] = {
             // Faults
             false,                              // Charge MOSFET fault.
@@ -309,8 +311,8 @@ modbus_controller:
             // Statuses
             is_charging,                        // Charging.
             is_discharging,                     // Discharging.
-            id(jkbms_charging).state,           // Charging enabled.
-            id(jkbms_discharging).state,        // Discharging enabled.
+            id(jkbms_charging_switch).state,           // Charging enabled.
+            id(jkbms_discharging_switch).state,        // Discharging enabled.
             false,                              // Charging current limit.
             false,                              // Reserved. Do not set.
             false,                              // Charger inverted.

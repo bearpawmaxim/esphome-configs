@@ -1,0 +1,23 @@
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  comment: "Inverter DTU"
+  project:
+    name: "lufton.esphome-inv-8851"
+    version: 1.0.0
+  libraries:
+    - leodesigner/PowMr_4500_regmap
+
+
+uart:
+  - id: inv_8851_uart
+    baud_rate: 9600
+    tx_pin: ${uart_tx_pin}
+    rx_pin: ${uart_rx_pin}
+
+external_components:
+  - source: github://lufton/esphome-inv-8851@main
+    refresh: 0s
+
+inv_8851:
+  update_interval: 5s
