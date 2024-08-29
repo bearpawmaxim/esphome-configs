@@ -32,16 +32,6 @@ packages:
   #     bms_emul_tx:   ${bms_emul_tx}
   #     bms_emul_rx:   ${bms_emul_rx}
 
-# uart:
-#   - id: dbg485
-#     rx_pin: GPIO01
-#     baud_rate: 9600
-#     debug:
-#       direction: RX
-#       dummy_receiver: true
-#       sequence:
-#         - lambda: UARTDebug::log_hex(esphome::uart::UARTDirection::UART_DIRECTION_RX, bytes, ':');
-
 globals:
   - id: inverter_on
     type: bool

@@ -1,0 +1,11 @@
+esphome:
+  name: powmr-wifi-dongle-32
+  friendly_name: powmr-wifi-dongle-32
+
+packages:
+  devicecommon: !include .device_common.yaml
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
