@@ -21,3 +21,4 @@ external_components:
 
 inv_8851:
   update_interval: 5s
+  version: ${version}
