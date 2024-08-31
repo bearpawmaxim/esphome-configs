@@ -5,6 +5,14 @@ substitutions:
   button_pin: GPIO0
   delay_time: 1min
 
+globals:
+  - id: error_ms
+    type: uint16_t
+    initial_value: "1000"
+  - id: last_update
+    type: ulong
+    initial_value: "millis()"
+
 packages:
   device_common: !include .device_common.yaml
   delayed_start: !include .sonoff_delayed_start.yaml
@@ -25,12 +33,16 @@ uart:
 
 sensor:
   - platform: pzemac
+    id: pzem1
     current:
       name: "Mains Current"
       id: mains_current
     voltage:
       name: "Mains Voltage"
       id: mains_voltage
+      on_value:
+        - lambda: |-
+            id(last_update) = millis();
     energy:
       name: "Mains Energy"
       id: mains_energy
@@ -55,6 +67,26 @@ sensor:
     accuracy_decimals: 2
     device_class: energy
     state_class: total_increasing
+
+interval:
+  - interval: 60s
+    then:
+      - lambda: |-
+          ulong now = millis();
+          ulong valid_update_timeout = id(pzem1).get_update_interval() +
+            id(error_ms);
+          ulong last_valid_update = id(last_update) +
+            valid_update_timeout;
+          if (last_valid_update < now) {
+            ESP_LOGW("PZEM", "No readings received within %d seconds. Sending state 0.",
+              (ulong)(valid_update_timeout / 1000));
+            id(mains_current)->publish_state(0.0);
+            id(mains_voltage)->publish_state(0.0);
+            // id(mains_energy)->publish_state(0.0);
+            id(mains_power)->publish_state(0.0);
+            id(mains_frequency)->publish_state(0.0);
+            id(mains_power_factor)->publish_state(0.0);
+          }
 
 button:
   - platform: template
