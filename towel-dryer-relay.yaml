@@ -2,9 +2,15 @@ esphome:
   name: ${device_name}
   friendly_name: towel dryer relay
 
+globals:
+  - id: pulse_len
+    type: uint8_t
+    initial_value: "0"
+
 # TODO: calibrate
 substitutions:
   device_name: towel-dryer-relay
+  device_name_underscore: towel_dryer_relay
   # Higher value gives lower watt readout
   current_res: "0.00280"
   # Lower value gives lower voltage readout
@@ -16,10 +22,24 @@ esp8266:
 packages:
   device_common: !include .device_common.yaml
 
+output:
+  - platform: template
+    id: power_status_led_output
+    type: binary
+    write_action:
+      if:
+        condition:
+          lambda: return state;
+        then:
+          light.turn_on: led
+        else:
+          light.turn_off: led
+
 light:
   - platform: status_led
     id: led
     restore_mode: RESTORE_DEFAULT_ON
+    internal: true
     pin:
       number: GPIO13
       inverted: true
@@ -61,7 +81,7 @@ switch:
 sensor:
   - platform: total_daily_energy
     name: "${device_name} - Total daily energy"
-    power_id: "nous_a1t_watt"
+    power_id: "${device_name_underscore}_power"
     filters:
       # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
@@ -83,21 +103,20 @@ sensor:
     current_resistor: ${current_res}
     voltage_divider: ${voltage_div}
     update_interval: 3s
-
     current:
-      name: "${device_name} - Ampere"
+      name: "${device_name} - Current"
+      id: "${device_name_underscore}_current"
       unit_of_measurement: A
       accuracy_decimals: 3
       icon: mdi:current-ac
-
     voltage:
       name: "${device_name} - Voltage"
+      id: "${device_name_underscore}_voltage"
       unit_of_measurement: V
       accuracy_decimals: 1
       icon: mdi:flash-outline
-
     power:
       name: "${device_name} - Power"
-      id: "nous_a1t_watt"
+      id: "${device_name_underscore}_power"
       unit_of_measurement: W
       icon: mdi:gauge
