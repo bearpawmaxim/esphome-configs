@@ -2,11 +2,6 @@ esphome:
   name: ${device_name}
   friendly_name: towel dryer relay
 
-globals:
-  - id: pulse_len
-    type: uint8_t
-    initial_value: "0"
-
 # TODO: calibrate
 substitutions:
   device_name: towel-dryer-relay
@@ -21,19 +16,6 @@ esp8266:
 
 packages:
   device_common: !include .device_common.yaml
-
-output:
-  - platform: template
-    id: power_status_led_output
-    type: binary
-    write_action:
-      if:
-        condition:
-          lambda: return state;
-        then:
-          light.turn_on: led
-        else:
-          light.turn_off: led
 
 light:
   - platform: status_led
@@ -80,7 +62,8 @@ switch:
 
 sensor:
   - platform: total_daily_energy
-    name: "${device_name} - Total daily energy"
+    name: "${device_name} - Total daily energy (kWh)"
+    id: "${device_name_underscore}_total_daily_energy"
     power_id: "${device_name_underscore}_power"
     filters:
       # Multiplication factor from W to kW is 0.001
