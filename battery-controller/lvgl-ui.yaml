@@ -480,6 +480,8 @@ script:
             format: "%.2fA"
             args: '(float)(isnan(current_val) ? 0 : current_val)'
   - id: lvgl_update_soc
+    mode: single
+    max_runs: 1
     parameters:
       soc: float
     then:

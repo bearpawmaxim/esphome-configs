@@ -1,0 +1,86 @@
+substitutions:
+  device_name: battery-controller
+# new
+#  rx_pin: GPIO16 - 
+#  tx_pin: GPIO17 - 
+# old
+#  jkbms_tx: GPIO10 - yellow
+#  jkbms_rx: GPIO11 - green
+  jkbms_tx: GPIO17
+  jkbms_rx: GPIO16
+
+external_components:
+  - source: github://syssi/esphome-jk-bms@main
+
+esphome:
+  name: temp-battery-controller
+  friendly_name: temp-battery-controller
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+packages:
+  device_common: !include .device_common.yaml
+  jkbms: !include 
+    file: battery-controller/jkbms.yaml
+    vars:
+      jkbms_tx: ${jkbms_tx}
+      jkbms_rx: ${jkbms_rx}
+
+status_led:
+  pin:
+    number: GPIO2
+    inverted: yes
+
+script:
+  - id: lvgl_update_label_value
+    parameters:
+      name: string
+      value: string
+    mode: queued
+    max_runs: 30
+    then:
+  - id: lvgl_update_switch_value
+    parameters:
+      name: string
+      value: bool
+    mode: queued
+    max_runs: 3
+    then:
+  - id: lvgl_update_status_icon
+    parameters:
+      name: string
+      is_on: bool
+    mode: queued
+    max_runs: 3
+    then:
+  - id: lvgl_update_cell_voltage_value
+    parameters:
+      cell_num: uint8_t
+      value: float
+    mode: queued
+    max_runs: 16
+    then:
+  - id: lvgl_update_error_label
+    parameters:
+      error: string
+    then:
+  - id: lvgl_update_soc_gauge_labels
+    mode: single
+    parameters:
+      voltage_val: float
+      current_val: float
+    then:
+  - id: lvgl_update_accent_color
+    mode: single
+    parameters:
+      current_val: float
+      is_balancing: bool
+    then:
+  - id: lvgl_update_soc
+    mode: single
+    parameters:
+      soc: float
+    then:

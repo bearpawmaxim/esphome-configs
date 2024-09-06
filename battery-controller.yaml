@@ -100,15 +100,18 @@ external_components:
 
 logger:
   baud_rate: 0
-  level: DEBUG
+  level: WARN
   logs:
-    sensor: ERROR
-    text_sensor: ERROR
-    modbus: DEBUG
-    modbus_controller: DEBUG
-    uart: DEBUG
+  #   sensor: ERROR
+  #   text_sensor: ERROR
+    modbus: ERROR
+    lvgl: ERROR
+    interval: ERROR
     component: ERROR
-    jk_bms: ERROR
+  #   modbus_controller: DEBUG
+  #   uart: DEBUG
+  #   component: ERROR
+  #   jk_bms: ERROR
 
 debug:
 

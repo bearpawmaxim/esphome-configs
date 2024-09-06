@@ -23,7 +23,17 @@ uart:
       dummy_receiver: false
       sequence:
         - lambda: |-
-            UARTDebug::log_hex(direction, bytes, ':');
+            //UARTDebug::log_hex(direction, bytes, ':');
+            if (direction == UART_DIRECTION_TX) {
+              std::string res = "";
+              size_t len = bytes.size();
+              char buf[5];
+              for (size_t i = 0; i < len; i++) {
+                sprintf(buf, "%02X", bytes[i]);
+                res += buf;
+              }
+              id(jkbms_sent_pace_bytes).publish_state(res);
+            }
 
 modbus:
   - id: bms_emul_modbus
@@ -54,6 +64,9 @@ text_sensor:
   - platform: template
     id: jkbms_sent_pace_faults
     name: JKBMS Pace faults sent
+  - platform: template
+    id: jkbms_sent_pace_bytes
+    name: JKBMS Pace bytes sent
 
 # TODO: Add ds18b20 ?
 number:
@@ -78,6 +91,7 @@ modbus_controller:
   - id: bms_emul_modbus_controller
     address: 0x01
     modbus_id: bms_emul_modbus
+    # command_throttle: 200ms
     server_registers:
       - address: 0x00 # Current
         value_type: S_WORD
@@ -103,11 +117,11 @@ modbus_controller:
       - address: 0x03 # SOH
         value_type: U_WORD
         read_lambda: |-
-          if (!id(inverter_on)) {
+          return (uint16_t)(100 - (id(jk          if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
           // Percentage between 4000 and (4000 cycles - current cycles count)
-          return (uint16_t)(100 - (id(jkbms_charge_cycles_count).state / 40));
+bms_charge_cycles_count).state / 40));
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x04, sensor: jkbms_capacity_remaining_ah } }
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x05, sensor:       jkbms_actual_capacity } }
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x06, sensor:       jkbms_actual_capacity } }
@@ -139,7 +153,7 @@ modbus_controller:
             id(jkbms_max_cell_voltage).state;
           bool cell_undervoltage = id(jkbms_cell_undervoltage_protection).state >=
             id(jkbms_min_cell_voltage).state;
-          bool is_pack_overvoltage = id(jkbms_pack_overvoltage_protection).state <= 
+          bool is_pack_overvoltage = id(jkbms_pack_overvoltage_protection).state <=
             id(jkbms_total_voltage).state;
           bool is_pack_undervoltage = id(jkbms_pack_undervoltage_protection).state >=
             id(jkbms_total_voltage).state;
@@ -159,7 +173,7 @@ modbus_controller:
             >= id(jkbms_mos_overtemperature_protection).state;
           uint16_t error_bits = id(jkbms_error_bitmask).state;
           bool is_low_soc = error_bits & (1 << 0);
-          static const bool sensors[16] = {
+          bool sensors[16] = {
             cell_overvoltage,                // Cell overvoltage warning.
             cell_undervoltage,               // Cell undervoltage warning.
             is_pack_overvoltage,             // Pack overvoltage warning.
@@ -179,35 +193,9 @@ modbus_controller:
           };
           uint16_t mask = pack_flags16(sensors, 16);
           static const uint8_t WARNINGS_SIZE = 16;
-          static const char *const WARNINGS[WARNINGS_SIZE] = {
-            "Cell overvoltage",              // 0000 0000 0000 0001 (1)
-            "Cell undervoltage",             // 0000 0000 0000 0010 (2)
-            "Pack overvoltage",              // 0000 0000 0000 0100 (3)
-            "Pack undervoltage",             // 0000 0000 0000 1000 (4)
-            "Charging overcurrent",          // 0000 0000 0001 0000 (5)
-            "Discharging overcurrent",       // 0000 0000 0010 0000 (6)
-            "Reserve (Bit 7)",               // 0000 0000 0100 0000 (7)
-            "Reserve (Bit 8)",               // 0000 0000 1000 0000 (8)
-            "Charging overtemperature",      // 0000 0001 0000 0000 (9)
-            "Discharging overtemperature",   // 0000 0010 0000 0000 (10)
-            "Charging undertemperature",     // 0000 0100 0000 0000 (11)
-            "Discharging undertemperature",  // 0000 1000 0000 0000 (12)
-            "Environment overtemperature",   // 0001 0000 0000 0000 (13)
-            "Environment undertemperature",  // 0010 0000 0000 0000 (14)
-            "MOSFET overtemperature",        // 0100 0000 0000 0000 (15)
-            "Low state of charge",           // 1000 0000 0000 0000 (16)
-          };
-          std::string values = "";
-          if (mask) {
-            for (int i = 0; i < WARNINGS_SIZE; i++) {
-              if (mask & (1 << i)) {
-                values.append(WARNINGS[i]);
-                values.append(";");
-              }
-            }
-            if (!values.empty()) {
-              values.pop_back();
-            }
+          std::string values = "0b";
+          for (int i = 0; i < WARNINGS_SIZE; i++) {
+            values.append((mask & (1 << i)) ? "1" : "0");
           }
           id(jkbms_sent_pace_warnings).publish_state(values);
           return mask;
@@ -230,57 +218,33 @@ modbus_controller:
           bool battery_undertemperature = error_bits & (1 << 9);
           bool cell_overvoltage = error_bits & (1 << 10);
           bool cell_undervoltage = error_bits & (1 << 11);
-          bool protection_309_A = error_bits & (1 << 12);
-          bool protection_309_B = error_bits & (1 << 13);
-          static const bool sensors[16] = {
-            cell_overvoltage,                     // Cell overvoltage protection.
-            cell_undervoltage,                    // Cell undervoltage protection.
-            charging_overvoltage,                 // Pack overvoltage protection.
-            discharging_undervoltage,             // Pack undervoltage protection.
-            charging_overcurrent,                 // Charging overcurrent protection.
-            discharging_overcurrent,              // Discharging overcurrent protection.
-            protection_309_A || protection_309_B, // Short circuit protection.
-            charging_overvoltage,                 // Charging overvoltage protection.
-            battery_overtemperature,              // Charging overtemperature protection.
-            battery_overtemperature,              // Discharging overtemperature protection.
-            battery_undertemperature,             // Charging undertemperature protection.
-            battery_undertemperature,             // Discharging undertemperature protection.
-            mos_overtemperature,                  // MOSFET overtemperature protection.
-            false,                                // Environment overtemperature protection.
-            false,                                // Environment undertemperature protection.
-            false,                                // Reserved. Do not set.
+          // bool protection_309_A = error_bits & (1 << 12);
+          // bool protection_309_B = error_bits & (1 << 13);
+          bool is_charging = id(jkbms_charging);
+          bool is_discharging = id(jkbms_discharging);
+          bool sensors[16] = {
+            cell_overvoltage,                           // Cell overvoltage protection.
+            cell_undervoltage,                          // Cell undervoltage protection.
+            charging_overvoltage,                       // Pack overvoltage protection.
+            discharging_undervoltage,                   // Pack undervoltage protection.
+            charging_overcurrent,                       // Charging overcurrent protection.
+            discharging_overcurrent,                    // Discharging overcurrent protection.
+            false,                                      // Short circuit protection.
+            false,                                      // Charging overvoltage protection.
+            battery_overtemperature && is_charging,     // Charging overtemperature protection.
+            battery_overtemperature && is_discharging,  // Discharging overtemperature protection.
+            battery_undertemperature && is_charging,    // Charging undertemperature protection.
+            battery_undertemperature && is_discharging, // Discharging undertemperature protection.
+            mos_overtemperature,                        // MOSFET overtemperature protection.
+            false,                                      // Environment overtemperature protection.
+            false,                                      // Environment undertemperature protection.
+            false,                                      // Reserved. Do not set.
           };
           uint16_t mask = pack_flags16(sensors, 16);
           static const uint8_t PROTECTIONS_SIZE = 16;
-          static const char *const PROTECTIONS[PROTECTIONS_SIZE] = {
-            "Cell overvoltage",              // 0000 0000 0000 0001 (1)
-            "Cell undervoltage",             // 0000 0000 0000 0010 (2)
-            "Pack overvoltage",              // 0000 0000 0000 0100 (3)
-            "Pack undervoltage",             // 0000 0000 0000 1000 (4)
-            "Charging overcurrent",          // 0000 0000 0001 0000 (5)
-            "Discharging overcurrent",       // 0000 0000 0010 0000 (6)
-            "Short circuit",                 // 0000 0000 0100 0000 (7)
-            "Charging overvoltage",          // 0000 0000 1000 0000 (8)
-            "Charging overtemperature",      // 0000 0001 0000 0000 (9)
-            "Discharging overtemperature",   // 0000 0010 0000 0000 (10)
-            "Charging undertemperature",     // 0000 0100 0000 0000 (11)
-            "Discharging undertemperature",  // 0000 1000 0000 0000 (12)
-            "MOSFET overtemperature",        // 0001 0000 0000 0000 (13)
-            "Environment overtemperature",   // 0010 0000 0000 0000 (14)
-            "Environment undertemperature",  // 0100 0000 0000 0000 (15)
-            "Reserve (Bit 16)",              // 1000 0000 0000 0000 (16)
-          };
-          std::string values = "";
-          if (mask) {
-            for (int i = 0; i < PROTECTIONS_SIZE; i++) {
-              if (mask & (1 << i)) {
-                values.append(PROTECTIONS[i]);
-                values.append(";");
-              }
-            }
-            if (!values.empty()) {
-              values.pop_back();
-            }
+          std::string values = "0b";
+          for (int i = 0; i < PROTECTIONS_SIZE; i++) {
+            values.append((mask & (1 << i)) ? "1" : "0");
           }
           id(jkbms_sent_pace_protections).publish_state(values);
           return mask;
@@ -298,7 +262,7 @@ modbus_controller:
           bool is_charging = !is_zero_current && is_charging_en && current > 0;
           bool is_discharging_en = id(jkbms_discharging);
           bool is_discharging = !is_zero_current && is_discharging_en && current < 0;
-          static const bool sensors[16] = {
+          bool sensors[16] = {
             // Faults
             false,                              // Charge MOSFET fault.
             false,                              // Discharge MOSFET fault.
@@ -320,51 +284,15 @@ modbus_controller:
           };
           uint16_t mask = pack_flags16(sensors, 16);
           static const uint8_t FAULTS_SIZE = 8;
-          static const char *const FAULTS[FAULTS_SIZE] = {
-            "Charging MOSFET fault",                   // 0000 0000 0000 0001 (1)
-            "Discharging MOSFET fault",                // 0000 0000 0000 0010 (2)
-            "Temperature sensor",                      // 0000 0000 0000 0100 (3)
-            "Reserve (Bit 4)",                         // 0000 0000 0000 1000 (4)
-            "Battery cell fault",                      // 0000 0000 0001 0000 (5)
-            "Front end sampling communication fault",  // 0000 0000 0010 0000 (6)
-            "Reserve (Bit 7)",                         // 0000 0000 0100 0000 (7)
-            "Reserve (Bit 8)",                         // 0000 0000 1000 0000 (8)
-          };
-          std::string values = "";
-          if (mask) {
-            for (int i = 0; i < FAULTS_SIZE; i++) {
-              if (mask & (1 << i)) {
-                values.append(FAULTS[i]);
-                values.append(";");
-              }
-            }
-            if (!values.empty()) {
-              values.pop_back();
-            }
+          std::string values = "0b";
+          for (int i = 0; i < FAULTS_SIZE; i++) {
+            values.append((mask & (1 << i)) ? "1" : "0");
           }
           id(jkbms_sent_pace_faults).publish_state(values);
-          values = "";
+          values = "0b";
           static const uint8_t STATUS_SIZE = 8;
-          static const char *const STATUS[STATUS_SIZE] = {
-            "CHG",
-            "DCHG",
-            "MOSFET_CHG",
-            "MOSFET_DCHG",
-            "LIMIT_CHG",
-            "Reserve (Bit 13)",
-            "Charger inversed",
-            "HEAT",
-          };
-          if (mask) {
-            for (int i = 8; i < (STATUS_SIZE+8); i++) {
-              if (mask & (1 << i)) {
-                values.append(STATUS[i-8]);
-                values.append(";");
-              }
-            }
-            if (!values.empty()) {
-              values.pop_back();
-            }
+          for (int i = 8; i < (STATUS_SIZE+8); i++) {
+            values.append((mask & (1 << i)) ? "1" : "0");
           }
           id(jkbms_sent_pace_status).publish_state(values);
           return mask;
