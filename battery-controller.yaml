@@ -8,12 +8,17 @@ substitutions:
 
 packages:
   device_common: !include .device_common.yaml
-  jkbms: !include 
-    file: battery-controller/jkbms.yaml
+  jkbms_gps: !include 
+    file: battery-controller/jkbms-gps.yaml
     vars:
       jkbms_tx: ${jkbms_tx}
       jkbms_rx: ${jkbms_rx}
-  # jkbms-faker: !include battery-controller/jkbms.faker.yaml
+  # jkbms_ble: !include 
+  #   file: battery-controller/jkbms-ble.yaml
+  #   vars:
+  #     mac_address: "C8:47:80:1D:6A:49"
+  #     protocol_version: JK02_32S
+  # jkbms-faker: !include battery-controller/jkbms-faker.yaml
   # powmr: !include
   #   file: battery-controller/powmr.yaml
   #   vars:
@@ -88,6 +93,7 @@ esp32:
       CONFIG_ESP32S3_DATA_CACHE_64KB: y
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
       CONFIG_SPIRAM_RODATA: y
+      # CONFIG_ESP_MAIN_TASK_STACK_SIZE: "65535"
 
 psram:
   mode: quad
