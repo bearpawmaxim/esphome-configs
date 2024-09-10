@@ -14,9 +14,9 @@ esphome:
     - battery-controller/pace_bms_utils.h
 
 uart:
-  - id: bms_emul_uart
-    tx_pin: ${bms_emul_tx}
-    rx_pin: ${bms_emul_rx}
+  - id: pace_uart
+    tx_pin: ${tx_pin}
+    rx_pin: ${rx_pin}
     baud_rate: 9600
     debug:
       direction: BOTH
@@ -36,11 +36,11 @@ uart:
             }
 
 modbus:
-  - id: bms_emul_modbus
-    uart_id: bms_emul_uart
+  - id: pace_modbus
+    uart_id: pace_uart
     send_wait_time: 200ms
     role: server
-    flow_control_pin: ${bms_emul_fctl}
+    flow_control_pin: ${fctl_pin}
 
 interval:
   - interval: 5sec
@@ -88,9 +88,9 @@ number:
     optimistic: true
 
 modbus_controller:
-  - id: bms_emul_modbus_controller
+  - id: pace_modbus_controller
     address: 0x01
-    modbus_id: bms_emul_modbus
+    modbus_id: pace_modbus
     # command_throttle: 200ms
     server_registers:
       - address: 0x00 # Current
@@ -149,10 +149,28 @@ modbus_controller:
           );
           bool is_charging = id(jkbms_charging);
           bool is_discharging = id(jkbms_discharging);
+          float cell_voltages[] = {
+            id(jkbms_cell_voltage_1).state,
+            id(jkbms_cell_voltage_2).state,
+            id(jkbms_cell_voltage_3).state,
+            id(jkbms_cell_voltage_4).state,
+            id(jkbms_cell_voltage_5).state,
+            id(jkbms_cell_voltage_6).state,
+            id(jkbms_cell_voltage_7).state,
+            id(jkbms_cell_voltage_8).state,
+            id(jkbms_cell_voltage_9).state,
+            id(jkbms_cell_voltage_10).state,
+            id(jkbms_cell_voltage_11).state,
+            id(jkbms_cell_voltage_12).state,
+            id(jkbms_cell_voltage_13).state,
+            id(jkbms_cell_voltage_14).state,
+            id(jkbms_cell_voltage_15).state,
+            id(jkbms_cell_voltage_16).state
+          };
           bool cell_overvoltage = id(jkbms_cell_overvoltage_protection).state <=
-            id(jkbms_max_cell_voltage).state;
+            *std::max_element(std::begin(cell_voltages), std::end(cell_voltages));
           bool cell_undervoltage = id(jkbms_cell_undervoltage_protection).state >=
-            id(jkbms_min_cell_voltage).state;
+            *std::min_element(std::begin(cell_voltages), std::end(cell_voltages));
           bool is_pack_overvoltage = id(jkbms_pack_overvoltage_protection).state <=
             id(jkbms_total_voltage).state;
           bool is_pack_undervoltage = id(jkbms_pack_undervoltage_protection).state >=
@@ -171,8 +189,7 @@ modbus_controller:
             id(jkbms_discharging_undertemperature_protection).state >= min_pack_temp;
           bool is_mos_overtemperature = id(jkbms_mos_temp).state
             >= id(jkbms_mos_overtemperature_protection).state;
-          uint16_t error_bits = id(jkbms_error_bitmask).state;
-          bool is_low_soc = error_bits & (1 << 0);
+          bool is_low_soc = id(jkbms_soc).state < id(jkbms_low_soc_warning).state;
           bool sensors[16] = {
             cell_overvoltage,                // Cell overvoltage warning.
             cell_undervoltage,               // Cell undervoltage warning.
@@ -205,40 +222,37 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          uint16_t error_bits = id(jkbms_error_bitmask).state;
-          bool low_capacity = error_bits & (1 << 0);
-          bool mos_overtemperature = error_bits & (1 << 1);
-          bool charging_overvoltage = error_bits & (1 << 2);
-          bool discharging_undervoltage = error_bits & (1 << 3);
-          bool battery_overtemperature = error_bits & (1 << 4);
-          bool charging_overcurrent = error_bits & (1 << 5);
-          bool discharging_overcurrent = error_bits & (1 << 6);
-          bool cell_pressure_difference = error_bits & (1 << 7);
-          bool overtemperature_alarm_in_the_battery_box = error_bits & (1 << 8);
-          bool battery_undertemperature = error_bits & (1 << 9);
-          bool cell_overvoltage = error_bits & (1 << 10);
-          bool cell_undervoltage = error_bits & (1 << 11);
-          // bool protection_309_A = error_bits & (1 << 12);
-          // bool protection_309_B = error_bits & (1 << 13);
+          uint16_t alarm_bits = id(jkbms_alarms_bitmask).state;
+          bool cell_overvoltage = alarm_bits & (1 << 4);
+          bool cell_undervoltage = alarm_bits & (1 << 11);
+          bool pack_overvoltage = alarm_bits & (1 << 5);
+          bool pack_undervoltage = alarm_bits & (1 << 12);
+          bool charging_overcurrent = alarm_bits & (1 << 6);
+          bool charging_overtemperature = alarm_bits & (1 << 8);
+          bool charging_undertemperature = alarm_bits & (1 << 9);
+          bool discharging_overcurrent = alarm_bits & (1 << 13);
+          bool discharging_overtemperature = alarm_bits & (1 << 15);
+          bool short_circuit_protection =
+            alarm_bits & (1 << 7) || alarm_bits & (1 << 14);
+          bool mos_overtemperature = alarm_bits & (1 << 1);
           bool is_charging = id(jkbms_charging);
-          bool is_discharging = id(jkbms_discharging);
           bool sensors[16] = {
-            cell_overvoltage,                           // Cell overvoltage protection.
-            cell_undervoltage,                          // Cell undervoltage protection.
-            charging_overvoltage,                       // Pack overvoltage protection.
-            discharging_undervoltage,                   // Pack undervoltage protection.
-            charging_overcurrent,                       // Charging overcurrent protection.
-            discharging_overcurrent,                    // Discharging overcurrent protection.
-            false,                                      // Short circuit protection.
-            false,                                      // Charging overvoltage protection.
-            battery_overtemperature && is_charging,     // Charging overtemperature protection.
-            battery_overtemperature && is_discharging,  // Discharging overtemperature protection.
-            battery_undertemperature && is_charging,    // Charging undertemperature protection.
-            battery_undertemperature && is_discharging, // Discharging undertemperature protection.
-            mos_overtemperature,                        // MOSFET overtemperature protection.
-            false,                                      // Environment overtemperature protection.
-            false,                                      // Environment undertemperature protection.
-            false,                                      // Reserved. Do not set.
+            cell_overvoltage,                // Cell overvoltage protection.
+            cell_undervoltage,               // Cell undervoltage protection.
+            pack_overvoltage,                // Pack overvoltage protection.
+            pack_undervoltage,               // Pack undervoltage protection.
+            charging_overcurrent,            // Charging overcurrent protection.
+            discharging_overcurrent,         // Discharging overcurrent protection.
+            short_circuit_protection,        // Short circuit protection.
+            cell_overvoltage && is_charging, // Charging overvoltage protection.
+            charging_overtemperature,        // Charging overtemperature protection.
+            discharging_overtemperature,     // Discharging overtemperature protection.
+            charging_undertemperature,       // Charging undertemperature protection.
+            false,                           // Discharging undertemperature protection.
+            mos_overtemperature,             // MOSFET overtemperature protection.
+            false,                           // Environment overtemperature protection.
+            false,                           // Environment undertemperature protection.
+            false,                           // Reserved. Do not set.
           };
           uint16_t mask = pack_flags16(sensors, 16);
           static const uint8_t PROTECTIONS_SIZE = 16;
@@ -254,8 +268,8 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          uint16_t error_bits = id(jkbms_error_bitmask).state;
-          bool cell_pressure_difference = error_bits & (1 << 7);
+          uint16_t alarm_bits = id(jkbms_alarms_bitmask).state;
+          bool cell_pressure_difference = alarm_bits & (1 << 7);
           float current = id(jkbms_current).state;
           bool is_zero_current = std::abs(current) > 0;
           bool is_charging_en = id(jkbms_charging);
@@ -268,15 +282,15 @@ modbus_controller:
             false,                              // Discharge MOSFET fault.
             false,                              // Temperature sensor fault.
             false,                              // Reserved. Do not set.
-            cell_pressure_difference,           // Cell fault.
+            false,                              // Cell fault.
             false,                              // Sample communications fault.
             false,                              // Reserved. Do not set.
             false,                              // Reserved. Do not set.
             // Statuses
             is_charging,                        // Charging.
             is_discharging,                     // Discharging.
-            id(jkbms_charging_switch).state,           // Charging enabled.
-            id(jkbms_discharging_switch).state,        // Discharging enabled.
+            id(jkbms_charging_switch).state,    // Charging enabled.
+            id(jkbms_discharging_switch).state, // Discharging enabled.
             false,                              // Charging current limit.
             false,                              // Reserved. Do not set.
             false,                              // Charger inverted.

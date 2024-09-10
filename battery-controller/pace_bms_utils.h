@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 
 uint32_t get_ascii_char_(const std::string &input, size_t offset) {
   uint32_t chr = static_cast<uint32_t>(input[offset]);

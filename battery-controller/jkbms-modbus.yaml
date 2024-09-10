@@ -1,0 +1,1143 @@
+uart:
+  - id: jkbms_uart
+    tx_pin: ${tx_pin}
+    rx_pin: ${rx_pin}
+    rx_buffer_size: 384
+    baud_rate: 115200
+
+modbus:
+  - id: jkbms_modbus
+    uart_id: jkbms_uart
+    flow_control_pin: ${fctl_pin}
+
+modbus_controller:
+  - id: jkbms_modbus_controller
+    address: 0x01
+    modbus_id: jkbms_modbus
+    setup_priority: -10
+    update_interval: 5s
+    command_throttle: 50ms
+    offline_skip_updates: 3
+
+interval:
+  - interval: 5sec
+    id: update_bms_state_interval
+    then:
+      - script.execute:
+          id: lvgl_update_status_icon
+          name: bms_connection
+          is_on: !lambda return !id(jkbms_modbus_controller).get_module_offline();
+
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_undervoltage_protection
+    name: "JKBMS cell undervoltage protection"
+    address: 0x1004
+    register_type: holding
+    value_type: U_DWORD
+    register_count: 4
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_overvoltage_protection
+    name: "JKBMS cell overvoltage protection"
+    address: 0x100C
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_charging_overcurrent_protection
+    name: "JKBMS charging overcurrent protection"
+    address: 0x102C
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "A"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_discharging_overcurrent_protection
+    name: "JKBMS discharging overcurrent protection"
+    address: 0x1038
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "A"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_charging_overtemperature_protection
+    name: "JKBMS charging overtemperature protection"
+    address: 0x104C
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "°C"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_discharging_overtemperature_protection
+    name: "JKBMS discharging overtemperature protection"
+    address: 0x1054
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "°C"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_charging_undertemperature_protection
+    name: "JKBMS charging undertemperature protection"
+    address: 0x105C
+    register_type: holding
+    value_type: S_DWORD
+    unit_of_measurement: "°C"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_mos_overtemperature_protection
+    name: "JKBMS MOS high temperature protection"
+    address: 0x1064
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "°C"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_count
+    address: 0x106C
+    register_type: holding
+    value_type: U_DWORD
+    accuracy_decimals: 0
+  # 0x1200    0    UINT16    2    R    CellVol0    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_1
+    name: "JKBMS cell voltage 1"
+    address: 0x1200
+    register_type: holding
+    value_type: U_WORD
+    register_count: 16  # read up to CellVol31
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 1
+          value: !lambda return x;
+
+  # 0x1202    2    UINT16    2    R    CellVol1    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_2
+    name: "JKBMS cell voltage 2"
+    address: 0x1202
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 2
+          value: !lambda return x;
+
+  # 0x1204    4    UINT16    2    R    CellVol2    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_3
+    name: "JKBMS cell voltage 3"
+    address: 0x1204
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 3
+          value: !lambda return x;
+
+  # 0x1206    6    UINT16    2    R    CellVol3    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_4
+    name: "JKBMS cell voltage 4"
+    address: 0x1206
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 4
+          value: !lambda return x;
+
+  # 0x1208    8    UINT16    2    R    CellVol4    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_5
+    name: "JKBMS cell voltage 5"
+    address: 0x1208
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 5
+          value: !lambda return x;
+
+  # 0x120A   10    UINT16    2    R    CellVol5    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_6
+    name: "JKBMS cell voltage 6"
+    address: 0x120A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 6
+          value: !lambda return x;
+
+  # 0x120C   12    UINT16    2    R    CellVol6    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_7
+    name: "JKBMS cell voltage 7"
+    address: 0x120C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 7
+          value: !lambda return x;
+
+  # 0x120E   14    UINT16    2    R    CellVol7    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_8
+    name: "JKBMS cell voltage 8"
+    address: 0x120E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 8
+          value: !lambda return x;
+
+  # 0x1210   16    UINT16    2    R    CellVol8    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_9
+    name: "JKBMS cell voltage 9"
+    address: 0x1210
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 9
+          value: !lambda return x;
+
+  # 0x1212   18    UINT16    2    R    CellVol9    mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_10
+    name: "JKBMS cell voltage 10"
+    address: 0x1212
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 10
+          value: !lambda return x;
+
+  # 0x1214   20    UINT16    2    R    CellVol10   mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_11
+    name: "JKBMS cell voltage 11"
+    address: 0x1214
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 11
+          value: !lambda return x;
+
+  # 0x1216   22    UINT16    2    R    CellVol11   mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_12
+    name: "JKBMS cell voltage 12"
+    address: 0x1216
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 12
+          value: !lambda return x;
+
+  # 0x1218   24    UINT16    2    R    CellVol12   mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_13
+    name: "JKBMS cell voltage 13"
+    address: 0x1218
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 13
+          value: !lambda return x;
+
+  # 0x121A   26    UINT16    2    R    CellVol13   mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_14
+    name: "JKBMS cell voltage 14"
+    address: 0x121A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 14
+          value: !lambda return x;
+
+  # 0x121C   28    UINT16    2    R    CellVol14   mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_15
+    name: "JKBMS cell voltage 15"
+    address: 0x121C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 15
+          value: !lambda return x;
+
+  # 0x121E   30    UINT16    2    R    CellVol15   mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_cell_voltage_16
+    name: "JKBMS cell voltage 16"
+    address: 0x121E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_cell_voltage_value
+          cell_num: 16
+          value: !lambda return x;
+
+  # 0x1240   64    UINT32    4    R    CellStatus    (each bit indicates a attached cell)
+  # 0x1244   68    UINT16    2    R    CellVolAverage    mV
+  # 0x1246   70    UINT16    2    R    CellVoltageDifferenceMax    mV
+  # 0x1248   72    UINT8/UINT8 2  R    MaxVolCellNbr / MinVolCellNbr
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS average cell voltage"
+    address: 0x1244
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS delta cell voltage"
+    address: 0x1246
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_max_voltage_cell
+    name: "JKBMS max voltage cell"
+    address: 0x1248
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: ""
+    state_class: measurement
+    accuracy_decimals: 0
+    bitmask: 0xFF00
+    filters:
+      - offset: 1.0
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_min_voltage_cell
+    name: "JKBMS min voltage cell"
+    address: 0x1248
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: ""
+    state_class: measurement
+    accuracy_decimals: 0
+    bitmask: 0x00FF
+    filters:
+      - offset: 1.0
+
+  # 0x124A   74    UINT16    2    R    CellWireRes0    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 1 wire resistance"
+    address: 0x124A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x124C   76    UINT16    2    R    CellWireRes1    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 2 wire resistance"
+    address: 0x124C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x124E   78    UINT16    2    R    CellWireRes2    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 3 wire resistance"
+    address: 0x124E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1250   80    UINT16    2    R    CellWireRes3    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 4 wire resistance"
+    address: 0x1250
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1252   82    UINT16    2    R    CellWireRes4    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 5 wire resistance"
+    address: 0x1252
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1254   84    UINT16    2    R    CellWireRes5    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 6 wire resistance"
+    address: 0x1254
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1256   86    UINT16    2    R    CellWireRes6    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 7 wire resistance"
+    address: 0x1256
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1258   88    UINT16    2    R    CellWireRes7    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 8 wire resistance"
+    address: 0x1258
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x125A   90    UINT16    2    R    CellWireRes8    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 9 wire resistance"
+    address: 0x125A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x125C   92    UINT16    2    R    CellWireRes9    mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 10 wire resistance"
+    address: 0x125C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x125E   94    UINT16    2    R    CellWireRes10   mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 11 wire resistance"
+    address: 0x125E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1260   96    UINT16    2    R    CellWireRes11   mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 12 wire resistance"
+    address: 0x1260
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1262   98    UINT16    2    R    CellWireRes12   mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 13 wire resistance"
+    address: 0x1262
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1264   100   UINT16    2    R    CellWireRes13   mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 14 wire resistance"
+    address: 0x1264
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1266   102   UINT16    2    R    CellWireRes14   mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 15 wire resistance"
+    address: 0x1266
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x1268   104   UINT16    2    R    CellWireRes15   mΩ
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS cell 16 wire resistance"
+    address: 0x1268
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Ω"
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  # 0x128A   138    INT16    2    R    TempMos         0.1 °C
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_mos_temp
+    name: "JKBMS power tube temperature"
+    address: 0x128A
+    register_type: holding
+    value_type: S_WORD
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+    on_value:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: tmos
+          value: !lambda return value_accuracy_to_string(x, 1);
+
+  # 0x128C   140   UINT32    4    R    CellWireResSta  Bit per Cell
+  # 0x1290   144   UINT32    4    R    BatVol          mV
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_total_voltage
+    name: "JKBMS total voltage"
+    address: 0x1290
+    register_type: holding
+    value_type: U_DWORD
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: voltage
+          value: !lambda return value_accuracy_to_string(x, 2);
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS power"
+    address: 0x1294
+    register_type: holding
+    value_type: S_DWORD
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: power
+          value: !lambda return value_accuracy_to_string(x, 0);
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_current
+    name: "JKBMS current"
+    address: 0x1298
+    register_type: holding
+    value_type: S_DWORD
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+    on_value:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: current
+          value: !lambda return value_accuracy_to_string(x, 2);
+      - script.execute:
+          id: lvgl_update_accent_color
+          current_val: !lambda return x;
+          is_balancing: !lambda return id(jkbms_balancing).state;
+      - script.execute:
+          id: lvgl_update_soc_gauge_labels
+          current_val: !lambda return x;
+          voltage_val: !lambda return id(jkbms_total_voltage).state;
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_bat_temp1
+    name: "JKBMS temperature sensor 1"
+    address: 0x129C
+    register_type: holding
+    value_type: U_WORD
+    state_class: measurement
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+    on_value:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: t1
+          value: !lambda return value_accuracy_to_string(x, 1);
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_bat_temp2
+    name: "JKBMS temperature sensor 2"
+    address: 0x129E
+    register_type: holding
+    value_type: U_WORD
+    state_class: measurement
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+    on_value:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: t2
+          value: !lambda return value_accuracy_to_string(x, 1);
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_alarms_bitmask
+    name: "JKBMS alarms bitmask"
+    address: 0x12A0
+    register_type: holding
+    value_type: U_WORD
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_soc
+    name: "JKBMS capacity remaining"
+    address: 0x12A6
+    register_type: holding
+    value_type: U_WORD
+    state_class: measurement
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    lambda: |-
+      return data[1];
+    on_value:
+      - script.execute:
+          id: lvgl_update_soc
+          soc: !lambda return x;
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_capacity_remaining_ah
+    name: "JKBMS capacity remaining derived"
+    address: 0x12A8
+    register_type: holding
+    value_type: U_DWORD
+    state_class: measurement
+    unit_of_measurement: "AH"
+    accuracy_decimals: 0
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_actual_capacity
+    name: "JKBMS actual battery capacity"
+    address: 0x12AC
+    register_type: holding
+    value_type: U_DWORD
+    state_class: measurement
+    unit_of_measurement: "AH"
+    accuracy_decimals: 0
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_charge_cycles_count
+    name: "JKBMS charging cycles"
+    address: 0x12B0
+    register_type: holding
+    value_type: U_DWORD
+    state_class: measurement
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS total charging cycle capacity"
+    address: 0x12B4
+    register_type: holding
+    value_type: U_DWORD
+    state_class: measurement
+    unit_of_measurement: "AH"
+    accuracy_decimals: 0
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_soh
+    name: "JKBMS state of helth"
+    address: 0x12B8
+    register_type: holding
+    value_type: U_WORD
+    state_class: measurement
+    unit_of_measurement: "%"
+    accuracy_decimals: 3
+    lambda: |-
+      return data[1];
+
+  # 0x1294   148   UINT32    4    R    BatWatt         mW
+  # 0x1298   152    INT32    4    R    BatCurrent      mA
+  # 0x129C   156    INT16    2    R    TempBat 1       0.1 °C
+  # 0x129E   158    INT16    2    R    TempBat 2       0.1 °C
+  # 0x12A0   160   UINT32    4    R    AlarmBitmask
+  # 0x12A4   164    INT16    2    R    BalanCurrent    mA
+  # 0x12A6   166 UINT8+UINT8 2    R    BalanStatatus (2:放电; 1:充电 ; 0:关闭) / SOCStateOfcharge %
+  # 0x12A8   168    INT32    2    R    SOCCapRemain    mAH
+  # 0x12AC   172   UINT32    4    R    SOCFullChargeCap    mAH
+  # 0x12B0   176   UINT32    4    R    SOCCycleCount   次
+  # 0x12B4   180   UINT32    4    R    SOCCycleCap     mAH
+  # 0x12B8   184 UINT8+UINT8 2    R    StateOfHealth % / Precharge stats (1:打开 ; 0:关闭)
+  # 0x12BA   186   UINT16    2    R    UserAlarm
+  # 0x12BC   188   UINT32    4    R    RunTime         S
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    name: "JKBMS total runtime in seconds"
+    address: 0x12BC
+    register_type: holding
+    value_type: U_DWORD
+    state_class: measurement
+    accuracy_decimals: 0
+    id: total_runtime
+  - platform: template
+    id: jkbms_pack_overvoltage_protection
+    name: "JKBMS pack overvoltage protection"
+    update_interval: 5s
+    lambda: |-
+      return id(jkbms_cell_overvoltage_protection).state * id(jkbms_cell_count).state;
+  - platform: template
+    id: jkbms_pack_undervoltage_protection
+    name: "JKBMS pack undervoltage protection"
+    update_interval: 5s
+    lambda: |-
+      return id(jkbms_cell_undervoltage_protection).state * id(jkbms_cell_count).state;
+  - platform: template
+    id: jkbms_discharging_undertemperature_protection
+    name: "JKBMS discharging low temperature protection"
+    update_interval: 5s
+    lambda: |-
+      return id(jkbms_charging_undertemperature_protection).state;
+
+  # 0x12C0   192 UINT8+UINT8 Charge (1:打开 ; 0:关闭) / Discharge (1:打开 ; 0:关闭)
+  # 0x12C2   194   UINT16    2    R    UserAlarm2
+  # 0x12C4   196   UINT16    2    R    TimeDcOCPR      S
+  # 0x12C6   198   UINT16    2    R    TimeDcSCPR      S
+  # 0x12C8   200   UINT16    2    R    TimeCOCPR       S
+  # 0x12CA   202   UINT16    2    R    TimeCSCPR       S
+  # 0x12CC   204   UINT16    2    R    TimeUVPR        S
+  # 0x12CE   206   UINT16    2    R    TimeOVPR        S
+  # 0x12D0   208 UINT8+UINT8 2    R    AbsentBitmask (Bit0: MOS TempSensorAbsent, Bit1: BATTempSensor1Absent, Bit2: BATTempSensor2Absent, Bit4: BATTempSensor4Absent, Bit5: BATTempSensor5Absent) / Heating
+  # 0x12D2   210   UINT16    2    R    Reserved
+  # 0x12D4   212   UINT16    2    R    TimeEmergency   S
+  # 0x12D6   214   UINT16    2    R    BatCurCorrect
+  # 0x12D8   216   UINT16    2    R    VolChargCur     mV
+  # 0x12DA   218   UINT16    2    R    VolDischargCur  mV
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_charging
+    name: "JKBMS charging"
+    address: 0x12C0
+    register_type: holding
+    lambda: |-
+      return data[0] > 0;
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_discharging
+    name: "JKBMS discharging"
+    address: 0x12C0
+    register_type: holding
+    lambda: |-
+      return data[1] > 0;
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_balancing
+    name: "JKBMS balancing"
+    address: 0x12A6
+    register_type: holding
+    lambda: |-
+      return data[0] > 0;
+
+switch:
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_charging_switch
+    name: "JKBMS charging switch"
+    custom_command: [0x00, 0x03, 0x10, 0x70, 0x00, 0x02]
+    write_lambda: |-
+      payload.push_back(0x00);
+      payload.push_back(0x10);
+      payload.push_back(0x10);
+      payload.push_back(0x70);
+      payload.push_back(0x00);
+      payload.push_back(0x02);
+      payload.push_back(0x04);
+      payload.push_back(0x00);
+      payload.push_back(0x00);
+      payload.push_back(0x00);
+      payload.push_back(x);
+      return true;
+    lambda: |-
+      if (data.size() != 4 ) {
+        ESP_LOGE("Custom", "Invalid data size %d",data.size());
+        return {};
+      }
+      return (data[3] == 1);
+    on_turn_on:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: discharge_sw
+          value: true
+    on_turn_off:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: discharge_sw
+          value: false
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_discharging_switch
+    name: "JKBMS discharging switch"
+    custom_command: [0x00, 0x03, 0x10, 0x74, 0x00, 0x02]
+    write_lambda: |-
+      payload.push_back(0x00);
+      payload.push_back(0x10);
+      payload.push_back(0x10);
+      payload.push_back(0x74);
+      payload.push_back(0x00);
+      payload.push_back(0x02);
+      payload.push_back(0x04);
+      payload.push_back(0x00);
+      payload.push_back(0x00);
+      payload.push_back(0x00);
+      payload.push_back(x);
+      return true;
+    lambda: |-
+      if (data.size() != 4 ) {
+        ESP_LOGE("Custom", "Invalid data size %d",data.size());
+        return {};
+      }
+      return (data[3] == 1);
+    on_turn_on:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: charge_sw
+          value: true
+    on_turn_off:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: charge_sw
+          value: false
+  - platform: modbus_controller
+    modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_balancing_switch
+    name: "JKBMS balancing switch"
+    custom_command: [0x00, 0x03, 0x10, 0x78, 0x00, 0x02]
+    write_lambda: |-
+      payload.push_back(0x00);
+      payload.push_back(0x10);
+      payload.push_back(0x10);
+      payload.push_back(0x78);
+      payload.push_back(0x00);
+      payload.push_back(0x02);
+      payload.push_back(0x04);
+      payload.push_back(0x00);
+      payload.push_back(0x00);
+      payload.push_back(0x00);
+      payload.push_back(x);
+      return true;
+    lambda: |-
+      if (data.size() != 4 ) {
+        ESP_LOGE("Custom", "Invalid data size %d",data.size());
+        return {};
+      }
+      return (data[3] == 1);
+    on_turn_on:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: balance_sw
+          value: true
+    on_turn_off:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: balance_sw
+          value: false
+
+text_sensor:
+  - platform: template
+    name: "JKBMS total runtime formatted"
+    update_interval: 60s
+    lambda: |-
+      std::string value = "Unknown";
+      if (id(total_runtime) && !isnan(id(total_runtime).state)) {
+        int seconds = (int) id(total_runtime).state;
+        int years = seconds / (24 * 3600 * 365);
+        seconds = seconds % (24 * 3600 * 365);
+        int days = seconds / (24 * 3600);
+        seconds = seconds % (24 * 3600);
+        int hours = seconds / 3600;
+        value = (years ? to_string(years) + "y " : "") +
+          (days ? to_string(days) + "d " : "") +
+          (hours ? to_string(hours) + "h" : "");
+      }
+      return value;

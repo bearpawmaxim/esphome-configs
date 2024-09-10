@@ -1,18 +1,32 @@
 substitutions:
   device_name: battery-controller
-  jkbms_tx: GPIO10
-  jkbms_rx: GPIO11
-  bms_emul_tx: GPIO42
-  bms_emul_rx: GPIO1
-  bms_emul_fctl: GPIO2
+  pace_tx: GPIO10
+  pace_rx: GPIO11
+  pace_fctl: GPIO12
+  jkbms_tx: GPIO42
+  jkbms_rx: GPIO1
+  jkbms_fctl: GPIO2
 
 packages:
   device_common: !include .device_common.yaml
-  jkbms_gps: !include 
-    file: battery-controller/jkbms-gps.yaml
+  lvgl-ui: !include battery-controller/lvgl-ui.yaml
+  jkbms_modbus: !include 
+    file: battery-controller/jkbms-modbus.yaml
     vars:
-      jkbms_tx: ${jkbms_tx}
-      jkbms_rx: ${jkbms_rx}
+      tx_pin: ${jkbms_tx}
+      rx_pin: ${jkbms_rx}
+      fctl_pin: ${jkbms_fctl}
+  pace-bms: !include
+    file: battery-controller/pace-bms-emulator.yaml
+    vars:
+      tx_pin: ${pace_tx}
+      rx_pin: ${pace_rx}
+      fctl_pin: ${pace_fctl}
+  # jkbms_gps: !include 
+  #   file: battery-controller/jkbms-gps.yaml
+  #   vars:
+  #     jkbms_tx: ${jkbms_tx}
+  #     jkbms_rx: ${jkbms_rx}
   # jkbms_ble: !include 
   #   file: battery-controller/jkbms-ble.yaml
   #   vars:
@@ -24,18 +38,11 @@ packages:
   #   vars:
   #     inverter_tx: GPIO43
   #     inverter_rx: GPIO44
-  lvgl-ui: !include battery-controller/lvgl-ui.yaml
-  pace-bms: !include
-    file: battery-controller/pace-bms-emulator.yaml
-    vars:
-      bms_emul_tx:   ${bms_emul_tx}
-      bms_emul_rx:   ${bms_emul_rx}
-      bms_emul_fctl: ${bms_emul_fctl}
   # pace-bms: !include
   #   file: battery-controller/pace-bms-faker.yaml
   #   vars:
-  #     bms_emul_tx:   ${bms_emul_tx}
-  #     bms_emul_rx:   ${bms_emul_rx}
+  #     modbus_tx:   ${modbus_tx}
+  #     modbus_rx:   ${modbus_rx}
 
 globals:
   - id: inverter_on
@@ -68,19 +75,6 @@ esphome:
   friendly_name: battery-controller
   platformio_options:
     board_build.flash_mode: dio
-  includes:
-    - includes/holding_gpio.h
-  on_boot:
-    - priority: 800
-      then:
-        - lambda: |-
-            holding_gpio = new HoldingGpio(GPIO_NUM_14);
-    - priority: 200
-      then:
-        - script.execute:
-            id: lvgl_update_led
-            l_text: !lambda 'return (const char *)(id(contactor_relay).state ? "On" : "Off");'
-            l_color: !lambda 'return (id(contactor_relay).state ? id(on_color) : id(off_color));'
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -107,13 +101,13 @@ external_components:
 logger:
   baud_rate: 0
   level: WARN
-  logs:
+  # logs:
   #   sensor: ERROR
   #   text_sensor: ERROR
-    modbus: ERROR
-    lvgl: ERROR
-    interval: ERROR
-    component: ERROR
+  #   modbus: ERROR
+  #   lvgl: ERROR
+  #   interval: ERROR
+  #   component: ERROR
   #   modbus_controller: DEBUG
   #   uart: DEBUG
   #   component: ERROR
@@ -147,6 +141,7 @@ touchscreen:
     transform:
       swap_xy: true
       mirror_x: true
+      mirror_y: true
     on_release:
       - script.execute: lvgl_resume
 
@@ -194,6 +189,8 @@ display:
       height: 320
     transform:
       swap_xy: true
+      mirror_x: true
+      mirror_y: true
     auto_clear_enabled: false
 
 button:
@@ -203,93 +200,3 @@ button:
     on_press:
       - script.execute:
           id: lvgl_resume
-
-switch:
-  - id: precharge_relay
-    platform: gpio
-    pin: GPIO21
-    internal: true
-  - id: contactor_relay
-    platform: template
-    lambda: 'return holding_gpio->get_state();'
-    internal: true
-    restore_mode: DISABLED
-    turn_on_action:
-      - lambda: 'holding_gpio->set_state(1);'
-    turn_off_action:
-      - lambda: 'holding_gpio->set_state(0);'
-  - id: on_switch
-    name: ${device_name} contactor switch
-    platform: template
-    restore_mode: DISABLED
-    lambda: 'return id(contactor_relay).state;'
-    turn_on_action:
-      - script.execute:
-          id: turn_on
-          precharge: !lambda return !id(inverter_on);
-    turn_off_action:
-      - script.execute: turn_off
-
-binary_sensor:
-  - id: precharge_sensor
-    platform: gpio
-    pin:
-      number: GPIO13
-      inverted: true
-    internal: true
-  - id: precharge_button
-    platform: gpio
-    pin:
-      number: GPIO12
-      mode:
-        input: true
-        pullup: true
-      inverted: true
-    internal: true
-    filters:
-      - delayed_on: 20ms
-      - delayed_off: 20ms
-    on_press:
-      - script.execute: lvgl_resume
-    on_multi_click:
-      - timing:
-          - ON FOR AT LEAST 2S
-        then:
-          - switch.toggle: on_switch
-
-script:
-  - id: turn_off
-    mode: single
-    then:
-      # todo: check whether inverter is off
-      - switch.turn_off: contactor_relay
-      - script.execute:
-          id: lvgl_update_led
-          l_text: 'Off'
-          l_color: off_color
-  - id: turn_on
-    mode: single
-    parameters:
-      precharge: bool
-    then:
-      - if:
-          condition:
-            lambda: 'return precharge;'
-          then:
-            - script.execute:
-                id: lvgl_update_led
-                l_text: 'Precharging'
-                l_color: 0xFFFB00
-            - switch.turn_on: precharge_relay
-            - wait_until:
-                condition:
-                  binary_sensor.is_on: precharge_sensor
-                timeout: 60s # remove on live
-            - switch.turn_on: contactor_relay
-            - switch.turn_off: precharge_relay
-          else:
-            - switch.turn_on: contactor_relay
-      - script.execute:
-          id: lvgl_update_led
-          l_text: 'On'
-          l_color: on_color

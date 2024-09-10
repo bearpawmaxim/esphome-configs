@@ -301,7 +301,7 @@ sensor:
       name: "JKBMS charging overcurrent protection"
     power_tube_temperature_protection:
       id: jkbms_mos_overtemperature_protection
-      name: "JKBMS power tube temperature protection"
+      name: "JKBMS MOS high temperature protection"
     charging_high_temperature_protection:
       id: jkbms_charging_overtemperature_protection
       name: "JKBMS charging high temperature protection"
