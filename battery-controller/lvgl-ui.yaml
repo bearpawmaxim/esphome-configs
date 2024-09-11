@@ -141,6 +141,8 @@ lvgl:
                       widgets:
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t1,   l_capt: BATT Temp 1,   l_unit: C } }
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t2,   l_capt: BATT Temp 2,   l_unit: C } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t3,   l_capt: BATT Temp 3,   l_unit: C } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t4,   l_capt: BATT Temp 4,   l_unit: C } }
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: tmos, l_capt: MOS Temp, l_unit: C } }
               - row: 0
                 column: 2
@@ -403,6 +405,8 @@ script:
             { "capacity", id(capacity_value_label) },
             { "t1",       id(t1_value_label) },
             { "t2",       id(t2_value_label) },
+            { "t3",       id(t3_value_label) },
+            { "t4",       id(t4_value_label) },
             { "tmos",     id(tmos_value_label) }
           };
           static const std::map<std::string, lv_obj_t*> unit_labels_map {
@@ -412,6 +416,8 @@ script:
             { "capacity", id(capacity_unit_label) },
             { "t1",       id(t1_unit_label) },
             { "t2",       id(t2_unit_label) },
+            { "t3",       id(t3_unit_label) },
+            { "t4",       id(t4_unit_label) },
             { "tmos",     id(tmos_unit_label) }
           };
           auto label_it = labels_map.find(name);
