@@ -108,8 +108,8 @@ touchscreen:
     interrupt_pin: GPIO7
     transform:
       swap_xy: true
+      mirror_y: false
       mirror_x: true
-      mirror_y: true
     on_release:
       - script.execute: lvgl_resume
 
@@ -157,8 +157,6 @@ display:
       height: 320
     transform:
       swap_xy: true
-      mirror_x: true
-      mirror_y: true
     auto_clear_enabled: false
 
 button:

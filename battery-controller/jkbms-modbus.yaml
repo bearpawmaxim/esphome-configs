@@ -90,11 +90,10 @@ sensor:
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "°C"
-    device_class: voltage
     state_class: measurement
-    accuracy_decimals: 2
+    accuracy_decimals: 1
     filters:
-      - multiply: 0.001
+      - multiply: 0.1
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_discharging_overtemperature_protection
@@ -103,11 +102,10 @@ sensor:
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "°C"
-    device_class: voltage
     state_class: measurement
-    accuracy_decimals: 2
+    accuracy_decimals: 1
     filters:
-      - multiply: 0.001
+      - multiply: 0.1
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_charging_undertemperature_protection
@@ -116,11 +114,10 @@ sensor:
     register_type: holding
     value_type: S_DWORD
     unit_of_measurement: "°C"
-    device_class: voltage
     state_class: measurement
-    accuracy_decimals: 2
+    accuracy_decimals: 1
     filters:
-      - multiply: 0.001
+      - multiply: 0.1
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_mos_overtemperature_protection
@@ -129,11 +126,10 @@ sensor:
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "°C"
-    device_class: voltage
     state_class: measurement
-    accuracy_decimals: 2
+    accuracy_decimals: 1
     filters:
-      - multiply: 0.001
+      - multiply: 0.1
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -1034,6 +1030,8 @@ sensor:
   - platform: template
     id: jkbms_discharging_undertemperature_protection
     name: "JKBMS discharging low temperature protection"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
     update_interval: 5s
     lambda: |-
       return id(jkbms_charging_undertemperature_protection).state;
