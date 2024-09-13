@@ -24,7 +24,7 @@ uart:
       sequence:
         - lambda: |-
             //UARTDebug::log_hex(direction, bytes, ':');
-            if (direction == UART_DIRECTION_TX) {
+            if (direction == UART_DIRECTION_RX) {
               std::string res = "";
               size_t len = bytes.size();
               char buf[5];
@@ -40,7 +40,6 @@ modbus:
     uart_id: pace_uart
     send_wait_time: 200ms
     role: server
-    flow_control_pin: ${fctl_pin}
 
 interval:
   - interval: 5sec
@@ -55,18 +54,23 @@ text_sensor:
   - platform: template
     id: jkbms_sent_pace_warnings
     name: JKBMS Pace warnings sent
+    entity_category: diagnostic
   - platform: template
     id: jkbms_sent_pace_protections
     name: JKBMS Pace protections sent
+    entity_category: diagnostic
   - platform: template
     id: jkbms_sent_pace_status
     name: JKBMS Pace status sent
+    entity_category: diagnostic
   - platform: template
     id: jkbms_sent_pace_faults
     name: JKBMS Pace faults sent
+    entity_category: diagnostic
   - platform: template
     id: jkbms_sent_pace_bytes
     name: JKBMS Pace bytes sent
+    entity_category: diagnostic
 
 # TODO: Add ds18b20 ?
 number:
@@ -139,14 +143,16 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          float max_pack_temp = std::max(
+          float pack_temps[] = {
             id(jkbms_bat_temp1).state,
-            id(jkbms_bat_temp2).state
-          );
-          float min_pack_temp = std::min(
-            id(jkbms_bat_temp1).state,
-            id(jkbms_bat_temp2).state
-          );
+            id(jkbms_bat_temp2).state,
+            id(jkbms_bat_temp3).state,
+            id(jkbms_bat_temp4).state
+          };
+          float max_pack_temp = *std::max_element(std::begin(pack_temps),
+            std::end(pack_temps));
+          float min_pack_temp = *std::min_element(std::begin(pack_temps),
+            std::end(pack_temps));
           bool is_charging = id(jkbms_charging);
           bool is_discharging = id(jkbms_discharging);
           float cell_voltages[] = {
@@ -271,26 +277,26 @@ modbus_controller:
           uint16_t alarm_bits = id(jkbms_alarms_bitmask).state;
           bool cell_pressure_difference = alarm_bits & (1 << 7);
           float current = id(jkbms_current).state;
-          bool is_zero_current = std::abs(current) > 0;
-          bool is_charging_en = id(jkbms_charging);
+          bool is_zero_current = std::abs(current) == 0.0;
+          bool is_charging_en = id(jkbms_charging).state;
           bool is_charging = !is_zero_current && is_charging_en && current > 0;
-          bool is_discharging_en = id(jkbms_discharging);
+          bool is_discharging_en = id(jkbms_discharging).state;
           bool is_discharging = !is_zero_current && is_discharging_en && current < 0;
           bool sensors[16] = {
             // Faults
-            false,                              // Charge MOSFET fault.
-            false,                              // Discharge MOSFET fault.
+            alarm_bits & (1 << 16),             // Charge MOSFET fault.
+            alarm_bits & (1 << 17),             // Discharge MOSFET fault.
             false,                              // Temperature sensor fault.
             false,                              // Reserved. Do not set.
-            false,                              // Cell fault.
+            alarm_bits & (1 << 2),              // Cell fault.
             false,                              // Sample communications fault.
             false,                              // Reserved. Do not set.
             false,                              // Reserved. Do not set.
             // Statuses
             is_charging,                        // Charging.
             is_discharging,                     // Discharging.
-            id(jkbms_charging_switch).state,    // Charging enabled.
-            id(jkbms_discharging_switch).state, // Discharging enabled.
+            is_charging_en,                     // Charging enabled.
+            is_discharging_en,                  // Discharging enabled.
             false,                              // Charging current limit.
             false,                              // Reserved. Do not set.
             false,                              // Charger inverted.
@@ -305,7 +311,7 @@ modbus_controller:
           id(jkbms_sent_pace_faults).publish_state(values);
           values = "0b";
           static const uint8_t STATUS_SIZE = 8;
-          for (int i = 8; i < (STATUS_SIZE+8); i++) {
+          for (int i = 8; i < (STATUS_SIZE + 8); i++) {
             values.append((mask & (1 << i)) ? "1" : "0");
           }
           id(jkbms_sent_pace_status).publish_state(values);
@@ -347,8 +353,8 @@ modbus_controller:
       # Temperature sensors
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x1F, sensor:     jkbms_bat_temp1 } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x20, sensor:     jkbms_bat_temp2 } }
-      - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x21, sensor:     jkbms_bat_temp1 } }
-      - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x22, sensor:     jkbms_bat_temp2 } }
+      - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x21, sensor:     jkbms_bat_temp3 } }
+      - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x22, sensor:     jkbms_bat_temp4 } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x23, sensor:      jkbms_mos_temp } }
       - <<: !include { file: ../pace-bms-emulator/temperature-value-register.yaml, vars: { addr: 0x24, sensor: jkbms_fake_env_temp } }
       # Reserved

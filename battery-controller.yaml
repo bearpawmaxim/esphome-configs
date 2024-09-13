@@ -1,8 +1,7 @@
 substitutions:
   device_name: battery-controller
-  pace_tx: GPIO10
-  pace_rx: GPIO11
-  pace_fctl: GPIO12
+  pace_tx: GPIO11
+  pace_rx: GPIO10
   jkbms_tx: GPIO42
   jkbms_rx: GPIO1
   jkbms_fctl: GPIO2
@@ -21,7 +20,6 @@ packages:
     vars:
       tx_pin: ${pace_tx}
       rx_pin: ${pace_rx}
-      fctl_pin: ${pace_fctl}
 
 globals:
   - id: inverter_on

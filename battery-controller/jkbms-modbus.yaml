@@ -4,6 +4,22 @@ uart:
     rx_pin: ${rx_pin}
     rx_buffer_size: 384
     baud_rate: 115200
+    # debug:
+    #   direction: BOTH
+    #   dummy_receiver: false
+    #   sequence:
+    #     - lambda: |-
+    #         //UARTDebug::log_hex(direction, bytes, ':');
+    #         if (direction == UART_DIRECTION_TX) {
+    #           std::string res = "";
+    #           size_t len = bytes.size();
+    #           char buf[5];
+    #           for (size_t i = 0; i < len; i++) {
+    #             sprintf(buf, "%02X", bytes[i]);
+    #             res += buf;
+    #           }
+    #           id(jkbms_sent_bms_bytes).publish_state(res);
+    #         }
 
 modbus:
   - id: jkbms_modbus
@@ -36,7 +52,7 @@ sensor:
     address: 0x1004
     register_type: holding
     value_type: U_DWORD
-    register_count: 96
+    register_count: 118
     unit_of_measurement: "V"
     device_class: voltage
     state_class: measurement
@@ -1052,20 +1068,19 @@ sensor:
   # 0x12DA   218   UINT16    2    R    VolDischargCur  mV
 
 binary_sensor:
-  - platform: modbus_controller
-    modbus_controller_id: jkbms_modbus_controller
-    id: jkbms_charging_switch
-    name: "JKBMS charging switch"
-    address: 0x1070
-    register_type: holding
-    lambda: |-
-      return data[3] > 0;
-    on_state:
-      - script.execute:
-          id: lvgl_update_switch_value
-          name: charge_sw
-          value: !lambda return x;
-
+#   - platform: modbus_controller
+#     modbus_controller_id: jkbms_modbus_controller
+#     id: jkbms_charging_switch
+#     name: "JKBMS charging switch"
+#     address: 0x1070
+#     register_type: holding
+#     lambda: |-
+#       return data[3] == 1;
+#     on_state:
+#       - script.execute:
+#           id: lvgl_update_switch_value
+#           name: charge_sw
+#           value: !lambda return x;
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_charging
@@ -1073,22 +1088,26 @@ binary_sensor:
     address: 0x12C0
     register_type: holding
     lambda: |-
-      return data[0] > 0;
-
-  - platform: modbus_controller
-    modbus_controller_id: jkbms_modbus_controller
-    id: jkbms_discharging_switch
-    name: "JKBMS discharging switch"
-    address: 0x1074
-    register_type: holding
-    lambda: |-
-      return data[3] > 0;
+      return data[0] == 1;
     on_state:
       - script.execute:
           id: lvgl_update_switch_value
-          name: discharge_sw
+          name: charge_sw
           value: !lambda return x;
 
+  # - platform: modbus_controller
+  #   modbus_controller_id: jkbms_modbus_controller
+  #   id: jkbms_discharging_switch
+  #   name: "JKBMS discharging switch"
+  #   address: 0x1074
+  #   register_type: holding
+  #   lambda: |-
+  #     return data[3] == 1;
+  #   on_state:
+  #     - script.execute:
+  #         id: lvgl_update_switch_value
+  #         name: discharge_sw
+  #         value: !lambda return x;
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_discharging
@@ -1096,22 +1115,26 @@ binary_sensor:
     address: 0x12C0
     register_type: holding
     lambda: |-
-      return data[1] > 0;
-
-  - platform: modbus_controller
-    modbus_controller_id: jkbms_modbus_controller
-    id: jkbms_balancing_switch
-    name: "JKBMS balancing switch"
-    address: 0x1078
-    register_type: holding
-    lambda: |-
-      return data[3] > 0;
+      return data[1] == 1;
     on_state:
       - script.execute:
           id: lvgl_update_switch_value
-          name: balance_sw
+          name: discharge_sw
           value: !lambda return x;
 
+  # - platform: modbus_controller
+  #   modbus_controller_id: jkbms_modbus_controller
+  #   id: jkbms_balancing_switch
+  #   name: "JKBMS balancing switch"
+  #   address: 0x1078
+  #   register_type: holding
+  #   lambda: |-
+  #     return data[3] == 1;
+  #   on_state:
+  #     - script.execute:
+  #         id: lvgl_update_switch_value
+  #         name: balance_sw
+  #         value: !lambda return x;
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_balancing
@@ -1119,7 +1142,12 @@ binary_sensor:
     address: 0x12A6
     register_type: holding
     lambda: |-
-      return data[0] > 0;
+      return data[0] == 1;
+    on_state:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: balance_sw
+          value: !lambda return x;
 
 text_sensor:
   - platform: template
@@ -1139,3 +1167,7 @@ text_sensor:
           (hours ? to_string(hours) + "h" : "");
       }
       return value;
+  # - platform: template
+  #   id: jkbms_sent_bms_bytes
+  #   name: JKBMS BMS bytes sent
+  #   entity_category: diagnostic

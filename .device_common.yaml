@@ -27,10 +27,12 @@ sensor:
   - platform: wifi_signal
     name: "${device_name} WiFi Signal"
     update_interval: 120s
+    entity_category: diagnostic
   - platform: uptime
     id: uptime_seconds
     name: "${device_name} uptime seconds"
     update_interval: 120s
+    entity_category: diagnostic
 
 button:
   - platform: restart
