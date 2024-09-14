@@ -24,7 +24,7 @@ uart:
       sequence:
         - lambda: |-
             //UARTDebug::log_hex(direction, bytes, ':');
-            if (direction == UART_DIRECTION_RX) {
+            if (direction == UART_DIRECTION_TX) {
               std::string res = "";
               size_t len = bytes.size();
               char buf[5];

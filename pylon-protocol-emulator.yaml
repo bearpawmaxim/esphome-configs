@@ -2,9 +2,7 @@ esphome:
   name: pylon-protocol-emulator
   friendly_name: pylon-protocol-emulator
   includes:
-    - pylon-protocol-emulator/custom_component.cpp
-    - pylon-protocol-emulator/pylontech_rs485_low_voltage.h
-    - pylon-protocol-emulator/pylontech_rs485_low_voltage.cpp
+    - pylon-protocol-emulator/custom_component.h
 
 esp32:
   board: esp32dev
@@ -12,23 +10,12 @@ esp32:
     type: arduino
 
 packages:
-  device_common: !include .device_common.yaml
+  pace_bms_common: !include .pace-bms-base.yaml
 
-status_led:
-  pin:
-    number: GPIO2
-    inverted: yes
-
-uart:
-  id: uart_0
-  rx_pin: GPIO16
-  tx_pin: GPIO17
-  baud_rate: 9600
-  debug:
-    direction: BOTH
-    dummy_receiver: false
+modbus:
+  - id: !remove modbus0
 
 custom_component:
 - lambda: |-
-    auto my_custom = new PylontechEmulatorComponent(id(uart_0));
-    return {my_custom};
+    auto comp = new PylontechEmulatorComponent(id(uart_0));
+    return {comp};

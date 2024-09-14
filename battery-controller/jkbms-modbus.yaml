@@ -1171,3 +1171,15 @@ text_sensor:
   #   id: jkbms_sent_bms_bytes
   #   name: JKBMS BMS bytes sent
   #   entity_category: diagnostic
+
+switch:
+  - platform: template
+    id: jkbms_disable_data_collection
+    name: "JKBMS disable data collection"
+    optimistic: true
+    turn_on_action:
+      - component.suspend: jkbms_modbus_controller
+    turn_off_action:
+      - component.resume: jkbms_modbus_controller
+    restore_mode: ALWAYS_OFF
+    entity_category: diagnostic

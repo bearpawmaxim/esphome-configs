@@ -1,0 +1,18 @@
+esphome:
+  name: pylon-protocol-listener
+  friendly_name: pylon-protocol-listener
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+packages:
+  pace_bms_common: !include .pace-bms-base.yaml
+
+modbus:
+  - id: !remove modbus0
+
+# Enable logging
+logger:
+    
