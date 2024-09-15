@@ -2,6 +2,8 @@ esphome:
   name: pylon-protocol-emulator
   friendly_name: pylon-protocol-emulator
   includes:
+    - pylon-protocol-emulator/pylontech_rs485_low_voltage.h
+    - pylon-protocol-emulator/pylontech_rs485_low_voltage.cpp
     - pylon-protocol-emulator/custom_component.h
 
 esp32:

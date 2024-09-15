@@ -14,6 +14,9 @@ class PylontechEmulatorComponent : public esphome::Component, public esphome::ua
       this->protocol_ = new PylontechLowVoltageProtocol();
       this->protocol_->set_read_byte_callback([this]() {
         uint8_t data;
+        if (!this->available()) {
+          return (uint8_t)0xFF;
+        }
         if (!this->read_byte(&data)) {
           return (uint8_t)0xFF;
         }
