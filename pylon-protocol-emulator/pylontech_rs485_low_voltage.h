@@ -9,6 +9,7 @@ namespace pylontech {
 
   static const uint8_t SOI = 0x7E;
   static const uint8_t EOI = 0x0D;
+  static const uint8_t RTN_CODE_OK = 0x00;
 
   // 7E 32 30 30 32 34 36 34 32 45 30 30 32 30 32 46 44 33 33 0D
   typedef struct PylonFrame {
@@ -22,10 +23,6 @@ namespace pylontech {
     uint16_t chksum;
   } PylonFrame_t;
 
-  // typedef struct PylonFrameFooter {
-  //   uint16_t checksum;
-  // } PylonFrameFooter_t;
-
   class PylontechLowVoltageProtocol {
     public:
       void set_read_byte_callback(std::function<uint8_t()> &&callback) {
@@ -34,6 +31,10 @@ namespace pylontech {
 
       void set_get_analog_info_callback(std::function<void()> &&callback) {
         this->get_analog_info_cb_ = std::move(callback);
+      }
+
+      void set_write_byte_callback(std::function<void(uint8_t)> &&callback) {
+        this->send_byte_cb_ = std::move(callback);
       }
 
       bool read_ascii_bytes(uint8_t *destination, uint8_t len) {
@@ -103,14 +104,12 @@ namespace pylontech {
           uint8_t low_nibble  = (ascii_bytes[i + 1] <= '9')
             ? (ascii_bytes[i + 1] - '0')
             : (ascii_bytes[i + 1] - 'A' + 10);
-          ESP_LOGE("A2H", "h: %02X, l: %02X", high_nibble, low_nibble);
           output[i / 2] = (high_nibble << 4) | low_nibble;
         }
       }
 
       bool static verify_len_chksum_(uint16_t len, uint8_t len_chksum) {
         uint8_t computed_len_chksum = get_len_chksum(len);
-        ESP_LOGE("PYL", "Length checksum %d, computed %d", len_chksum, computed_len_chksum);
         return computed_len_chksum == len_chksum;
       }
 
@@ -133,11 +132,9 @@ namespace pylontech {
         }
         uint8_t *info_bytes = new uint8_t[frame->len_id / 2];
         this->read_ascii_bytes(info_bytes, frame->len_id / 2);
-        log_hex_("Info", info_bytes, frame->len_id / 2);
         uint8_t *chksum_bytes = new uint8_t[2];
         this->read_ascii_bytes(chksum_bytes, 2);
         frame->chksum = chksum_bytes[0] << 8 | chksum_bytes[1];
-        ESP_LOGE("PYL", "Frame checksum %04X", frame->chksum);
 
         // TODO: Verify checksum.
         uint8_t last_byte = this->read_byte_cb_();
@@ -148,18 +145,61 @@ namespace pylontech {
         this->handle_command_(frame);
       }
 
+      bool verify_frame_checksum_(PylonFrame *frame) {
+        std::vector<uint8_t> data = {};
+        data.push_back(frame->ver);
+        data.push_back(frame->addr);
+        data.push_back(frame->cid1);
+        data.push_back(frame->cid2);
+        data.push_back(frame->len_chksum << 4 | frame->len_id >> 12);
+        data.push_back(frame->len_id & 0x0FFF);
+        
+      }
+
       void handle_command_(PylonFrame *frame) {
         if (frame->cid1 != 0x46) {
           ESP_LOGE("PYL", "Invalid CID1 value %02X", frame->cid1);
         }
+        std::vector<uint8_t> info_bytes = {};
         switch (frame->cid2) {
           case 0x61:
             ESP_LOGE("PYL", "Received 'Get analog info' command");
+            info_bytes = this->get_analog_info_command_bytes_();
             break;
           default:
             ESP_LOGE("PYL", "Received unknown command %02X", frame->cid2);
-            break;
+            return;
         }
+        this->send_response_(frame, info_bytes);
+        delete frame;
+      }
+
+      void send_response_(PylonFrame *frame, std::vector<uint8_t> info_bytes) {
+        uint16_t info_len = this->get_info_length_(info_bytes.size());
+        uint8_t *info_len_bytes = (uint8_t*)&info_len;
+        info_bytes.insert(info_bytes.begin(), info_len_bytes[1]);
+        info_bytes.insert(info_bytes.begin(), info_len_bytes[0]);
+        info_bytes.insert(info_bytes.begin(), RTN_CODE_OK);
+        info_bytes.insert(info_bytes.begin(), frame->cid1);
+        info_bytes.insert(info_bytes.begin(), frame->addr);
+        info_bytes.insert(info_bytes.begin(), frame->ver);
+        uint16_t chksum = this->get_frame_checksum_(info_bytes.data(), info_bytes.size());
+        uint8_t *chksum_bytes = (uint8_t*)&chksum;
+        info_bytes.insert(info_bytes.end(), chksum_bytes[0]);
+        info_bytes.insert(info_bytes.end(), chksum_bytes[1]);
+        this->send_byte_cb_(SOI);
+        for (uint16_t i = 0; i < info_bytes.size(); i ++) {
+          uint8_t *bytes = new uint8_t[2];
+          this->uint8_array_to_ascii_(&info_bytes[i], bytes, 1);
+          this->send_byte_cb_(bytes[0]);
+          this->send_byte_cb_(bytes[1]);
+        }
+        this->send_byte_cb_(EOI);
+      }
+
+      std::vector<uint8_t> get_analog_info_command_bytes_() {
+        std::vector<uint8_t> result = { 0xDe, 0xad, 0xba, 0xbe };
+        return result;
       }
 
       static void uint8_array_to_ascii_(uint8_t* bytes, uint8_t* ascii_bytes, size_t length) {
@@ -184,6 +224,7 @@ namespace pylontech {
 
       std::function<uint8_t()> read_byte_cb_;
       std::function<void()> get_analog_info_cb_;
+      std::function<void(uint8_t)> send_byte_cb_;
   };
 
 }

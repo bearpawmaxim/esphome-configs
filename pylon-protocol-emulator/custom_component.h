@@ -22,6 +22,9 @@ class PylontechEmulatorComponent : public esphome::Component, public esphome::ua
         }
         return data;
       });
+      this->protocol_->set_write_byte_callback([this](uint8_t byte) {
+        this->write_byte(byte);
+      });
     }
 
     void loop() override {
