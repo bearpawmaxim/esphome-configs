@@ -25,6 +25,9 @@ class PylontechEmulatorComponent : public esphome::Component, public esphome::ua
       this->protocol_->set_write_byte_callback([this](uint8_t byte) {
         this->write_byte(byte);
       });
+      this->protocol_->set_get_analog_info_callback([this](PylonAnalogInfo *info) {
+        // TODO...
+      });
     }
 
     void loop() override {

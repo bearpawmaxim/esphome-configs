@@ -1,3 +1,7 @@
+substitutions:
+  device_name: pylon-protocol-emulator
+  name: Pylon protocol emulator
+
 esphome:
   name: pylon-protocol-emulator
   friendly_name: pylon-protocol-emulator

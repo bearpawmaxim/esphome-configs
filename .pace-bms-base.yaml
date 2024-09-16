@@ -22,8 +22,8 @@ status_led:
 
 uart:
   id: uart_0
-  rx_pin: GPIO16
-  tx_pin: GPIO17
+  rx_pin: GPIO18
+  tx_pin: GPIO19
   baud_rate: 115200
   debug:
     direction: BOTH
@@ -31,6 +31,18 @@ uart:
     sequence:
       - lambda: |-
           UARTDebug::log_hex(direction, bytes, ':');
+
+debug:
+  update_interval: 5s
+
+sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
 
 modbus:
   - id: modbus0
