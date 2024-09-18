@@ -1,0 +1,104 @@
+esphome:
+  includes:
+    - ./pylon-protocol-emulator/pylontech_rs485_low_voltage.h
+    - ./pylon-protocol-emulator/pylontech_rs485_low_voltage.cpp
+    - ./pylon-protocol-emulator/custom_component.h
+
+uart:
+  - id: pylon_uart
+    tx_pin: ${tx_pin}
+    rx_pin: ${rx_pin}
+    baud_rate: 9600
+    debug:
+      direction: BOTH
+      dummy_receiver: false
+      sequence:
+        - lambda: |-
+            //UARTDebug::log_hex(direction, bytes, ':');
+            if (direction == UART_DIRECTION_RX) {
+              std::string res = "";
+              size_t len = bytes.size();
+              char buf[5];
+              for (size_t i = 0; i < len; i++) {
+                sprintf(buf, "%02X", bytes[i]);
+                res += buf;
+              }
+              id(jkbms_received_pylon_bytes).publish_state(res);
+            }
+
+text_sensor:
+  - platform: template
+    id: jkbms_received_pylon_bytes
+    name: JKBMS received pylon bytes sent
+    entity_category: diagnostic
+
+custom_component:
+- lambda: |-
+    auto comp = new PylontechEmulatorComponent(id(pylon_uart));
+    comp->set_get_analog_info_callback(std::move([](PylonAnalogInfo *info) {
+      info->pack_voltage = id(jkbms_total_voltage).state;
+      info->current = id(jkbms_current).state;
+      info->soc = id(jkbms_soc).state;
+      info->avg_nr_of_cycles = id(jkbms_charge_cycles_count).state;
+      info->max_nr_of_cycles = id(jkbms_charge_cycles_count).state;
+      info->avg_soh = 100;
+      info->min_soh = 100;
+      float cell_voltages[] = {
+        id(jkbms_cell_voltage_1).state,
+        id(jkbms_cell_voltage_2).state,
+        id(jkbms_cell_voltage_3).state,
+        id(jkbms_cell_voltage_4).state,
+        id(jkbms_cell_voltage_5).state,
+        id(jkbms_cell_voltage_6).state,
+        id(jkbms_cell_voltage_7).state,
+        id(jkbms_cell_voltage_8).state,
+        id(jkbms_cell_voltage_9).state,
+        id(jkbms_cell_voltage_10).state,
+        id(jkbms_cell_voltage_11).state,
+        id(jkbms_cell_voltage_12).state,
+        id(jkbms_cell_voltage_13).state,
+        id(jkbms_cell_voltage_14).state,
+        id(jkbms_cell_voltage_15).state,
+        id(jkbms_cell_voltage_16).state
+        };
+      info->max_cell_voltage = *std::max_element(std::begin(cell_voltages), std::end(cell_voltages));
+      info->max_cell_voltage_pack_num = 1;
+      info->max_cell_voltage_num = id(jkbms_max_voltage_cell).state;
+      info->min_cell_voltage = *std::min_element(std::begin(cell_voltages), std::end(cell_voltages));
+      info->min_cell_voltage_pack_num = 1;
+      info->min_cell_voltage_num = id(jkbms_min_voltage_cell).state;
+      float pack_temps[] = {
+        id(jkbms_bat_temp1).state,
+        id(jkbms_bat_temp2).state,
+        id(jkbms_bat_temp3).state,
+        id(jkbms_bat_temp4).state
+      };
+      float avg = 0.0;
+      float sum = 0.0;
+      for (int i = 0; i < 4; i++) {
+        sum += pack_temps[i];
+      }
+      avg = ((float)sum)/4;
+      info->avg_cell_temp_k = avg + 273.15;
+      info->max_cell_temp_k = *std::max_element(std::begin(pack_temps), std::end(pack_temps)) + 273.15;
+      info->max_cell_temp_pack_num = 1;
+      info->max_cell_temp_num = 4;
+      info->min_cell_temp_k = *std::min_element(std::begin(pack_temps), std::end(pack_temps)) + 273.15;
+      info->min_cell_temp_pack_num = 1;
+      info->min_cell_temp_num = 5;
+      info->avg_mos_temp_k = id(jkbms_mos_temp).state + 273.15;
+      info->max_mos_temp_k = id(jkbms_mos_temp).state + 273.15;
+      info->max_mos_temp_pack_num = 1;
+      info->max_mos_temp_num = 1;
+      info->min_mos_temp_k = id(jkbms_mos_temp).state + 273.15;
+      info->min_mos_temp_pack_num = 1;
+      info->min_mos_temp_num = 1;
+      info->avg_bms_temp_k = id(jkbms_mos_temp).state + 273.15;
+      info->max_bms_temp_k = id(jkbms_mos_temp).state + 273.15;
+      info->max_bms_temp_pack_num = 1;
+      info->max_bms_temp_num = 1;
+      info->min_bms_temp_k = id(jkbms_mos_temp).state + 273.15;
+      info->min_bms_temp_pack_num = 1;
+      info->min_bms_temp_num = 1;
+    }));
+    return {comp};
