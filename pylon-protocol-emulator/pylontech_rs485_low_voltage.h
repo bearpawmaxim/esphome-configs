@@ -66,8 +66,8 @@ namespace pylontech {
     uint8_t   min_bms_temp_num;
   } PylonAnalogInfo_t;
 
-  using get_analog_info_cb_t =
-    std::shared_ptr<std::function<void(PylonAnalogInfo*)>>;
+  //typedef std::function<void(PylonAnalogInfo*)> get_analog_info_cb_t;
+  typedef void (*GetAnalogInfoCallback)(PylonAnalogInfo*);
 
   class PylontechTransport {
     public:
@@ -78,7 +78,7 @@ namespace pylontech {
   class PylontechLowVoltageProtocol {
     public:
       PylontechLowVoltageProtocol(PylontechTransport *transport, uint8_t addr);
-      void set_get_analog_info_callback(get_analog_info_cb_t callback);
+      void set_get_analog_info_callback(GetAnalogInfoCallback callback);
       void loop();
 
     private:
@@ -107,7 +107,7 @@ namespace pylontech {
 
       PylontechTransport *transport_;
       uint8_t addr_;
-      get_analog_info_cb_t get_analog_info_cb_;
+      GetAnalogInfoCallback get_analog_info_cb_{nullptr};
   };
 
 }

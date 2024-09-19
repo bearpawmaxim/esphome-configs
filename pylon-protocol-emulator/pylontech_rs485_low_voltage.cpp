@@ -6,7 +6,8 @@ namespace pylontech {
     this->addr_ = addr;
   }
 
-  void PylontechLowVoltageProtocol::set_get_analog_info_callback(get_analog_info_cb_t callback) {
+  void PylontechLowVoltageProtocol::set_get_analog_info_callback(
+      GetAnalogInfoCallback callback) {
     this->get_analog_info_cb_ = callback;
   }
 
@@ -231,9 +232,8 @@ namespace pylontech {
   std::vector<uint8_t> PylontechLowVoltageProtocol::get_analog_info_command_bytes_(PylonFrame *frame) {
     PylonAnalogInfo *info = new PylonAnalogInfo();
     if (this->get_analog_info_cb_) {
-      (*this->get_analog_info_cb_)(info);
+      this->get_analog_info_cb_(info);
     }
-
     std::vector<uint8_t> result = {};
     PylontechLowVoltageProtocol::write_float_(info->pack_voltage * 1000, result);
     PylontechLowVoltageProtocol::write_float_(info->current * 1000, result);

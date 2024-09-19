@@ -2,6 +2,11 @@ substitutions:
   device_name: pylon-protocol-emulator
   name: Pylon protocol emulator
 
+globals:
+  - id: volt
+    type: float
+    initial_value: '11.859'
+
 esphome:
   name: pylon-protocol-emulator
   friendly_name: pylon-protocol-emulator
@@ -24,10 +29,8 @@ modbus:
 custom_component:
 - lambda: |-
     auto comp = new PylontechEmulatorComponent(id(uart_0));
-    ESP_LOGW("CMP", "Creating callback");
-    auto callback = std::make_shared<std::function<void(PylonAnalogInfo*)>>(
-      [](PylonAnalogInfo *info) {
-        info->pack_voltage = 11.859;
+    comp->set_get_analog_info_callback([](PylonAnalogInfo *info) {
+        info->pack_voltage = id(volt);
         info->current = 25.0;
         info->soc = 98;
         info->avg_nr_of_cycles = 2516;
@@ -62,7 +65,4 @@ custom_component:
         info->min_bms_temp_pack_num = 1;
         info->min_bms_temp_num = 7;
       });
-    ESP_LOGW("CMP", "Setting callback");
-    comp->set_get_analog_info_callback(callback);
-    ESP_LOGW("CMP", "Returning component");
     return {comp};

@@ -12,7 +12,7 @@ class PylontechEmulatorComponent : public esphome::Component,
   public:
     PylontechEmulatorComponent(esphome::uart::UARTComponent *parent): UARTDevice(parent) {}
 
-    void set_get_analog_info_callback(std::shared_ptr<std::function<void(PylonAnalogInfo*)>> callback) {
+    void set_get_analog_info_callback(GetAnalogInfoCallback callback) {
       this->protocol_->set_get_analog_info_callback(callback);
     }
 

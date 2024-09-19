@@ -35,7 +35,7 @@ text_sensor:
 custom_component:
 - lambda: |-
     auto comp = new PylontechEmulatorComponent(id(pylon_uart));
-    comp->set_get_analog_info_callback(std::move([](PylonAnalogInfo *info) {
+    comp->set_get_analog_info_callback([](PylonAnalogInfo *info) {
       info->pack_voltage = id(jkbms_total_voltage).state;
       info->current = id(jkbms_current).state;
       info->soc = id(jkbms_soc).state;
@@ -100,5 +100,5 @@ custom_component:
       info->min_bms_temp_k = id(jkbms_mos_temp).state + 273.15;
       info->min_bms_temp_pack_num = 1;
       info->min_bms_temp_num = 1;
-    }));
+    });
     return {comp};
