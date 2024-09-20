@@ -7,13 +7,15 @@ globals:
     type: float
     initial_value: '11.859'
 
+external_components:
+  - source:
+      type: local
+      path: custom_components
+    refresh: 1s
+
 esphome:
   name: pylon-protocol-emulator
   friendly_name: pylon-protocol-emulator
-  includes:
-    - pylon-protocol-emulator/pylontech_rs485_low_voltage.h
-    - pylon-protocol-emulator/pylontech_rs485_low_voltage.cpp
-    - pylon-protocol-emulator/custom_component.h
 
 esp32:
   board: esp32dev
@@ -26,43 +28,61 @@ packages:
 modbus:
   - id: !remove modbus0
 
-custom_component:
-- lambda: |-
-    auto comp = new PylontechEmulatorComponent(id(uart_0));
-    comp->set_get_analog_info_callback([](PylonAnalogInfo *info) {
-        info->pack_voltage = id(volt);
-        info->current = 25.0;
-        info->soc = 98;
-        info->avg_nr_of_cycles = 2516;
-        info->max_nr_of_cycles = 2932;
-        info->avg_soh = 98;
-        info->min_soh = 97;
-        info->max_cell_voltage = 3.512;
-        info->max_cell_voltage_pack_num = 3;
-        info->max_cell_voltage_num = 4;
-        info->min_cell_voltage = 3.259;
-        info->min_cell_voltage_pack_num = 1;
-        info->min_cell_voltage_num = 4;
-        info->avg_cell_temp_k = 25.5 + 273.15;
-        info->max_cell_temp_k = 26.8 + 273.15;
-        info->max_cell_temp_pack_num = 3;
-        info->max_cell_temp_num = 4;
-        info->min_cell_temp_k = 24.2 + 273.15;
-        info->min_cell_temp_pack_num = 1;
-        info->min_cell_temp_num = 5;
-        info->avg_mos_temp_k = 25.5 + 273.15;
-        info->max_mos_temp_k = 26.9 + 273.15;
-        info->max_mos_temp_pack_num = 3;
-        info->max_mos_temp_num = 6;
-        info->min_mos_temp_k = 24.1 + 273.15;
-        info->min_mos_temp_pack_num = 1;
-        info->min_mos_temp_num = 6;
-        info->avg_bms_temp_k = 25.5 + 273.15;
-        info->max_bms_temp_k = 26.7 + 273.15;
-        info->max_bms_temp_pack_num = 3;
-        info->max_bms_temp_num = 7;
-        info->min_bms_temp_k = 24.3 + 273.15;
-        info->min_bms_temp_pack_num = 1;
-        info->min_bms_temp_num = 7;
-      });
-    return {comp};
+sensor:
+  - platform: template
+    id: emul_pack_voltage
+    lambda: "return 11.859;"
+  - platform: template
+    id: emul_current
+    lambda: "return 25.0;"
+  - platform: template
+    id: emul_soc
+    lambda: "return 98;"
+
+pylontech_emulator:
+  id: pyl_emul
+  uart_id: uart_0
+  voltage_sensor: emul_pack_voltage
+  current_sensor: emul_current
+  soc_sensor: emul_soc
+
+# custom_component:
+# - lambda: |-
+#     auto comp = new PylontechEmulatorComponent(id(uart_0));
+#     comp->set_get_analog_info_callback([](PylonAnalogInfo *info) {
+#         info->pack_voltage = 11.859;
+#         info->current = 25.0;
+#         info->soc = 98;
+#         info->avg_nr_of_cycles = 2516;
+#         info->max_nr_of_cycles = 2932;
+#         info->avg_soh = 98;
+#         info->min_soh = 97;
+#         info->max_cell_voltage = 3.512;
+#         info->max_cell_voltage_pack_num = 3;
+#         info->max_cell_voltage_num = 4;
+#         info->min_cell_voltage = 3.259;
+#         info->min_cell_voltage_pack_num = 1;
+#         info->min_cell_voltage_num = 4;
+#         info->avg_cell_temp_k = 25.5 + 273.15;
+#         info->max_cell_temp_k = 26.8 + 273.15;
+#         info->max_cell_temp_pack_num = 3;
+#         info->max_cell_temp_num = 4;
+#         info->min_cell_temp_k = 24.2 + 273.15;
+#         info->min_cell_temp_pack_num = 1;
+#         info->min_cell_temp_num = 5;
+#         info->avg_mos_temp_k = 25.5 + 273.15;
+#         info->max_mos_temp_k = 26.9 + 273.15;
+#         info->max_mos_temp_pack_num = 3;
+#         info->max_mos_temp_num = 6;
+#         info->min_mos_temp_k = 24.1 + 273.15;
+#         info->min_mos_temp_pack_num = 1;
+#         info->min_mos_temp_num = 6;
+#         info->avg_bms_temp_k = 25.5 + 273.15;
+#         info->max_bms_temp_k = 26.7 + 273.15;
+#         info->max_bms_temp_pack_num = 3;
+#         info->max_bms_temp_num = 7;
+#         info->min_bms_temp_k = 24.3 + 273.15;
+#         info->min_bms_temp_pack_num = 1;
+#         info->min_bms_temp_num = 7;
+#       });
+#     return {comp};

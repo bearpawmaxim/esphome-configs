@@ -4,9 +4,7 @@
 #include <functional>
 #include "esphome.h"
 
-namespace pylontech {
-  using namespace esphome;
-
+namespace pylontech_lv {
   static const uint8_t SOI                     = 0x7E;
   static const uint8_t EOI                     = 0x0D;
   static const uint8_t RTN_CODE_OK             = 0x00;
@@ -66,7 +64,6 @@ namespace pylontech {
     uint8_t   min_bms_temp_num;
   } PylonAnalogInfo_t;
 
-  //typedef std::function<void(PylonAnalogInfo*)> get_analog_info_cb_t;
   typedef void (*GetAnalogInfoCallback)(PylonAnalogInfo*);
 
   class PylontechTransport {
@@ -103,11 +100,11 @@ namespace pylontech {
       void send_response_(PylonFrame *frame, uint8_t status,
           std::vector<uint8_t> info_bytes);
       std::vector<uint8_t> get_analog_info_command_bytes_(PylonFrame *frame);
-      void log_hex_(std::string name, uint8_t *bytes, uint8_t len);
 
       PylontechTransport *transport_;
       uint8_t addr_;
       GetAnalogInfoCallback get_analog_info_cb_{nullptr};
   };
 
+}
 }

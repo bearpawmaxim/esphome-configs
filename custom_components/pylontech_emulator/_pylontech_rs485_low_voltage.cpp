@@ -1,6 +1,6 @@
-#include "pylontech_rs485_low_voltage.h"
+#include "_pylontech_rs485_low_voltage.h"
 
-namespace pylontech {
+namespace pylontech_lv {
   PylontechLowVoltageProtocol::PylontechLowVoltageProtocol(PylontechTransport *transport, uint8_t addr) {
     this->transport_ = transport;
     this->addr_ = addr;
@@ -157,6 +157,7 @@ namespace pylontech {
     esphome::ESP_LOGE("PYL", "Got frame. Version = %02X, Addr = %02X, Cid1 = %02X, Cid2 = %02X, Lch = %02X, Lid = %04X",
       frame->ver, frame->addr, frame->cid1, frame->cid2, frame->len_chksum, frame->len_id);
     if (frame->addr != this->addr_) {
+      ESP_LOGE("PYL", "Got frame for non-matching address %d, skipping.", frame->addr);
       delete frame;
       return;
     }
@@ -273,13 +274,4 @@ namespace pylontech {
     return result;
   }
 
-  void PylontechLowVoltageProtocol::log_hex_(std::string name, uint8_t *bytes, uint8_t len) {
-    std::string res = "";
-    char buf[5];
-    for (size_t i = 0; i < len; i++) {
-      sprintf(buf, "%02X", bytes[i]);
-      res += buf;
-    }
-    esphome::ESP_LOGE("PYL", "%s: 0x%s", name.c_str(), res.c_str());
-  }
 }
