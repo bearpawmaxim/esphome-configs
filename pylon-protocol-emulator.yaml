@@ -42,9 +42,11 @@ sensor:
 pylontech_emulator:
   id: pyl_emul
   uart_id: uart_0
-  voltage_sensor: emul_pack_voltage
-  current_sensor: emul_current
-  soc_sensor: emul_soc
+  batteries:
+    - address: 0x02
+      voltage_sensor: emul_pack_voltage
+      current_sensor: emul_current
+      remain_capacity_sensor: emul_soc
 
 # custom_component:
 # - lambda: |-

@@ -4,7 +4,7 @@ namespace esphome {
   namespace pylontech {
     using namespace pylontech_lv;
 
-    void PylontechEmulatorComponent::register_callbacks() {
+    void PylontechEmulatorComponent::register_callbacks_() {
       this->protocol_->set_get_analog_info_callback([this](PylonAnalogInfo *info) {
         this->handle_get_analog_info_(info);
       });
@@ -55,6 +55,7 @@ namespace esphome {
         esphome::ESP_LOGE("PYL", format, args);
         va_end(args);
       });
+      this->register_callbacks_();
     }
 
     void PylontechEmulatorComponent::write_uint8(uint8_t byte) {

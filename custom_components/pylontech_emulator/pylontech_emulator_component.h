@@ -12,20 +12,20 @@ namespace esphome {
         void set_current_sensor(sensor::Sensor *sensor) { this->current_sensor_ = sensor; }
         void set_soc_sensor(sensor::Sensor *sensor) { this->soc_sensor_ = sensor; }
 
-        void register_callbacks();
-
         void setup() override;
         void write_uint8(uint8_t byte);
         uint8_t read_uint8();
         void loop() override;
 
       private:
+        void handle_get_analog_info_(pylontech_lv::PylonAnalogInfo *info);
+        void register_callbacks_();
+
         sensor::Sensor *voltage_sensor_;
         sensor::Sensor *current_sensor_;
         sensor::Sensor *soc_sensor_;
         pylontech_lv::PylontechLowVoltageProtocol *protocol_;
 
-        void handle_get_analog_info_(pylontech_lv::PylonAnalogInfo *info);
     };
   }
 }
