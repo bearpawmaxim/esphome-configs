@@ -1,10 +1,14 @@
 #pragma once
 
+#include <cstdarg>
 #include <cstdint>
 #include <functional>
-#include "esphome.h"
+#include <vector>
+#include <cmath>
 
 namespace pylontech_lv {
+  using namespace std;
+
   static const uint8_t SOI                     = 0x7E;
   static const uint8_t EOI                     = 0x0D;
   static const uint8_t RTN_CODE_OK             = 0x00;
@@ -16,7 +20,7 @@ namespace pylontech_lv {
   static const uint8_t RTN_CODE_DATA_ERROR     = 0x06;
 
   // 7E 32 30 30 32 34 36 34 32 45 30 30 32 30 32 46 44 33 33 0D
-  typedef struct PylonFrame {
+  struct PylonFrame {
     uint8_t   ver;
     uint8_t   addr;
     uint8_t   cid1;
@@ -25,9 +29,9 @@ namespace pylontech_lv {
     uint16_t  len_id;
     uint8_t   *info;
     uint16_t  chksum;
-  } PylonFrame_t;
+  };
 
-  typedef struct PylonAnalogInfo {
+  struct PylonAnalogInfo {
     float     pack_voltage; // uint16, volts * 1000.
     float     current; // uint16, amps * 1000.
     uint8_t   soc;
@@ -62,9 +66,10 @@ namespace pylontech_lv {
     float     min_bms_temp_k; // uint16, kelvins * 1000.
     uint8_t   min_bms_temp_pack_num;
     uint8_t   min_bms_temp_num;
-  } PylonAnalogInfo_t;
+  };
 
-  typedef void (*GetAnalogInfoCallback)(PylonAnalogInfo*);
+  using WriteLogCallback = std::function<void(uint8_t, const char*, va_list)>;
+  using GetAnalogInfoCallback = std::function<void(PylonAnalogInfo *info)>;
 
   class PylontechTransport {
     public:
@@ -75,10 +80,12 @@ namespace pylontech_lv {
   class PylontechLowVoltageProtocol {
     public:
       PylontechLowVoltageProtocol(PylontechTransport *transport, uint8_t addr);
+      void set_log_callback(WriteLogCallback callback);
       void set_get_analog_info_callback(GetAnalogInfoCallback callback);
       void loop();
 
     private:
+      inline void log_(uint8_t level, const char *format, ...);
       static inline void write_uint8_(uint8_t value, std::vector<uint8_t> &data);
       static inline void write_uint16_(uint16_t value, std::vector<uint8_t> &data);
       static inline void write_float_(float value, std::vector<uint8_t> &data);
@@ -103,8 +110,9 @@ namespace pylontech_lv {
 
       PylontechTransport *transport_;
       uint8_t addr_;
+
+      WriteLogCallback write_log_cb_{nullptr};
       GetAnalogInfoCallback get_analog_info_cb_{nullptr};
   };
 
-}
 }

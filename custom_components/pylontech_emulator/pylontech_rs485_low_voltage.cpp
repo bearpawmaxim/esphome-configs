@@ -1,4 +1,4 @@
-#include "_pylontech_rs485_low_voltage.h"
+#include "pylontech_rs485_low_voltage.h"
 
 namespace pylontech_lv {
   PylontechLowVoltageProtocol::PylontechLowVoltageProtocol(PylontechTransport *transport, uint8_t addr) {
@@ -6,9 +6,13 @@ namespace pylontech_lv {
     this->addr_ = addr;
   }
 
+  void PylontechLowVoltageProtocol::set_log_callback(WriteLogCallback callback) {
+    this->write_log_cb_ = std::move(callback);
+  }
+
   void PylontechLowVoltageProtocol::set_get_analog_info_callback(
       GetAnalogInfoCallback callback) {
-    this->get_analog_info_cb_ = callback;
+    this->get_analog_info_cb_ = std::move(callback);
   }
 
   void PylontechLowVoltageProtocol::loop() {
@@ -23,6 +27,15 @@ namespace pylontech_lv {
       PylonFrame *frame = this->construct_frame_(header_bytes, 6);
       delete[] header_bytes;
       this->handle_frame_(frame, ascii_sum);
+    }
+  }
+
+  void PylontechLowVoltageProtocol::log_(uint8_t level, const char *format, ...) {
+    if (this->write_log_cb_ != nullptr) {
+      va_list args;
+      va_start(args, format);
+      this->write_log_cb_(level, format, args);
+      va_end(args);
     }
   }
 
@@ -134,7 +147,7 @@ namespace pylontech_lv {
   bool PylontechLowVoltageProtocol::verify_frame_checksum_(uint16_t frame_chksum, uint16_t ascii_sum) {
     uint16_t chksum = this->get_frame_checksum_(ascii_sum);
     if (chksum != frame_chksum) {
-      ESP_LOGE("PYL", "Error in checksum verification(expected: %04X, actual: %04X)", chksum, frame_chksum);
+      this->log_(4, "Error in checksum verification(expected: %04X, actual: %04X)", chksum, frame_chksum);
       return false;
     }
     return true;
@@ -154,10 +167,10 @@ namespace pylontech_lv {
   }
 
   void PylontechLowVoltageProtocol::handle_frame_(PylonFrame *frame, uint16_t ascii_sum) {
-    esphome::ESP_LOGE("PYL", "Got frame. Version = %02X, Addr = %02X, Cid1 = %02X, Cid2 = %02X, Lch = %02X, Lid = %04X",
+    this->log_(4, "Got frame. Version = %02X, Addr = %02X, Cid1 = %02X, Cid2 = %02X, Lch = %02X, Lid = %04X",
       frame->ver, frame->addr, frame->cid1, frame->cid2, frame->len_chksum, frame->len_id);
     if (frame->addr != this->addr_) {
-      ESP_LOGE("PYL", "Got frame for non-matching address %d, skipping.", frame->addr);
+      this->log_(4, "Got frame for non-matching address %d, skipping.", frame->addr);
       delete frame;
       return;
     }
@@ -172,7 +185,7 @@ namespace pylontech_lv {
     }
     uint8_t last_byte = this->transport_->read_uint8();
     if (last_byte != EOI) {
-      ESP_LOGE("PYL", "Last byte is not 0x0D (but %02X)", last_byte);
+      this->log_(4, "Last byte is not 0x0D (but %02X)", last_byte);
       this->send_response_(frame, RTN_CODE_VER_ERROR, {});
       return;
     }
@@ -181,16 +194,16 @@ namespace pylontech_lv {
 
   void PylontechLowVoltageProtocol::handle_command_(PylonFrame *frame) {
     if (frame->cid1 != 0x46) {
-      ESP_LOGE("PYL", "Invalid CID1 value %02X", frame->cid1);
+      this->log_(4, "Invalid CID1 value %02X", frame->cid1);
     }
     std::vector<uint8_t> info_bytes = {};
     switch (frame->cid2) {
       case 0x61:
-        ESP_LOGE("PYL", "Received 'Get analog info' command");
+        this->log_(4, "Received 'Get analog info' command");
         info_bytes = this->get_analog_info_command_bytes_(frame);
         break;
       default:
-        ESP_LOGE("PYL", "Received unknown command %02X", frame->cid2);
+        this->log_(4, "Received unknown command %02X", frame->cid2);
         this->send_response_(frame, RTN_CODE_CID2_ERROR, {});
         return;
     }
@@ -231,46 +244,46 @@ namespace pylontech_lv {
   }
 
   std::vector<uint8_t> PylontechLowVoltageProtocol::get_analog_info_command_bytes_(PylonFrame *frame) {
-    PylonAnalogInfo *info = new PylonAnalogInfo();
-    if (this->get_analog_info_cb_) {
-      this->get_analog_info_cb_(info);
+    PylonAnalogInfo info;
+    if (this->get_analog_info_cb_ != nullptr) {
+      this->get_analog_info_cb_(&info);
     }
     std::vector<uint8_t> result = {};
-    PylontechLowVoltageProtocol::write_float_(info->pack_voltage * 1000, result);
-    PylontechLowVoltageProtocol::write_float_(info->current * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->soc, result);
-    PylontechLowVoltageProtocol::write_uint16_(info->avg_nr_of_cycles, result);
-    PylontechLowVoltageProtocol::write_uint16_(info->max_nr_of_cycles, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->avg_soh, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_soh, result);
-    PylontechLowVoltageProtocol::write_float_(info->max_cell_voltage * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_cell_voltage_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_cell_voltage_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->min_cell_voltage * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_cell_voltage_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_cell_voltage_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->avg_cell_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_float_(info->max_cell_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_cell_temp_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_cell_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->min_cell_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_cell_temp_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_cell_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->avg_mos_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_float_(info->max_mos_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_mos_temp_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_mos_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->min_mos_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_mos_temp_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_mos_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->avg_bms_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_float_(info->max_bms_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_bms_temp_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->max_bms_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info->min_bms_temp_k * 1000, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_bms_temp_pack_num, result);
-    PylontechLowVoltageProtocol::write_uint8_(info->min_bms_temp_num, result);
-    delete info;
+    PylontechLowVoltageProtocol::write_float_(info.pack_voltage * 1000, result);
+    PylontechLowVoltageProtocol::write_float_(info.current * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.soc, result);
+    PylontechLowVoltageProtocol::write_uint16_(info.avg_nr_of_cycles, result);
+    PylontechLowVoltageProtocol::write_uint16_(info.max_nr_of_cycles, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.avg_soh, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_soh, result);
+    PylontechLowVoltageProtocol::write_float_(info.max_cell_voltage * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_cell_voltage_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_cell_voltage_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.min_cell_voltage * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_cell_voltage_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_cell_voltage_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.avg_cell_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_float_(info.max_cell_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_cell_temp_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_cell_temp_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.min_cell_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_cell_temp_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_cell_temp_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.avg_mos_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_float_(info.max_mos_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_mos_temp_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_mos_temp_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.min_mos_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_mos_temp_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_mos_temp_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.avg_bms_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_float_(info.max_bms_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_bms_temp_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.max_bms_temp_num, result);
+    PylontechLowVoltageProtocol::write_float_(info.min_bms_temp_k * 1000, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_bms_temp_pack_num, result);
+    PylontechLowVoltageProtocol::write_uint8_(info.min_bms_temp_num, result);
+
     return result;
   }
 

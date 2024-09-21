@@ -13,7 +13,7 @@ packages:
 
 logger:
   level: DEBUG
-  baud_rate: 0
+  baud_rate: 115200
 
 status_led:
   pin:
