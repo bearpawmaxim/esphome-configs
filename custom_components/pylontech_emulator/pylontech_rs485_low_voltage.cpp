@@ -30,7 +30,7 @@ namespace pylontech_lv {
     }
   }
 
-  void PylontechLowVoltageProtocol::log_(uint8_t level, const char *format, ...) {
+  void PylontechLowVoltageProtocol::log_(PylonLogLevel level, const char *format, ...) {
     if (this->write_log_cb_ != nullptr) {
       va_list args;
       va_start(args, format);
@@ -147,7 +147,7 @@ namespace pylontech_lv {
   bool PylontechLowVoltageProtocol::verify_frame_checksum_(uint16_t frame_chksum, uint16_t ascii_sum) {
     uint16_t chksum = this->get_frame_checksum_(ascii_sum);
     if (chksum != frame_chksum) {
-      this->log_(4, "Error in checksum verification(expected: %04X, actual: %04X)", chksum, frame_chksum);
+      this->log_(PylonLogLevel::ERROR, "Error in checksum verification(expected: %04X, actual: %04X)", chksum, frame_chksum);
       return false;
     }
     return true;
@@ -167,10 +167,10 @@ namespace pylontech_lv {
   }
 
   void PylontechLowVoltageProtocol::handle_frame_(PylonFrame *frame, uint16_t ascii_sum) {
-    this->log_(4, "Got frame. Version = %02X, Addr = %02X, Cid1 = %02X, Cid2 = %02X, Lch = %02X, Lid = %04X",
+    this->log_(PylonLogLevel::DEBUG, "Got frame. Version = %02X, Addr = %02X, Cid1 = %02X, Cid2 = %02X, Lch = %02X, Lid = %04X",
       frame->ver, frame->addr, frame->cid1, frame->cid2, frame->len_chksum, frame->len_id);
     if (frame->addr != this->addr_) {
-      this->log_(4, "Got frame for non-matching address %d, skipping.", frame->addr);
+      this->log_(PylonLogLevel::WARN, "Got frame for non-matching address %d, skipping.", frame->addr);
       delete frame;
       return;
     }
@@ -185,7 +185,7 @@ namespace pylontech_lv {
     }
     uint8_t last_byte = this->transport_->read_uint8();
     if (last_byte != EOI) {
-      this->log_(4, "Last byte is not 0x0D (but %02X)", last_byte);
+      this->log_(PylonLogLevel::ERROR, "Last byte is not 0x0D (but %02X)", last_byte);
       this->send_response_(frame, RTN_CODE_VER_ERROR, {});
       return;
     }
@@ -194,16 +194,16 @@ namespace pylontech_lv {
 
   void PylontechLowVoltageProtocol::handle_command_(PylonFrame *frame) {
     if (frame->cid1 != 0x46) {
-      this->log_(4, "Invalid CID1 value %02X", frame->cid1);
+      this->log_(PylonLogLevel::ERROR, "Invalid CID1 value %02X", frame->cid1);
     }
     std::vector<uint8_t> info_bytes = {};
     switch (frame->cid2) {
       case 0x61:
-        this->log_(4, "Received 'Get analog info' command");
+        this->log_(PylonLogLevel::INFO, "Received 'Get analog info' command");
         info_bytes = this->get_analog_info_command_bytes_(frame);
         break;
       default:
-        this->log_(4, "Received unknown command %02X", frame->cid2);
+        this->log_(PylonLogLevel::ERROR, "Received unknown command %02X", frame->cid2);
         this->send_response_(frame, RTN_CODE_CID2_ERROR, {});
         return;
     }

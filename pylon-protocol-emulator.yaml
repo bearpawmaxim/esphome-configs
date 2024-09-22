@@ -31,22 +31,151 @@ modbus:
 sensor:
   - platform: template
     id: emul_pack_voltage
+    name: "Pack Voltage"
     lambda: "return 11.859;"
   - platform: template
     id: emul_current
+    name: "Current"
     lambda: "return 25.0;"
   - platform: template
+    id: emul_nr_of_cycles
+    name: "Number of cycles"
+    lambda: "return 1;"
+  - platform: template
     id: emul_soc
+    name: "State of Charge (SOC)"
     lambda: "return 98;"
+  - platform: template
+    id: emul_soh
+    name: "State of Health (SOH)"
+    lambda: "return 100;"
+
+  - platform: template
+    id: emul_cell1_voltage
+    name: "Cell 1 Voltage"
+    lambda: "return 3.200;"
+  - platform: template
+    id: emul_cell2_voltage
+    name: "Cell 2 Voltage"
+    lambda: "return 3.225;"
+  - platform: template
+    id: emul_cell3_voltage
+    name: "Cell 3 Voltage"
+    lambda: "return 3.230;"
+  - platform: template
+    id: emul_cell4_voltage
+    name: "Cell 4 Voltage"
+    lambda: "return 3.235;"
+  - platform: template
+    id: emul_cell5_voltage
+    name: "Cell 5 Voltage"
+    lambda: "return 3.240;"
+  - platform: template
+    id: emul_cell6_voltage
+    name: "Cell 6 Voltage"
+    lambda: "return 3.245;"
+  - platform: template
+    id: emul_cell7_voltage
+    name: "Cell 7 Voltage"
+    lambda: "return 3.250;"
+  - platform: template
+    id: emul_cell8_voltage
+    name: "Cell 8 Voltage"
+    lambda: "return 3.255;"
+  - platform: template
+    id: emul_cell9_voltage
+    name: "Cell 9 Voltage"
+    lambda: "return 3.260;"
+  - platform: template
+    id: emul_cell10_voltage
+    name: "Cell 10 Voltage"
+    lambda: "return 3.265;"
+  - platform: template
+    id: emul_cell11_voltage
+    name: "Cell 11 Voltage"
+    lambda: "return 3.370;"
+  - platform: template
+    id: emul_cell12_voltage
+    name: "Cell 12 Voltage"
+    lambda: "return 3.275;"
+  - platform: template
+    id: emul_cell13_voltage
+    name: "Cell 13 Voltage"
+    lambda: "return 3.280;"
+  - platform: template
+    id: emul_cell14_voltage
+    name: "Cell 14 Voltage"
+    lambda: "return 3.285;"
+  - platform: template
+    id: emul_cell15_voltage
+    name: "Cell 15 Voltage"
+    lambda: "return 3.290;"
+  - platform: template
+    id: emul_cell16_voltage
+    name: "Cell 16 Voltage"
+    lambda: "return 3.295;"
+
+  - platform: template
+    id: emul_cell1_temperature
+    name: "Cell 1 Temperature"
+    lambda: "return 28.2;"
+  - platform: template
+    id: emul_cell2_temperature
+    name: "Cell 2 Temperature"
+    lambda: "return 28.5;"
+  - platform: template
+    id: emul_cell3_temperature
+    name: "Cell 3 Temperature"
+    lambda: "return 30.1;"
+  - platform: template
+    id: emul_cell4_temperature
+    name: "Cell 4 Temperature"
+    lambda: "return 29.4;"
+
+  - platform: template
+    id: emul_mos_temperature
+    name: "MOS Temperature"
+    lambda: "return 32.1;"
+  - platform: template
+    id: emul_bms_temperature
+    name: "BMS Temperature"
+    lambda: "return 31.1;"
 
 pylontech_emulator:
   id: pyl_emul
   uart_id: uart_0
+  address: 0x02
   batteries:
     - address: 0x02
       voltage_sensor: emul_pack_voltage
       current_sensor: emul_current
-      remain_capacity_sensor: emul_soc
+      soc_sensor: emul_soc
+      number_of_cycles_sensor: emul_nr_of_cycles
+      soh_sensor: emul_soh
+      cell_voltage_sensors:
+        - emul_cell1_voltage
+        - emul_cell2_voltage
+        - emul_cell3_voltage
+        - emul_cell4_voltage
+        - emul_cell5_voltage
+        - emul_cell6_voltage
+        - emul_cell7_voltage
+        - emul_cell8_voltage
+        - emul_cell9_voltage
+        - emul_cell10_voltage
+        - emul_cell11_voltage
+        - emul_cell12_voltage
+        - emul_cell13_voltage
+        - emul_cell14_voltage
+        - emul_cell15_voltage
+        - emul_cell16_voltage
+      cell_temperature_sensors:
+        - emul_cell1_temperature
+        - emul_cell2_temperature
+        - emul_cell3_temperature
+        - emul_cell4_temperature
+      mos_temperature_sensor: emul_mos_temperature
+      bms_temperature_sensor: emul_bms_temperature
 
 # custom_component:
 # - lambda: |-

@@ -19,6 +19,13 @@ namespace pylontech_lv {
   static const uint8_t RTN_CODE_CMD_FMT_ERROR  = 0x05;
   static const uint8_t RTN_CODE_DATA_ERROR     = 0x06;
 
+  enum PylonLogLevel {
+    ERROR = 4,
+    WARN = 3,
+    INFO = 2,
+    DEBUG = 1
+  };
+
   // 7E 32 30 30 32 34 36 34 32 45 30 30 32 30 32 46 44 33 33 0D
   struct PylonFrame {
     uint8_t   ver;
@@ -68,7 +75,7 @@ namespace pylontech_lv {
     uint8_t   min_bms_temp_num;
   };
 
-  using WriteLogCallback = std::function<void(uint8_t, const char*, va_list)>;
+  using WriteLogCallback = std::function<void(PylonLogLevel, const char*, va_list)>;
   using GetAnalogInfoCallback = std::function<void(PylonAnalogInfo *info)>;
 
   class PylontechTransport {
@@ -85,7 +92,7 @@ namespace pylontech_lv {
       void loop();
 
     private:
-      inline void log_(uint8_t level, const char *format, ...);
+      inline void log_(PylonLogLevel level, const char *format, ...);
       static inline void write_uint8_(uint8_t value, std::vector<uint8_t> &data);
       static inline void write_uint16_(uint16_t value, std::vector<uint8_t> &data);
       static inline void write_float_(float value, std::vector<uint8_t> &data);
