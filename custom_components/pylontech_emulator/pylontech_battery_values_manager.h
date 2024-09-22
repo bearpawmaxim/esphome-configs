@@ -3,7 +3,7 @@
 #include <tuple>
 #include <limits>
 #include <vector>
-#include "types.h"
+#include "pylontech_types.h"
 
 namespace esphome {
 namespace pylontech {

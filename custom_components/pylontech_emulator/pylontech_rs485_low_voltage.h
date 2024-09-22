@@ -77,6 +77,7 @@ namespace pylontech_lv {
 
   using WriteLogCallback = std::function<void(PylonLogLevel, const char*, va_list)>;
   using GetAnalogInfoCallback = std::function<void(PylonAnalogInfo *info)>;
+  using UnknownCmdCallback = std::function<void(uint8_t code)>;
 
   class PylontechTransport {
     public:
@@ -87,8 +88,9 @@ namespace pylontech_lv {
   class PylontechLowVoltageProtocol {
     public:
       PylontechLowVoltageProtocol(PylontechTransport *transport, uint8_t addr);
-      void set_log_callback(WriteLogCallback callback);
-      void set_get_analog_info_callback(GetAnalogInfoCallback callback);
+      void set_log_callback(WriteLogCallback callback) { this->write_log_cb_ = std::move(callback); }
+      void set_get_analog_info_callback(GetAnalogInfoCallback callback) { this->get_analog_info_cb_ = std::move(callback); }
+      void set_unknown_command_callback(UnknownCmdCallback callback) { this->unknown_command_cb_ = std::move(callback); }
       void loop();
 
     private:
@@ -120,6 +122,7 @@ namespace pylontech_lv {
 
       WriteLogCallback write_log_cb_{nullptr};
       GetAnalogInfoCallback get_analog_info_cb_{nullptr};
+      UnknownCmdCallback unknown_command_cb_{nullptr};
   };
 
 }

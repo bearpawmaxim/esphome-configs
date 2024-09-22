@@ -8,6 +8,18 @@ namespace esphome {
       this->protocol_->set_get_analog_info_callback([this](PylonAnalogInfo *info) {
         this->handle_get_analog_info_(info);
       });
+      this->protocol_->set_unknown_command_callback([this](uint8_t cmd) {
+        this->unknown_commands_.insert(cmd);
+        if (this->unknown_commands_sensor_ != nullptr) {
+          std::string res = "";
+          char buf[5];
+          for (const uint8_t cmd : this->unknown_commands_) {
+            sprintf(buf, "%02X, ", cmd);
+            res += buf;
+          }
+          this->unknown_commands_sensor_->publish_state(res);
+        }
+      });
     }
 
     void PylontechEmulatorComponent::handle_get_analog_info_(PylonAnalogInfo *info) {
@@ -89,10 +101,10 @@ namespace esphome {
             esphome::ESP_LOGW("PYL", format, args);
             break;
           case PylonLogLevel::INFO:
-            esphome::ESP_LOGI("PYL", format, args);
+            //esphome::ESP_LOGI("PYL", format, args);
             break;
           default:
-            esphome::ESP_LOGD("PYL", format, args);
+            //esphome::ESP_LOGD("PYL", format, args);
             break;
         }
         va_end(args);

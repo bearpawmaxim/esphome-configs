@@ -504,6 +504,11 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
+    on_value: 
+      - script.execute:
+          id: lvgl_update_label_value
+          name: delta_cell_voltage
+          value: !lambda return value_accuracy_to_string(x, 3);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller

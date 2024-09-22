@@ -6,15 +6,6 @@ namespace pylontech_lv {
     this->addr_ = addr;
   }
 
-  void PylontechLowVoltageProtocol::set_log_callback(WriteLogCallback callback) {
-    this->write_log_cb_ = std::move(callback);
-  }
-
-  void PylontechLowVoltageProtocol::set_get_analog_info_callback(
-      GetAnalogInfoCallback callback) {
-    this->get_analog_info_cb_ = std::move(callback);
-  }
-
   void PylontechLowVoltageProtocol::loop() {
     uint8_t byte = this->transport_->read_uint8();
     if (byte == 0xFF) {
@@ -204,6 +195,9 @@ namespace pylontech_lv {
         break;
       default:
         this->log_(PylonLogLevel::ERROR, "Received unknown command %02X", frame->cid2);
+        if (this->unknown_command_cb_ != nullptr) {
+          this->unknown_command_cb_(frame->cid2);
+        }
         this->send_response_(frame, RTN_CODE_CID2_ERROR, {});
         return;
     }

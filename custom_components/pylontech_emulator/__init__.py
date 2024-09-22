@@ -1,6 +1,6 @@
 import logging
 import esphome.codegen as cg
-from esphome.components import uart, sensor
+from esphome.components import uart, sensor, text_sensor
 from esphome.components.sensor import SensorPtr
 import esphome.config_validation as cv
 from esphome.const import CONF_ADDRESS, CONF_ID
@@ -22,6 +22,7 @@ CONF_CELL_VOLTAGE_SENSORS = "cell_voltage_sensors"
 CONF_CELL_TEMP_SENSORS = "cell_temperature_sensors"
 CONF_MOS_TEMP_SENSOR = "mos_temperature_sensor"
 CONF_BMS_TEMP_SENSOR = "bms_temperature_sensor"
+CONF_UNKNOWN_COMMAND_SENSOR = "unknown_commands_text_sensor"
 
 pylontech_ns = cg.esphome_ns.namespace("pylontech")
 PylontechComponent = pylontech_ns.class_(
@@ -58,7 +59,8 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_BATTERIES): cv.All(
                 cv.ensure_list(BATTERY_SCHEMA),
                 cv.Length(min=1, max=5)
-            )
+            ),
+            cv.Optional(CONF_UNKNOWN_COMMAND_SENSOR): cv.use_id(text_sensor)
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -93,5 +95,7 @@ async def to_code(config):
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
     cg.add(var.set_address(config[CONF_ADDRESS]))
+    if CONF_UNKNOWN_COMMAND_SENSOR in config:
+        await set_sensor(var, config, CONF_UNKNOWN_COMMAND_SENSOR, "set_unknown_commands_sensor")
     for battery in config[CONF_BATTERIES]:
         await battery_to_code(var, battery)

@@ -141,10 +141,16 @@ sensor:
     name: "BMS Temperature"
     lambda: "return 31.1;"
 
+text_sensor:
+  - platform: template
+    id: emul_unknown_commands
+    name: "Unknown commands"
+
 pylontech_emulator:
   id: pyl_emul
   uart_id: uart_0
   address: 0x02
+  unknown_commands_text_sensor: emul_unknown_commands
   batteries:
     - address: 0x02
       voltage_sensor: emul_pack_voltage

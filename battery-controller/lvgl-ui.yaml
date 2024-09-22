@@ -127,10 +127,11 @@ lvgl:
                   - obj:
                       <<: !include lvgl-tile-container.yaml
                       widgets:
-                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: voltage,  l_capt: Voltage,  l_unit: V  } }
-                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: current,  l_capt: Currrent, l_unit: A  } }
-                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: power,    l_capt: Power,    l_unit: W  } }
-                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: capacity, l_capt: Capacity, l_unit: Ah } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: voltage,            l_capt: Voltage,   l_unit: V  } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: current,            l_capt: Currrent,  l_unit: A  } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: power,              l_capt: Power,     l_unit: W  } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: capacity,           l_capt: Capacity,  l_unit: Ah } }
+                        - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: delta_cell_voltage, l_capt: Cell diff, l_unit: V  } }
               - row: 0
                 column: 1
                 id: tile_general_2
@@ -307,20 +308,66 @@ script:
     mode: queued
     max_runs: 3
     then:
-      - lambda: |-
-          static const std::map<std::string, lv_obj_t*> icons_map {
-            { "api_connection", id(api_connection) },
-            { "bms_connection", id(bms_connection) },
-            { "inv_connection", id(inv_connection) }
-          };
-          auto iterator = icons_map.find(name);
-          if (iterator != icons_map.end()) {
-            lv_obj_t* icon = iterator->second;
-            lv_obj_set_style_text_color(icon, lv_color_from(is_on ? id(on_color) : id(off_color)), (int)LV_STATE_DEFAULT|(int)LV_PART_MAIN);
-            lv_event_send(icon, LV_EVENT_VALUE_CHANGED, nullptr);
-            return;
-          }
-          ESP_LOGE("BMS", "Cannot find icon %s", name.c_str());
+      - if:
+          condition:
+            - lambda: return name == "api_connection";
+          then:
+            if:
+              condition:
+                - lambda: return is_on;
+              then:
+                - lvgl.widget.update:
+                    id: api_connection
+                    text_color: on_color
+              else:
+                - lvgl.widget.update:
+                      id: api_connection
+                      text_color: off_color
+          else:
+            - if:
+                condition:
+                  - lambda: return name == "bms_connection";
+                then:
+                  - if:
+                      condition:
+                        - lambda: return is_on;
+                      then:
+                        - lvgl.widget.update:
+                            id: bms_connection
+                            text_color: on_color
+                      else:
+                        - lvgl.widget.update:
+                            id: bms_connection
+                            text_color: off_color
+                else:
+                  - if:
+                      condition:
+                        - lambda: return is_on;
+                      then:
+                        - lvgl.widget.update:
+                            id: inv_connection
+                            text_color: on_color
+                      else:
+                        - lvgl.widget.update:
+                            id: inv_connection
+                            text_color: off_color
+      # - lambda: |-
+      #     static const std::map<std::string, lv_obj_t*> icons_map {
+      #       { "api_connection", id(api_connection) },
+      #       { "bms_connection", id(bms_connection) },
+      #       { "inv_connection", id(inv_connection) }
+      #     };
+      #     auto iterator = icons_map.find(name);
+      #     if (iterator != icons_map.end()) {
+      #       lv_obj_t* icon = iterator->second;
+      #       lv_obj_set_style_text_color(icon, lv_color_from(is_on
+      #           ? id(on_color)
+      #           : id(off_color)),
+      #         (int)LV_STATE_DEFAULT|(int)LV_PART_MAIN);
+      #       lv_event_send(icon, LV_EVENT_VALUE_CHANGED, nullptr);
+      #       return;
+      #     }
+      #     ESP_LOGE("BMS", "Cannot find icon %s", name.c_str());
   - id: lvgl_update_cell_voltage_value
     parameters:
       cell_num: uint8_t
@@ -399,26 +446,28 @@ script:
     then:
       - lambda: |-
           static const std::map<std::string, lv_obj_t*> labels_map {
-            { "voltage",  id(voltage_value_label) },
-            { "current",  id(current_value_label) },
-            { "power",    id(power_value_label) },
-            { "capacity", id(capacity_value_label) },
-            { "t1",       id(t1_value_label) },
-            { "t2",       id(t2_value_label) },
-            { "t3",       id(t3_value_label) },
-            { "t4",       id(t4_value_label) },
-            { "tmos",     id(tmos_value_label) }
+            { "voltage",            id(voltage_value_label) },
+            { "current",            id(current_value_label) },
+            { "power",              id(power_value_label) },
+            { "capacity",           id(capacity_value_label) },
+            { "delta_cell_voltage", id(delta_cell_voltage_value_label) },
+            { "t1",                 id(t1_value_label) },
+            { "t2",                 id(t2_value_label) },
+            { "t3",                 id(t3_value_label) },
+            { "t4",                 id(t4_value_label) },
+            { "tmos",               id(tmos_value_label) }
           };
           static const std::map<std::string, lv_obj_t*> unit_labels_map {
-            { "voltage",  id(voltage_unit_label) },
-            { "current",  id(current_unit_label) },
-            { "power",    id(power_unit_label) },
-            { "capacity", id(capacity_unit_label) },
-            { "t1",       id(t1_unit_label) },
-            { "t2",       id(t2_unit_label) },
-            { "t3",       id(t3_unit_label) },
-            { "t4",       id(t4_unit_label) },
-            { "tmos",     id(tmos_unit_label) }
+            { "voltage",            id(voltage_unit_label) },
+            { "current",            id(current_unit_label) },
+            { "power",              id(power_unit_label) },
+            { "capacity",           id(capacity_unit_label) },
+            { "delta_cell_voltage", id(delta_cell_voltage_unit_label) },
+            { "t1",                 id(t1_unit_label) },
+            { "t2",                 id(t2_unit_label) },
+            { "t3",                 id(t3_unit_label) },
+            { "t4",                 id(t4_unit_label) },
+            { "tmos",               id(tmos_unit_label) }
           };
           auto label_it = labels_map.find(name);
           if (label_it != labels_map.end()) {
