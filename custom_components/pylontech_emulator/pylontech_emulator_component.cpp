@@ -49,11 +49,11 @@ namespace esphome {
       info->min_cell_voltage = min_cell_v;
       info->min_cell_voltage_pack_num = min_cell_v_address;
       info->min_cell_voltage_num = min_cell_v_idx;
-      
+
       info->avg_cell_temp_k = 273.15
         + values_manager.get_average_cell_temperature();
       auto [max_cell_t_address, max_cell_t, max_cell_t_idx]
-        = values_manager.get_min_cell_temperature();
+        = values_manager.get_max_cell_temperature();
       info->max_cell_temp_k = 273.15 + max_cell_t;
       info->max_cell_temp_pack_num = max_cell_t_address;
       info->max_cell_temp_num = max_cell_t_idx;
@@ -70,7 +70,7 @@ namespace esphome {
       info->max_mos_temp_pack_num = max_mos_t_address;
       info->max_mos_temp_num = 1;
       auto [min_mos_t_address, min_mos_t]
-        = values_manager.get_max_mos_temperature();
+        = values_manager.get_min_mos_temperature();
       info->min_mos_temp_k = min_mos_t + 273.15;
       info->min_mos_temp_pack_num = min_mos_t_address;
       info->min_mos_temp_num = 1;
@@ -82,7 +82,7 @@ namespace esphome {
       info->max_bms_temp_pack_num = max_bms_t_address;
       info->max_bms_temp_num = 1;
       auto [min_bms_t_address, min_bms_t]
-        = values_manager.get_max_bms_temperature();
+        = values_manager.get_min_bms_temperature();
       info->min_bms_temp_k = min_bms_t + 273.15;
       info->min_bms_temp_pack_num = min_bms_t_address;
       info->min_bms_temp_num = 1;

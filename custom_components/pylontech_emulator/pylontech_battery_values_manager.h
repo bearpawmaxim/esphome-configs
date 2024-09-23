@@ -45,7 +45,7 @@ namespace pylontech {
             }
           }
         }
-        return std::make_tuple(min_address, min_value, min_index);
+        return std::make_tuple(min_address, min_value, min_index + 1);
       }
 
       std::tuple<uint8_t, float, size_t> get_max_cell_voltage() {
@@ -63,7 +63,7 @@ namespace pylontech {
             }
           }
         }
-        return std::make_tuple(max_address, max_value, max_index);
+        return std::make_tuple(max_address, max_value, max_index + 1);
       }
 
       std::tuple<uint8_t, float, size_t> get_min_cell_temperature() {
@@ -81,7 +81,7 @@ namespace pylontech {
             }
           }
         }
-        return std::make_tuple(min_address, min_value, min_index);
+        return std::make_tuple(min_address, min_value, min_index + 1);
       }
 
       std::tuple<uint8_t, float, size_t> get_max_cell_temperature() {
@@ -99,7 +99,7 @@ namespace pylontech {
             }
           }
         }
-        return std::make_tuple(max_address, max_value, max_index);
+        return std::make_tuple(max_address, max_value, max_index + 1);
       }
 
       std::tuple<uint8_t, uint8_t> get_avg_min_soh() {
@@ -108,13 +108,11 @@ namespace pylontech {
         size_t count = 0;
 
         for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_temp_sensors.size(); ++i) {
-            uint8_t value = battery.cell_temp_sensors[i]->state;
-            value_acc += value;
-            count ++;
-            if (value < min_value) {
-              min_value = value;
-            }
+          uint8_t value = battery.soh_sensor->state;
+          value_acc += value;
+          count ++;
+          if (value < min_value) {
+            min_value = value;
           }
         }
         return std::make_tuple((uint8_t)(value_acc / count), min_value);

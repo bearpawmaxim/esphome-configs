@@ -18,6 +18,7 @@ uart:
                 res += buf;
               }
               id(jkbms_received_pylon_bytes).publish_state(res);
+              ESP_LOGE("PYL", ">> %s", res.c_str());
             }
 
 external_components:
