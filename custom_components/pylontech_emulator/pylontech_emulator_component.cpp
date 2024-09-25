@@ -51,7 +51,7 @@ namespace esphome {
       info->min_cell_voltage_num = min_cell_v_idx;
 
       info->avg_cell_temp_k = 273.15
-        + values_manager.get_average_cell_temperature();
+        + values_manager.get_avg_cell_temperature();
       auto [max_cell_t_address, max_cell_t, max_cell_t_idx]
         = values_manager.get_max_cell_temperature();
       info->max_cell_temp_k = 273.15 + max_cell_t;

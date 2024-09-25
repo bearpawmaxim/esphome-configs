@@ -136,7 +136,7 @@ namespace pylontech {
         return std::make_tuple((uint16_t)(value_acc / count), max_value);
       }
 
-      float get_average_cell_temperature() {
+      float get_avg_cell_temperature() {
         float value_acc = 0;
         size_t count = 0;
 
