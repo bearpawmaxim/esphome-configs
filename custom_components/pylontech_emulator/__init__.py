@@ -1,5 +1,7 @@
 import logging
 import esphome.codegen as cg
+from esphome import automation
+from esphome.automation import maybe_simple_id
 from esphome.components import uart, sensor, text_sensor
 from esphome.components.sensor import SensorPtr
 import esphome.config_validation as cv
@@ -29,6 +31,8 @@ PylontechComponent = pylontech_ns.class_(
     "PylontechEmulatorComponent", cg.Component, uart.UARTDevice
 )
 BatteryConfig = pylontech_ns.struct("BatteryConfig")
+
+
 
 BATTERY_SCHEMA = cv.Schema(
     {

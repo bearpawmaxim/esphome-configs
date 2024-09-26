@@ -195,9 +195,6 @@ namespace pylontech_lv {
         break;
       default:
         this->log_(PylonLogLevel::ERROR, "Received unknown command %02X", frame->cid2);
-        if (this->unknown_command_cb_ != nullptr) {
-          this->unknown_command_cb_(frame->cid2);
-        }
         this->send_response_(frame, RTN_CODE_CID2_ERROR, {});
         return;
     }

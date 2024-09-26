@@ -8,23 +8,11 @@ namespace esphome {
       this->protocol_->set_get_analog_info_callback([this](PylonAnalogInfo *info) {
         this->handle_get_analog_info_(info);
       });
-      this->protocol_->set_unknown_command_callback([this](uint8_t cmd) {
-        this->unknown_commands_.insert(cmd);
-        if (this->unknown_commands_sensor_ != nullptr) {
-          std::string res = "";
-          char buf[5];
-          for (const uint8_t cmd : this->unknown_commands_) {
-            sprintf(buf, "%02X, ", cmd);
-            res += buf;
-          }
-          this->unknown_commands_sensor_->publish_state(res);
-        }
-      });
     }
 
     void PylontechEmulatorComponent::handle_get_analog_info_(PylonAnalogInfo *info) {
       BatteryConfig first_battery = this->batteries_.front();
-      auto values_manager = this->get_batt_values_manager();
+      auto values_manager = this->get_batt_values_manager_();
 
       info->pack_voltage = values_manager.get_pack_voltage();
       info->current = values_manager.get_summary_current();
@@ -128,6 +116,11 @@ namespace esphome {
     }
 
     void PylontechEmulatorComponent::loop() {
+      if (!this->enabled_) {
+        while (this->available() > 0) {
+          this->read();
+        }
+      }
       this->protocol_->loop();
     }
   }
