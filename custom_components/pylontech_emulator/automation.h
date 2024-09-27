@@ -25,7 +25,7 @@ namespace pylontech {
 
     protected:
       PylontechEmulatorComponent *emulator_;
-  }
+  };
 
 }  // namespace pylontech
 }  // namespace esphome

@@ -10,8 +10,22 @@ namespace esphome {
       });
     }
 
+    void PylontechEmulatorComponent::set_enabled(bool enabled) {
+      if (enabled && !this->enabled_) {
+        bool batteries_ready = true;
+        for (auto battery : this->batteries_) {
+          if (!battery.get_is_ready()) {
+            batteries_ready = false;
+            break;
+          }
+        }
+        this->enabled_ = batteries_ready;
+        return;
+      }
+      this->enabled_ = false;
+    }
+
     void PylontechEmulatorComponent::handle_get_analog_info_(PylonAnalogInfo *info) {
-      BatteryConfig first_battery = this->batteries_.front();
       auto values_manager = this->get_batt_values_manager_();
 
       info->pack_voltage = values_manager.get_pack_voltage();

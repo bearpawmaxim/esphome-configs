@@ -1,4 +1,5 @@
-#include <set>
+#pragma once
+
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "pylontech_rs485_low_voltage.h"
@@ -12,12 +13,14 @@ namespace pylontech {
     public:
       void set_address(uint8_t address) { this->address_ = address; }
       void add_battery(const BatteryConfig &battery) { this->batteries_.push_back(battery); }
-      void set_enabled(bool enabled) { this->enabled_ = enabled; }
+      void set_enabled(bool enabled);
 
       void setup() override;
       void write_uint8(uint8_t byte);
       uint8_t read_uint8();
       void loop() override;
+
+      bool get_is_enabled() { return this->enabled_; }
 
     private:
       void handle_get_analog_info_(pylontech_lv::PylonAnalogInfo *info);

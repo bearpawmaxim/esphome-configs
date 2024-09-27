@@ -32,7 +32,8 @@ PylontechComponent = pylontech_ns.class_(
 )
 BatteryConfig = pylontech_ns.struct("BatteryConfig")
 
-
+EnableAction = pylontech_ns.class_("EnableAction", automation.Action)
+DisableAction = pylontech_ns.class_("DisableAction", automation.Action)
 
 BATTERY_SCHEMA = cv.Schema(
     {
@@ -70,6 +71,24 @@ CONFIG_SCHEMA = cv.All(
     .extend(cv.COMPONENT_SCHEMA)
     .extend(uart.UART_DEVICE_SCHEMA)
 )
+
+
+SET_STATE_SCHEMA = maybe_simple_id(
+    {
+        cv.Required(CONF_ID): cv.use_id(PylontechComponent),
+    }
+)
+
+@automation.register_action("pylontech_emulator.enable", EnableAction, SET_STATE_SCHEMA)
+async def pylontech_enable_to_code(config, action_id, template_arg, args):
+    parent = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(action_id, template_arg, parent)
+
+@automation.register_action("pylontech_emulator.disable", DisableAction, SET_STATE_SCHEMA)
+async def pylontech_disable_to_code(config, action_id, template_arg, args):
+    parent = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(action_id, template_arg, parent)
+
 
 async def set_sensor(var, config, sensor_key, set_method):
     sensor_var = await cg.get_variable(config[sensor_key])

@@ -27,7 +27,7 @@ packages:
       rx_pin: ${pace_rx}
 
 globals:
-  - id: inverter_on
+  - id: bms_ready
     type: bool
     initial_value: 'false'
   - id: current_tile_num
