@@ -4,6 +4,23 @@ uart:
     rx_pin: ${rx_pin}
     rx_buffer_size: 2000
     baud_rate: 115200
+
+    # select
+    #   x.addr,
+    #   x.cnt,
+    #   ('0x'||x.cnt)::int as cnt_dec,
+    #   count(x.state),
+    #   x.state
+    # from (
+    #     select
+    #       state,
+    #       substring(state, 5, 4) as addr,
+    #       substring(state, 9, 4) as cnt
+    #     from states
+    #     where metadata_id = 1416
+    #   ) as x
+    # group by 1,2,5
+    # order by 1
     # debug:
     #   direction: BOTH
     #   dummy_receiver: false
@@ -36,11 +53,17 @@ modbus_controller:
     offline_skip_updates: 3
 
 interval:
-  - interval: 5sec
-    id: update_bms_data_interval
-    then:
-      - lambda: |-
-          
+  # - interval: 5sec
+  #   id: update_bms_data_interval
+  #   then:
+  #     - lambda: |-
+  #         auto *controller = id(jkbms_modbus_controller);
+  #         auto get_1x_registers = esphome::modbus_controller::ModbusCommandItem::create_read_command(
+  #           controller, esphome::modbus_controller::ModbusRegisterType::HOLDING, 0x1004, 118);
+  #         controller->queue_command(get_1x_registers);
+  #         auto get_2x_registers = esphome::modbus_controller::ModbusCommandItem::create_read_command(
+  #           controller, esphome::modbus_controller::ModbusRegisterType::HOLDING, 0x1200, 122);
+  #         controller->queue_command(get_2x_registers);
   - interval: 5sec
     id: update_bms_state_interval
     then:
@@ -983,20 +1006,6 @@ sensor:
     lambda: |-
       return data[0];
 
-  # 0x1294   148   UINT32    4    R    BatWatt         mW
-  # 0x1298   152    INT32    4    R    BatCurrent      mA
-  # 0x129C   156    INT16    2    R    TempBat 1       0.1 °C
-  # 0x129E   158    INT16    2    R    TempBat 2       0.1 °C
-  # 0x12A0   160   UINT32    4    R    AlarmBitmask
-  # 0x12A4   164    INT16    2    R    BalanCurrent    mA
-  # 0x12A6   166 UINT8+UINT8 2    R    BalanStatatus (2:放电; 1:充电 ; 0:关闭) / SOCStateOfcharge %
-  # 0x12A8   168    INT32    2    R    SOCCapRemain    mAH
-  # 0x12AC   172   UINT32    4    R    SOCFullChargeCap    mAH
-  # 0x12B0   176   UINT32    4    R    SOCCycleCount   次
-  # 0x12B4   180   UINT32    4    R    SOCCycleCap     mAH
-  # 0x12B8   184 UINT8+UINT8 2    R    StateOfHealth % / Precharge stats (1:打开 ; 0:关闭)
-  # 0x12BA   186   UINT16    2    R    UserAlarm
-  # 0x12BC   188   UINT32    4    R    RunTime         S
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     name: "JKBMS total runtime in seconds"
@@ -1063,21 +1072,6 @@ sensor:
     update_interval: 5s
     lambda: |-
       return id(jkbms_charging_undertemperature_protection).state;
-
-  # 0x12C0   192 UINT8+UINT8 Charge (1:打开 ; 0:关闭) / Discharge (1:打开 ; 0:关闭)
-  # 0x12C2   194   UINT16    2    R    UserAlarm2
-  # 0x12C4   196   UINT16    2    R    TimeDcOCPR      S
-  # 0x12C6   198   UINT16    2    R    TimeDcSCPR      S
-  # 0x12C8   200   UINT16    2    R    TimeCOCPR       S
-  # 0x12CA   202   UINT16    2    R    TimeCSCPR       S
-  # 0x12CC   204   UINT16    2    R    TimeUVPR        S
-  # 0x12CE   206   UINT16    2    R    TimeOVPR        S
-  # 0x12D0   208 UINT8+UINT8 2    R    AbsentBitmask (Bit0: MOS TempSensorAbsent, Bit1: BATTempSensor1Absent, Bit2: BATTempSensor2Absent, Bit4: BATTempSensor4Absent, Bit5: BATTempSensor5Absent) / Heating
-  # 0x12D2   210   UINT16    2    R    Reserved
-  # 0x12D4   212   UINT16    2    R    TimeEmergency   S
-  # 0x12D6   214   UINT16    2    R    BatCurCorrect
-  # 0x12D8   216   UINT16    2    R    VolChargCur     mV
-  # 0x12DA   218   UINT16    2    R    VolDischargCur  mV
 
 binary_sensor:
 #   - platform: modbus_controller
@@ -1228,7 +1222,6 @@ text_sensor:
       - script.execute:
           id: lvgl_update_error_label
           error: !lambda return x;
-
   # - platform: template
   #   id: jkbms_sent_bms_bytes
   #   name: JKBMS BMS bytes sent

@@ -3,23 +3,23 @@ uart:
     tx_pin: ${tx_pin}
     rx_pin: ${rx_pin}
     baud_rate: 9600
-    debug:
-      direction: BOTH
-      dummy_receiver: false
-      sequence:
-        - lambda: |-
-            //UARTDebug::log_hex(direction, bytes, ':');
-            if (direction == UART_DIRECTION_RX) {
-              std::string res = "";
-              size_t len = bytes.size();
-              char buf[5];
-              for (size_t i = 0; i < len; i++) {
-                sprintf(buf, "%02X", bytes[i]);
-                res += buf;
-              }
-              id(jkbms_received_pylon_bytes).publish_state(res);
-              ESP_LOGE("PYL", ">> %s", res.c_str());
-            }
+    # debug:
+    #   direction: BOTH
+    #   dummy_receiver: false
+    #   sequence:
+    #     - lambda: |-
+    #         //UARTDebug::log_hex(direction, bytes, ':');
+    #         if (direction == UART_DIRECTION_RX) {
+    #           std::string res = "";
+    #           size_t len = bytes.size();
+    #           char buf[5];
+    #           for (size_t i = 0; i < len; i++) {
+    #             sprintf(buf, "%02X", bytes[i]);
+    #             res += buf;
+    #           }
+    #           id(jkbms_received_pylon_bytes).publish_state(res);
+    #           ESP_LOGE("PYL", ">> %s", res.c_str());
+    #         }
 
 external_components:
   - source:

@@ -100,16 +100,16 @@ namespace esphome {
         va_start(args, format);
         switch (level) {
           case PylonLogLevel::ERROR:
-            esphome::ESP_LOGE("PYL", format, args);
+            esp_log_printf_(ESPHOME_LOG_LEVEL_ERROR, "PYL", __LINE__, format, args);
             break;
           case PylonLogLevel::WARN:
-            esphome::ESP_LOGW("PYL", format, args);
+            esp_log_printf_(ESPHOME_LOG_LEVEL_WARN, "PYL", __LINE__, format, args);
             break;
           case PylonLogLevel::INFO:
-            //esphome::ESP_LOGI("PYL", format, args);
+            esp_log_printf_(ESPHOME_LOG_LEVEL_INFO, "PYL", __LINE__, format, args);
             break;
           default:
-            //esphome::ESP_LOGD("PYL", format, args);
+            esp_log_printf_(ESPHOME_LOG_LEVEL_DEBUG, "PYL", __LINE__, format, args);
             break;
         }
         va_end(args);
