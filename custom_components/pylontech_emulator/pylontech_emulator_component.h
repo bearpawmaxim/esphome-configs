@@ -1,7 +1,6 @@
 #pragma once
 
 #include "esphome/components/uart/uart.h"
-#include "esphome/components/text_sensor/text_sensor.h"
 #include "pylontech_rs485_low_voltage.h"
 #include "pylontech_types.h"
 #include "pylontech_battery_values_manager.h"
@@ -13,6 +12,7 @@ namespace pylontech {
     public:
       void set_address(uint8_t address) { this->address_ = address; }
       void add_battery(const BatteryConfig &battery) { this->batteries_.push_back(battery); }
+      void add_on_connection_state_changed_callback(std::function<void(bool)> &&callback);
       void set_enabled(bool enabled);
 
       void setup() override;
@@ -29,7 +29,9 @@ namespace pylontech {
 
       uint8_t address_;
       bool enabled_;
+      bool is_online_;
       std::vector<BatteryConfig> batteries_ = {};
+      std::function<void(bool)> connection_state_changed_callback_;
       pylontech_lv::PylontechLowVoltageProtocol *protocol_;
   };
 }

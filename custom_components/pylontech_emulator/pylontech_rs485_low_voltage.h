@@ -90,6 +90,7 @@ namespace pylontech_lv {
       void set_log_callback(WriteLogCallback callback) { this->write_log_cb_ = std::move(callback); }
       void set_get_analog_info_callback(GetAnalogInfoCallback callback) { this->get_analog_info_cb_ = std::move(callback); }
       void loop();
+      bool is_online() { return this->is_online_; }
 
     private:
       inline void log_(PylonLogLevel level, const char *format, ...);
@@ -118,6 +119,7 @@ namespace pylontech_lv {
       PylontechTransport *transport_;
       uint8_t addr_;
 
+      bool is_online_;
       WriteLogCallback write_log_cb_{nullptr};
       GetAnalogInfoCallback get_analog_info_cb_{nullptr};
   };

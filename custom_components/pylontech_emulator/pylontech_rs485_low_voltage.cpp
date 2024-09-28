@@ -232,6 +232,7 @@ namespace pylontech_lv {
     }
     delete[] chksum_ascii_bytes;
     this->transport_->write_uint8(EOI);
+    this->is_online_ = true;
   }
 
   std::vector<uint8_t> PylontechLowVoltageProtocol::get_analog_info_command_bytes_(PylonFrame *frame) {

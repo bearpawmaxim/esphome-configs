@@ -5,7 +5,7 @@ from esphome.automation import maybe_simple_id
 from esphome.components import uart, sensor, text_sensor
 from esphome.components.sensor import SensorPtr
 import esphome.config_validation as cv
-from esphome.const import CONF_ADDRESS, CONF_ID
+from esphome.const import CONF_ADDRESS, CONF_ID, CONF_TRIGGER_ID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,13 +24,17 @@ CONF_CELL_VOLTAGE_SENSORS = "cell_voltage_sensors"
 CONF_CELL_TEMP_SENSORS = "cell_temperature_sensors"
 CONF_MOS_TEMP_SENSOR = "mos_temperature_sensor"
 CONF_BMS_TEMP_SENSOR = "bms_temperature_sensor"
-CONF_UNKNOWN_COMMAND_SENSOR = "unknown_commands_text_sensor"
+CONF_ON_CONNECTION_STATE_CHANGE = "on_connection_state_change"
 
 pylontech_ns = cg.esphome_ns.namespace("pylontech")
 PylontechComponent = pylontech_ns.class_(
     "PylontechEmulatorComponent", cg.Component, uart.UARTDevice
 )
 BatteryConfig = pylontech_ns.struct("BatteryConfig")
+
+ConnectionStateChangeTrigger = pylontech_ns.class_(
+    "ConnectionStateChangeTrigger", automation.Trigger.template(cg.bool_)
+)
 
 EnableAction = pylontech_ns.class_("EnableAction", automation.Action)
 DisableAction = pylontech_ns.class_("DisableAction", automation.Action)
@@ -65,7 +69,11 @@ CONFIG_SCHEMA = cv.All(
                 cv.ensure_list(BATTERY_SCHEMA),
                 cv.Length(min=1, max=5)
             ),
-            cv.Optional(CONF_UNKNOWN_COMMAND_SENSOR): cv.use_id(text_sensor)
+            cv.Optional(CONF_ON_CONNECTION_STATE_CHANGE):
+                automation.validate_automation({
+                    cv.GenerateID(CONF_TRIGGER_ID):
+                        cv.declare_id(ConnectionStateChangeTrigger),
+                }),
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -90,10 +98,6 @@ async def pylontech_disable_to_code(config, action_id, template_arg, args):
     return cg.new_Pvariable(action_id, template_arg, parent)
 
 
-async def set_sensor(var, config, sensor_key, set_method):
-    sensor_var = await cg.get_variable(config[sensor_key])
-    cg.add(getattr(var, set_method)(sensor_var))
-
 async def battery_cell_sensors_to_code(battery, sensor_key):
     return cg.ArrayInitializer([await cg.get_variable(sensor) for sensor in battery[sensor_key]])
 
@@ -117,8 +121,11 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+    for conf in config.get(CONF_ON_CONNECTION_STATE_CHANGE, []):
+        trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
+        await automation.build_automation(
+            trigger, [(cg.bool_, "connected")], conf
+        )
     cg.add(var.set_address(config[CONF_ADDRESS]))
-    if CONF_UNKNOWN_COMMAND_SENSOR in config:
-        await set_sensor(var, config, CONF_UNKNOWN_COMMAND_SENSOR, "set_unknown_commands_sensor")
     for battery in config[CONF_BATTERIES]:
         await battery_to_code(var, battery)

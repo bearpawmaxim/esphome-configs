@@ -40,16 +40,19 @@ interval:
       - lambda: |-
           if (!id(pyl_emul)->get_is_enabled()) {
             id(pyl_emul)->set_enabled(true);
-            ESP_LOGE("PYL", "Trying to enable");
             return;
           }
-          ESP_LOGE("PYL", "Component enabled, stopping timer.");
           id(bms_readyness_check)->stop_poller();
 
 pylontech_emulator:
   id: pyl_emul
   uart_id: pylon_uart
   address: 0x02
+  on_connection_state_change:
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: inv_connection
+        is_on: !lambda return connected;
   batteries:
     - address: 0x02
       voltage_sensor: jkbms_total_voltage

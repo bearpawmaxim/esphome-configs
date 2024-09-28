@@ -16,6 +16,7 @@ namespace esphome {
         for (auto battery : this->batteries_) {
           if (!battery.get_is_ready()) {
             batteries_ready = false;
+            ESP_LOGW("PYL", "Battery %02X not ready", battery.address);
             break;
           }
         }
@@ -90,6 +91,10 @@ namespace esphome {
       info->min_bms_temp_num = 1;
     }
 
+    void PylontechEmulatorComponent::add_on_connection_state_changed_callback(std::function<void(bool)> &&callback) {
+      this->connection_state_changed_callback_ = std::move(callback);
+    }
+
     void PylontechEmulatorComponent::setup() {
       this->protocol_ = new PylontechLowVoltageProtocol(this, this->address_);
       this->protocol_->set_log_callback([](PylonLogLevel level, const char *format, ...) {
@@ -134,8 +139,16 @@ namespace esphome {
         while (this->available() > 0) {
           this->read();
         }
+        return;
       }
       this->protocol_->loop();
+      bool is_online = this->protocol_->is_online();
+      if (this->is_online_ != is_online) {
+        this->is_online_ = is_online;
+        if (this->connection_state_changed_callback_ != nullptr) {
+          this->connection_state_changed_callback_(is_online);
+        }
+      }
     }
   }
 }

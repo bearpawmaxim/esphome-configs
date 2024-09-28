@@ -9,23 +9,32 @@ namespace pylontech {
 
   template<typename... Ts> class EnableAction : public Action<Ts...> {
     public:
-      explicit EnableAction(PylontechEmulatorComponent *emulator) : emulator_(emulator) {}
+      explicit EnableAction(PylontechEmulatorComponent *component) : component_(component) {}
 
-      void play(Ts... x) override { this->emulator_->set_enabled(true); }
+      void play(Ts... x) override { this->component_->set_enabled(true); }
 
     protected:
-      PylontechEmulatorComponent *emulator_;
+      PylontechEmulatorComponent *component_;
   };
 
   template<typename... Ts> class DisableAction : public Action<Ts...> {
     public:
-      explicit DisableAction(PylontechEmulatorComponent *emulator) : emulator_(emulator) {}
+      explicit DisableAction(PylontechEmulatorComponent *component) : component_(component) {}
 
-      void play(Ts... x) override { this->emulator_->set_enabled(false); }
+      void play(Ts... x) override { this->component_->set_enabled(false); }
 
     protected:
-      PylontechEmulatorComponent *emulator_;
+      PylontechEmulatorComponent *component_;
   };
+
+  class ConnectionStateChangeTrigger : public Trigger<bool> {
+    public:
+      ConnectionStateChangeTrigger(PylontechEmulatorComponent *component) {
+        component->add_on_connection_state_changed_callback(
+          [this](bool connected) { this->trigger(connected); }
+        );
+      }
+};
 
 }  // namespace pylontech
 }  // namespace esphome

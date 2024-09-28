@@ -27,9 +27,6 @@ packages:
       rx_pin: ${pace_rx}
 
 globals:
-  - id: bms_ready
-    type: bool
-    initial_value: 'false'
   - id: current_tile_num
     type: uint8_t
     initial_value: '0'
@@ -78,7 +75,7 @@ psram:
 external_components:
   - source: github://pr#6537
     components: [ io_bus, i80, spi, ili9xxx ]
-  - source: github://syssi/esphome-jk-bms@main
+  # - source: github://syssi/esphome-jk-bms@main
 
 logger:
   baud_rate: 0

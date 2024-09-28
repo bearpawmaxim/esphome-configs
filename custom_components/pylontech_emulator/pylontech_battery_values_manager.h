@@ -12,20 +12,24 @@ namespace pylontech {
     public:
       PylontechBatteryValuesManager(std::vector<BatteryConfig> batteries) {
         this->batteries_ = batteries;
+        this->battery_states_ = {};
+        for (auto &battery : batteries) {
+          this->load_battery_state(battery);
+        }
       }
 
       float get_pack_voltage() {
-        return this->batteries_.front().voltage_sensor->state;
+        return this->battery_states_.front().voltage;
       }
 
       uint8_t get_pack_soc() {
-        return this->batteries_.front().soc_sensor->state;
+        return this->battery_states_.front().soc;
       }
 
       float get_summary_current() {
         float current = 0;
-        for (const auto& battery : batteries_) {
-          current += battery.current_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          current += battery.current;
         }
         return current;
       }
@@ -35,9 +39,9 @@ namespace pylontech {
         size_t min_index = 0;
         uint8_t min_address = 0;
 
-        for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_voltage_sensors.size(); ++i) {
-            float value = battery.cell_voltage_sensors[i]->state;
+        for (const auto &battery : this->battery_states_) {
+          for (size_t i = 0; i < battery.cell_voltages.size(); ++i) {
+            float value = battery.cell_voltages[i];
             if (value < min_value) {
               min_value = value;
               min_index = i;
@@ -53,9 +57,9 @@ namespace pylontech {
         size_t max_index = 0;
         uint8_t max_address = 0;
 
-        for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_voltage_sensors.size(); ++i) {
-            float value = battery.cell_voltage_sensors[i]->state;
+        for (const auto &battery : this->battery_states_) {
+          for (size_t i = 0; i < battery.cell_voltages.size(); ++i) {
+            float value = battery.cell_voltages[i];
             if (value > max_value) {
               max_value = value;
               max_index = i;
@@ -71,9 +75,9 @@ namespace pylontech {
         size_t min_index = 0;
         uint8_t min_address = 0;
 
-        for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_temp_sensors.size(); ++i) {
-            float value = battery.cell_temp_sensors[i]->state;
+        for (const auto &battery : this->battery_states_) {
+          for (size_t i = 0; i < battery.cell_temps.size(); ++i) {
+            float value = battery.cell_temps[i];
             if (value < min_value) {
               min_value = value;
               min_index = i;
@@ -89,9 +93,9 @@ namespace pylontech {
         size_t max_index = 0;
         uint8_t max_address = 0;
 
-        for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_temp_sensors.size(); ++i) {
-            float value = battery.cell_temp_sensors[i]->state;
+        for (const auto &battery : this->battery_states_) {
+          for (size_t i = 0; i < battery.cell_temps.size(); ++i) {
+            float value = battery.cell_temps[i];
             if (value > max_value) {
               max_value = value;
               max_index = i;
@@ -107,8 +111,8 @@ namespace pylontech {
         uint64_t value_acc = 0;
         size_t count = 0;
 
-        for (const auto& battery : batteries_) {
-          uint8_t value = battery.soh_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          uint8_t value = battery.soh;
           value_acc += value;
           count ++;
           if (value < min_value) {
@@ -123,14 +127,12 @@ namespace pylontech {
         uint64_t value_acc = 0;
         size_t count = 0;
 
-        for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_temp_sensors.size(); ++i) {
-            uint16_t value = battery.number_of_cycles_sensor->state;
-            value_acc += value;
-            count ++;
-            if (value > max_value) {
-              max_value = value;
-            }
+        for (const auto &battery : this->battery_states_) {
+          uint16_t value = battery.number_of_cycles;
+          value_acc += value;
+          count ++;
+          if (value > max_value) {
+            max_value = value;
           }
         }
         return std::make_tuple((uint16_t)(value_acc / count), max_value);
@@ -140,9 +142,9 @@ namespace pylontech {
         float value_acc = 0;
         size_t count = 0;
 
-        for (const auto& battery : batteries_) {
-          for (size_t i = 0; i < battery.cell_temp_sensors.size(); ++i) {
-              value_acc += battery.cell_temp_sensors[i]->state;
+        for (const auto &battery : this->battery_states_) {
+          for (size_t i = 0; i < battery.cell_temps.size(); ++i) {
+              value_acc += battery.cell_temps[i];
               count ++;
           }
         }
@@ -153,8 +155,8 @@ namespace pylontech {
         float value_acc = 0;
         size_t count = 0;
 
-        for (const auto& battery : batteries_) {
-          value_acc += battery.mos_temp_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          value_acc += battery.mos_temp;
           count ++;
         }
         return value_acc / count;
@@ -164,8 +166,8 @@ namespace pylontech {
         float max_value = 0;
         uint8_t max_address = 0;
 
-        for (const auto& battery : batteries_) {
-          float value = battery.mos_temp_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          float value = battery.mos_temp;
           if (value > max_value) {
             max_value = value;
             max_address = battery.address;
@@ -178,8 +180,8 @@ namespace pylontech {
         float min_value = std::numeric_limits<float>::max();
         uint8_t min_address = 0;
 
-        for (const auto& battery : batteries_) {
-          float value = battery.mos_temp_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          float value = battery.mos_temp;
           if (value < min_value) {
             min_value = value;
             min_address = battery.address;
@@ -192,8 +194,8 @@ namespace pylontech {
         float value_acc = 0;
         size_t count = 0;
 
-        for (const auto& battery : batteries_) {
-          value_acc += battery.bms_temp_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          value_acc += battery.bms_temp;
           count ++;
         }
         return value_acc / count;
@@ -203,8 +205,8 @@ namespace pylontech {
         float max_value = 0;
         uint8_t max_address = 0;
 
-        for (const auto& battery : batteries_) {
-          float value = battery.bms_temp_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          float value = battery.bms_temp;
           if (value > max_value) {
             max_value = value;
             max_address = battery.address;
@@ -217,8 +219,8 @@ namespace pylontech {
         float min_value = std::numeric_limits<float>::max();
         uint8_t min_address = 0;
 
-        for (const auto& battery : batteries_) {
-          float value = battery.bms_temp_sensor->state;
+        for (const auto &battery : this->battery_states_) {
+          float value = battery.bms_temp;
           if (value < min_value) {
             min_value = value;
             min_address = battery.address;
@@ -228,6 +230,42 @@ namespace pylontech {
       }
 
     private:
+      struct BatteryState {
+        uint8_t address;
+        float voltage;
+        float current;
+        uint8_t soc;
+        uint16_t number_of_cycles;
+        uint8_t soh;
+        std::vector<float> cell_voltages;
+        std::vector<float> cell_temps;
+        float mos_temp;
+        float bms_temp;
+      };
+
+      void load_battery_state(BatteryConfig battery) {
+        auto battery_state = PylontechBatteryValuesManager::BatteryState{
+          .address = battery.address,
+          .voltage = battery.voltage_sensor->state,
+          .current = battery.current_sensor->state,
+          .soc = (uint8_t)battery.soc_sensor->state,
+          .number_of_cycles = (uint16_t)battery.number_of_cycles_sensor->state,
+          .soh = (uint8_t)battery.soh_sensor->state,
+          .mos_temp = battery.mos_temp_sensor->state,
+          .bms_temp = battery.bms_temp_sensor->state
+        };
+        battery_state.cell_voltages = {};
+        for (auto *sensor : battery.cell_voltage_sensors) {
+          battery_state.cell_voltages.push_back(sensor->state);
+        }
+        battery_state.cell_temps = {};
+        for (auto *sensor : battery.cell_temp_sensors) {
+          battery_state.cell_temps.push_back(sensor->state);
+        }
+        this->battery_states_.push_back(battery_state);
+      }
+
+      std::vector<BatteryState> battery_states_;
       std::vector<BatteryConfig> batteries_;
   };
 
