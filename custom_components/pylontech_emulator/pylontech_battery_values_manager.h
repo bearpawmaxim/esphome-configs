@@ -23,7 +23,15 @@ namespace pylontech {
       }
 
       uint8_t get_pack_soc() {
-        return this->battery_states_.front().soc;
+        uint8_t max_value = std::numeric_limits<uint8_t>::lowest();
+
+        for (const auto &battery : this->battery_states_) {
+          uint8_t value = battery.soc;
+          if (value > max_value) {
+            max_value = value;
+          }
+        }
+        return max_value;
       }
 
       float get_summary_current() {
@@ -251,14 +259,14 @@ namespace pylontech {
           .soc = (uint8_t)battery.soc_sensor->state,
           .number_of_cycles = (uint16_t)battery.number_of_cycles_sensor->state,
           .soh = (uint8_t)battery.soh_sensor->state,
+          .cell_voltages = {},
+          .cell_temps = {},
           .mos_temp = battery.mos_temp_sensor->state,
           .bms_temp = battery.bms_temp_sensor->state
         };
-        battery_state.cell_voltages = {};
         for (auto *sensor : battery.cell_voltage_sensors) {
           battery_state.cell_voltages.push_back(sensor->state);
         }
-        battery_state.cell_temps = {};
         for (auto *sensor : battery.cell_temp_sensors) {
           battery_state.cell_temps.push_back(sensor->state);
         }

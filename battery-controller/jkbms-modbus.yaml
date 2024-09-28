@@ -883,6 +883,8 @@ sensor:
     address: 0x12A0
     register_type: holding
     value_type: U_WORD
+    on_value:
+      - component.update: jkbms_alarms
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -1161,6 +1163,7 @@ binary_sensor:
 
 text_sensor:
   - platform: template
+    id: jkbms_total_runtime_formatted
     name: "JKBMS total runtime formatted"
     update_interval: 60s
     lambda: |-
@@ -1177,6 +1180,55 @@ text_sensor:
           (hours ? to_string(hours) + "h" : "");
       }
       return value;
+  - platform: template
+    id: jkbms_alarms
+    name: "JKBMS alarms"
+    update_interval: never
+    lambda: |-
+      static const uint8_t alarms_size = 22;
+      static const char *const alarms[alarms_size] = {
+        "Wire resistance",
+        "MOS OTP",
+        "Cell quantity",
+        "Current sensor error",
+        "Cell OVP",
+        "Battery OVP",
+        "Charge OCP",
+        "Charge SCP",
+        "Charge OTP",
+        "Charge UTP",
+        "CPU Aux comm error",
+        "Cell UVP",
+        "Batt UVP",
+        "Discharge OCP",
+        "Discharge SCP",
+        "Discharge OTP",
+        "Charge MOS",
+        "Disacharge MOS",
+        "GPS Disconneted",
+        "Modify PWD. in time",
+        "Discharge On Failed",
+        "Battery Over Temp Alarm"
+      };
+      std::string values = "";
+      uint16_t mask = id(jkbms_alarms_bitmask)->state;
+      if (mask) {
+        for (int i = 0; i < alarms_size; i++) {
+          if (mask & (1 << i)) {
+            values.append(alarms[i]);
+            values.append(";");
+          }
+        }
+        if (!values.empty()) {
+          values.pop_back();
+        }
+      }
+      return values;
+    on_value: 
+      - script.execute:
+          id: lvgl_update_error_label
+          error: !lambda return x;
+
   # - platform: template
   #   id: jkbms_sent_bms_bytes
   #   name: JKBMS BMS bytes sent

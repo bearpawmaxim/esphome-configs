@@ -47,31 +47,31 @@ namespace pylontech_lv {
     uint8_t   avg_soh;
     uint8_t   min_soh;
     float     max_cell_voltage; // uint16, volts * 1000.
-    uint8_t   max_cell_voltage_pack_num;
+    uint8_t   max_cell_voltage_pack_addr;
     uint8_t   max_cell_voltage_num;
     float     min_cell_voltage; // uint16, volts * 1000.
-    uint8_t   min_cell_voltage_pack_num;
+    uint8_t   min_cell_voltage_pack_addr;
     uint8_t   min_cell_voltage_num;
     float     avg_cell_temp_k; // uint16, kelvins * 1000.
     float     max_cell_temp_k; // uint16, kelvins * 1000.
-    uint8_t   max_cell_temp_pack_num;
+    uint8_t   max_cell_temp_pack_addr;
     uint8_t   max_cell_temp_num;
     float     min_cell_temp_k; // uint16, kelvins * 1000.
-    uint8_t   min_cell_temp_pack_num;
+    uint8_t   min_cell_temp_pack_addr;
     uint8_t   min_cell_temp_num;
     float     avg_mos_temp_k; // uint16, kelvins * 1000.
     float     max_mos_temp_k; // uint16, kelvins * 1000.
-    uint8_t   max_mos_temp_pack_num;
+    uint8_t   max_mos_temp_pack_addr;
     uint8_t   max_mos_temp_num;
     float     min_mos_temp_k; // uint16, kelvins * 1000.
-    uint8_t   min_mos_temp_pack_num;
+    uint8_t   min_mos_temp_pack_addr;
     uint8_t   min_mos_temp_num;
     float     avg_bms_temp_k; // uint16, kelvins * 1000.
     float     max_bms_temp_k; // uint16, kelvins * 1000.
-    uint8_t   max_bms_temp_pack_num;
+    uint8_t   max_bms_temp_pack_addr;
     uint8_t   max_bms_temp_num;
     float     min_bms_temp_k; // uint16, kelvins * 1000.
-    uint8_t   min_bms_temp_pack_num;
+    uint8_t   min_bms_temp_pack_addr;
     uint8_t   min_bms_temp_num;
   };
 
