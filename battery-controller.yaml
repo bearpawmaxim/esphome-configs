@@ -15,16 +15,16 @@ packages:
       tx_pin: ${jkbms_tx}
       rx_pin: ${jkbms_rx}
       fctl_pin: ${jkbms_fctl}
-  # pace-bms: !include
-  #   file: battery-controller/pace-bms-emulator.yaml
-  #   vars:
-  #     tx_pin: ${pace_tx}
-  #     rx_pin: ${pace_rx}
-  pylon-bms: !include
-    file: battery-controller/pylon-protocol-emulator.yaml
+  pace-bms: !include
+    file: battery-controller/pace-bms-emulator.yaml
     vars:
       tx_pin: ${pace_tx}
       rx_pin: ${pace_rx}
+  # pylon-bms: !include
+  #   file: battery-controller/pylon-protocol-emulator.yaml
+  #   vars:
+  #     tx_pin: ${pace_tx}
+  #     rx_pin: ${pace_rx}
 
 globals:
   - id: current_tile_num

@@ -1,4 +1,7 @@
 globals:
+  - id: inverter_on
+    type: bool
+    initial_value: 'false'
   - id: bms_version_info
     type: std::string
     initial_value: '"JKPaceBms"'
@@ -24,7 +27,7 @@ uart:
       sequence:
         - lambda: |-
             //UARTDebug::log_hex(direction, bytes, ':');
-            if (direction == UART_DIRECTION_RX) {
+            if (direction == UART_DIRECTION_TX) {
               std::string res = "";
               size_t len = bytes.size();
               char buf[5];
