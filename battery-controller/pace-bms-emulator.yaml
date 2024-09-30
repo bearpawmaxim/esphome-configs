@@ -127,8 +127,7 @@ modbus_controller:
           if (!id(inverter_on)) {
             id(inverter_on) = true;
           }
-          // Percentage between 4000 and (4000 cycles - current cycles count)
-          return (uint16_t)(100 - (id(jkbms_charge_cycles_count).state / 40));
+          return (uint16_t)(id(jkbms_soh).state);
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x04, sensor: jkbms_capacity_remaining_ah } }
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x05, sensor:       jkbms_actual_capacity } }
       - <<: !include { file: ../pace-bms-emulator/ampere-hour-value-register.yaml, vars: { addr: 0x06, sensor:       jkbms_actual_capacity } }
