@@ -94,9 +94,9 @@ namespace pylontech_lv {
 
     private:
       inline void log_(PylonLogLevel level, const char *format, ...);
-      static inline void write_uint8_(uint8_t value, std::vector<uint8_t> &data);
-      static inline void write_uint16_(uint16_t value, std::vector<uint8_t> &data);
-      static inline void write_float_(float value, std::vector<uint8_t> &data);
+      inline void write_uint8_(uint8_t value, std::vector<uint8_t> &data);
+      inline void write_uint16_(uint16_t value, std::vector<uint8_t> &data);
+      inline void write_float_(float value, std::vector<uint8_t> &data);
       static uint16_t get_frame_checksum_(uint16_t ascii_sum);
       static uint8_t get_len_chksum(uint16_t len);
       static uint16_t get_info_length_(uint16_t len);

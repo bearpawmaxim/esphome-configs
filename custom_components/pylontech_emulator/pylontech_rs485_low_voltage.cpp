@@ -242,7 +242,7 @@ namespace pylontech_lv {
     }
     std::vector<uint8_t> result = {};
     PylontechLowVoltageProtocol::write_float_(info.pack_voltage * 1000, result);
-    PylontechLowVoltageProtocol::write_float_(info.current * 1000, result);
+    PylontechLowVoltageProtocol::write_float_(info.current, result);
     PylontechLowVoltageProtocol::write_uint8_(info.soc, result);
     PylontechLowVoltageProtocol::write_uint16_(info.avg_nr_of_cycles, result);
     PylontechLowVoltageProtocol::write_uint16_(info.max_nr_of_cycles, result);

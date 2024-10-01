@@ -1,4 +1,0 @@
-- platform: template
-  id: pbms_emul_${s_name}
-  name: "${name} ${s_h_name}"
-  optimistic: true

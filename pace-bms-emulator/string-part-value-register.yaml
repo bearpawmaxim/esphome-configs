@@ -1,4 +1,0 @@
-- address: ${addr}
-  value_type: U_WORD
-  read_lambda: |-
-    return pack_chars16(${str_var}->value(), ${offset});

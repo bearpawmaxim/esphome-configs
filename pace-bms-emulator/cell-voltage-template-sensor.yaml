@@ -1,9 +1,0 @@
-- platform: template
-  id: pbms_emul_cell_v_${cell_num}
-  name: "${name} Cell voltage ${cell_num}"
-  optimistic: true
-  min_value: 2.500
-  max_value: 3.650
-  unit_of_measurement: 'V'
-  device_class: voltage
-  step: 0.01
