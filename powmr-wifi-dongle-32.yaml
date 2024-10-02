@@ -73,3 +73,6 @@ sensor:
     ac_output_active_power:
       id: powmr_ac_output_active_power
       name: Powmr AC output active power
+    inverter_heat_sink_temperature:
+      id: powmr_invertet_twmperature
+      name: Powmr inverter temperature
