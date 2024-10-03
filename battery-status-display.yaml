@@ -7,10 +7,6 @@ esphome:
   platform: ESP32
   board: esp32-c3-devkitm-1
 
-external_components:
-  - source: github://clydebarrow/esphome@lvgl
-    components: [ lvgl ]
-
 packages:
   device_common: !include .device_common.yaml
 
@@ -77,59 +73,3 @@ lvgl:
       radius: 4
       pad_all: 2
   widgets:
-    - tileview:
-        id: example_tileview
-        x: 0
-        y: 0
-        height: 240
-        width: 240
-        bg_color: 0x202831
-        bg_grad_color: 0x101215
-        bg_dither_mode: ORDERED
-        bg_grad_dir: VER
-        align: CENTER
-        on_value:
-          - lambda: 'ESP_LOGW("TILE", "Tile was scrolled");'
-        tiles:
-          - row: 0
-            column: 0
-            id: tile_1
-            dir: [ RIGHT ]
-            align: CENTER
-            widgets:
-              - btn:
-                  width: 70
-                  height: 20
-                  widgets:
-                    - label:
-                        align: center
-                        text: "Scroll!"
-                  on_value:
-                    then:
-                      lvgl.tileview.select:
-                        id: example_tileview
-                        row: 0
-                        column: 1
-              - label:
-                  text: "Tile 1"
-          - row: 0
-            column: 1
-            id: tile_2
-            dir: [ LEFT ]
-            align: CENTER
-            widgets:
-              - btn:
-                  width: 70
-                  height: 20
-                  widgets:
-                    - label:
-                        align: center
-                        text: "Scroll!"
-                  on_value:
-                    then:
-                      lvgl.tileview.select:
-                        id: example_tileview
-                        row: 0
-                        column: 0
-              - label:
-                  text: "Tile 2"

@@ -45,12 +45,12 @@ pipsolar:
 binary_sensor:
   - platform: pipsolar
     pipsolar_id: powmr_inverter
-    configuration_status:
-      id: powmr_configuration_status
-      name: Powmr configuration_status
     backlight_on: 
       id: powmr_backlight_on
       name: Powmr backlight on
+    switch_on:
+      id: powmr_switch_on
+      name: Powmr switch on
 
 sensor:
   - platform: pipsolar

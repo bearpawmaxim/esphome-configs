@@ -39,8 +39,18 @@ namespace pylontech_lv {
     data.push_back(static_cast<uint8_t>(value & 0xFF));
   }
 
-  void PylontechLowVoltageProtocol::write_float_(float value, std::vector<uint8_t> &data) {
-    uint16_t scaled_value = static_cast<uint16_t>(round(value));
+  void PylontechLowVoltageProtocol::write_voltage_(float value, std::vector<uint8_t> &data) {
+    uint16_t scaled_value = static_cast<uint16_t>(round(value * 1000));
+    PylontechLowVoltageProtocol::write_uint16_(scaled_value, data);
+  }
+
+  void PylontechLowVoltageProtocol::write_current_(float value, std::vector<uint8_t> &data) {
+    int16_t scaled_value = static_cast<int16_t>(round(value));
+    PylontechLowVoltageProtocol::write_uint16_(scaled_value, data);
+  }
+
+  void PylontechLowVoltageProtocol::write_temperature_(float value, std::vector<uint8_t> &data) {
+    uint16_t scaled_value = static_cast<uint16_t>(round(value * 10));
     PylontechLowVoltageProtocol::write_uint16_(scaled_value, data);
   }
 
@@ -241,38 +251,38 @@ namespace pylontech_lv {
       this->get_analog_info_cb_(&info);
     }
     std::vector<uint8_t> result = {};
-    PylontechLowVoltageProtocol::write_float_(info.pack_voltage * 1000, result);
-    PylontechLowVoltageProtocol::write_float_(info.current, result);
+    PylontechLowVoltageProtocol::write_voltage_(info.pack_voltage, result);
+    PylontechLowVoltageProtocol::write_current_(info.current, result);
     PylontechLowVoltageProtocol::write_uint8_(info.soc, result);
     PylontechLowVoltageProtocol::write_uint16_(info.avg_nr_of_cycles, result);
     PylontechLowVoltageProtocol::write_uint16_(info.max_nr_of_cycles, result);
     PylontechLowVoltageProtocol::write_uint8_ (info.avg_soh, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_soh, result);
-    PylontechLowVoltageProtocol::write_float_(info.max_cell_voltage * 1000, result);
+    PylontechLowVoltageProtocol::write_voltage_(info.max_cell_voltage, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_cell_voltage_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_cell_voltage_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.min_cell_voltage * 1000, result);
+    PylontechLowVoltageProtocol::write_voltage_(info.min_cell_voltage, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_cell_voltage_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_cell_voltage_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.avg_cell_temp_k * 10, result);
-    PylontechLowVoltageProtocol::write_float_(info.max_cell_temp_k * 10, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.avg_cell_temp_k, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.max_cell_temp_k, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_cell_temp_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_cell_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.min_cell_temp_k * 10, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.min_cell_temp_k, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_cell_temp_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_cell_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.avg_mos_temp_k * 10, result);
-    PylontechLowVoltageProtocol::write_float_(info.max_mos_temp_k * 10, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.avg_mos_temp_k, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.max_mos_temp_k, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_mos_temp_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_mos_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.min_mos_temp_k * 10, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.min_mos_temp_k, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_mos_temp_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_mos_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.avg_bms_temp_k * 10, result);
-    PylontechLowVoltageProtocol::write_float_(info.max_bms_temp_k * 10, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.avg_bms_temp_k, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.max_bms_temp_k, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_bms_temp_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.max_bms_temp_num, result);
-    PylontechLowVoltageProtocol::write_float_(info.min_bms_temp_k * 10, result);
+    PylontechLowVoltageProtocol::write_temperature_(info.min_bms_temp_k, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_bms_temp_pack_addr, result);
     PylontechLowVoltageProtocol::write_uint8_(info.min_bms_temp_num, result);
 
