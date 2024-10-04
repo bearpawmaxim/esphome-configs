@@ -51,6 +51,21 @@ binary_sensor:
     switch_on:
       id: powmr_switch_on
       name: Powmr switch on
+    warnings_present:
+      id: powmr_warnings_present
+      name: Powmr warnings present
+    faults_present:
+      id: powmr_faults_present
+      name: Powmr faults present
+    fault_bus_over:
+      id: powmr_bus_overvoltage_fault
+      name: Powmr bus overvoltage fault
+    fault_inverter_voltage_too_high:
+      id: powmr_inverter_overvoltage_fault
+      name: Powmr inverter overvoltage fault
+    warning_battery_voltage_high:
+      id: powmr_batt_overvoltage_warning
+      name: Powmr battery overvoltage warning
 
 sensor:
   - platform: pipsolar
@@ -76,3 +91,10 @@ sensor:
     inverter_heat_sink_temperature:
       id: powmr_invertet_twmperature
       name: Powmr inverter temperature
+
+text_sensor:
+  - platform: pipsolar
+    pipsolar_id: powmr_inverter
+    device_mode:
+      id: powmr_device_mode
+      name: Powmr device mode
