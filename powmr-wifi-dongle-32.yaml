@@ -1,23 +1,40 @@
 substitutions:
   device_name: "powmr-wifi-dongle-32"
-  uart_tx_pin: GPIO16
-  uart_rx_pin: GPIO17
+  uart_tx_pin: GPIO7
+  uart_rx_pin: GPIO21
   friendly_name: "POWMR WiFi dongle 32"
 
 esphome:
   name: powmr-wifi-dongle-32
   friendly_name: powmr-wifi-dongle-32
 
+output:
+  - platform: gpio
+    id: pwr_led
+    pin:
+      number: GPIO20
+      inverted: true
+  - platform: gpio
+    id: com_led
+    pin: GPIO8
+  - platform: gpio
+    id: net_led
+    pin: GPIO9
+
+# leds: D1, D2, D3, D4
 light:
+  # SRV
   - platform: status_led
     id: status_led_
-    pin: GPIO2
+    pin:
+      number: GPIO10
+      inverted: true
 
 packages:
   devicecommon: !include .device_common.yaml
 
 esp32:
-  board: esp32dev
+  board: seeed_xiao_esp32c3
   framework:
     type: arduino
 
@@ -25,6 +42,12 @@ globals:
   - id: inverter_on
     type: boolean
     initial_value: 'false'
+
+wifi:
+  on_connect:
+    - output.turn_on: net_led
+  on_disconnect:
+    - output.turn_off: net_led
 
 uart:
   - id: powmr_uart
