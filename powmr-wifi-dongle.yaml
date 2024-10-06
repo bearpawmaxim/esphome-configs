@@ -1,12 +1,12 @@
 substitutions:
-  device_name: "powmr-wifi-dongle-32"
+  device_name: "powmr-wifi-dongle"
   uart_tx_pin: GPIO7
   uart_rx_pin: GPIO21
   friendly_name: "POWMR WiFi dongle 32"
 
 esphome:
-  name: powmr-wifi-dongle-32
-  friendly_name: powmr-wifi-dongle-32
+  name: "powmr-wifi-dongle"
+  friendly_name: "powmr-wifi-dongle"
 
 output:
   - platform: gpio
@@ -15,17 +15,16 @@ output:
       number: GPIO20
       inverted: true
   - platform: gpio
-    id: com_led
+    id: comm_led
     pin: GPIO8
   - platform: gpio
     id: net_led
     pin: GPIO9
 
-# leds: D1, D2, D3, D4
 light:
   # SRV
   - platform: status_led
-    id: status_led_
+    id: srv_led
     pin:
       number: GPIO10
       inverted: true
@@ -39,15 +38,21 @@ esp32:
     type: arduino
 
 globals:
-  - id: inverter_on
-    type: boolean
-    initial_value: 'false'
+  - id: last_updated
+    type: ulong
+    initial_value: 'millis()'
+  - id: error_ms
+    type: ulong
+    initial_value: '3000'
 
 wifi:
   on_connect:
     - output.turn_on: net_led
   on_disconnect:
     - output.turn_off: net_led
+
+logger:
+  level: WARN
 
 uart:
   - id: powmr_uart
@@ -96,9 +101,15 @@ sensor:
     grid_voltage:
       id: powmr_grid_voltage
       name: Powmr grid voltage
+      on_value:
+        - lambda: |-
+            id(last_updated) = millis();
     battery_voltage:
       id: powmr_battery_voltage
       name: Powmr battery voltage
+    battery_voltage_scc:
+      id: powmr_battery_scc_voltage
+      name: Powmr battery SCC voltage
     battery_charging_current:
       id: powmr_battery_charging_current
       name: Powmr battery charging current
@@ -121,3 +132,20 @@ text_sensor:
     device_mode:
       id: powmr_device_mode
       name: Powmr device mode
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          ulong now = millis();
+          ulong valid_update_timeout = id(powmr_inverter).get_update_interval() +
+            id(error_ms);
+          ulong last_valid_update = id(last_updated) +
+            valid_update_timeout;
+          if (last_valid_update < now) {
+            ESP_LOGW("pipsolar", "No readings received within %d seconds",
+              (ulong)(valid_update_timeout / 1000));
+            id(comm_led)->turn_off();
+            return;
+          }
+          id(comm_led)->turn_on();
