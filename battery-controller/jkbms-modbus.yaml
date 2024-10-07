@@ -1211,9 +1211,11 @@ text_sensor:
           if (mask & (1 << i)) {
             values.append(alarms[i]);
             values.append(";");
+            values.append(" ");
           }
         }
         if (!values.empty()) {
+          values.pop_back();
           values.pop_back();
         }
       }
