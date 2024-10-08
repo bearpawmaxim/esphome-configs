@@ -905,7 +905,7 @@ sensor:
     name: "JKBMS alarms bitmask"
     address: 0x12A0
     register_type: holding
-    value_type: U_WORD
+    value_type: U_DWORD
     on_value:
       - component.update: jkbms_alarms
 
