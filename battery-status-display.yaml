@@ -1,18 +1,26 @@
 substitutions:
   device_name: battery-status-display
   device_name_underscore: battery_status_display
+  mac_address: !secret jk_bms_mac
+  protocol_version: JK02_24S
 
 esphome:
   name: ${device_name}
-  platform: ESP32
-  board: esp32-c3-devkitm-1
+
+esp32:
+  framework: 
+    type: arduino
+    version: recommended
+  board: seeed_xiao_esp32c3
+
+external_components:
+  - source: github://syssi/esphome-jk-bms@main
 
 packages:
   device_common: !include .device_common.yaml
 
 logger:
-  baud_rate: 460800
-  hardware_uart: USB_CDC
+  baud_rate: 0
 
 spi:
   mosi_pin: GPIO7
@@ -36,40 +44,227 @@ light:
 
 display:
   - platform: ili9xxx
-    model: GC9A01A
     id: watchface
+    model: GC9A01A
     cs_pin: GPIO10
     dc_pin: GPIO2
+    data_rate: 80MHz
+    pixel_mode: 16bit
     dimensions:
       width: 240
       height: 240
-    rotation: 90
     update_interval: never
+    invert_colors: false
+    auto_clear_enabled: false
 
 touchscreen:
   id: cst816d
   platform: cst816
   interrupt_pin: GPIO0
   reset_pin: GPIO1
-  # transform:
-  #   swap_xy: false
-  #   mirror_y: true
-  #   mirror_x: true
+#  on_release:
+#    - script.execute: lvgl_resume
 
-lvgl:
-  log_level: INFO
-  color_depth: 16
-  bg_color: 0x0F0F0F
-  text_font: unscii_8
-  touchscreens:
-    - touchscreen_id: cst816d
-  align: center
-  style_definitions:
-    - id: date_style
-      text_font: unscii_8
-      align: center
-      text_color: 0x000000
-      bg_opa: cover
-      radius: 4
-      pad_all: 2
-  widgets:
+color:
+  - id: color_red
+    red: 100%
+  - id: color_green
+    green: 100%
+  - id: off_color
+    hex: FF4F00
+  - id: on_color
+    hex: 58D900
+  - id: balancing_color
+    red_int: 145
+    green_int: 245
+    blue_int: 242
+  - id: std_cell_voltage_color
+    hex: 58D900
+  - id: min_cell_voltage_color
+    hex: FF4F00
+  - id: max_cell_voltage_color
+    hex: 00ADFF
+  - id: label_heading_color
+    hex: FFFFFF
+  - id: label_value_color
+    hex: 58D900
+
+# lvgl:
+#   log_level: WARN
+#   color_depth: 16
+#   bg_color: 0x000000
+#   text_font: unscii_8
+#   touchscreens:
+#     - touchscreen_id: cst816d
+#   align: center
+#   style_definitions:
+#     - id: date_style
+#       text_font: unscii_8
+#       align: center
+#       text_color: 0x000000
+#       bg_opa: cover
+#       radius: 4
+#       pad_all: 2
+#   pages:
+#     - id: main_page
+#       scrollable: false
+#       widgets:
+#         - tileview:
+#             id: stats_tile
+#             x: 0
+#             y: 0
+#             height: 240
+#             width: 240
+#             tiles:
+#               - id: soc_tile
+#                 row: 0
+#                 column: 0
+#                 dir: [RIGHT]
+#                 widgets:
+#                   - obj:
+#                       <<: !include lvgl-common/lvgl-tile-container.yaml
+#                       widgets:
+#                         - label:
+#                             id: cap_label
+#                             text: "0%"
+#                             height: 50
+#                             text_font: montserrat_48
+#                             text_color: label_value_color
+#                         - line:
+#                             height: 2
+#                             width: 240
+#                             line_color: balancing_color
+#                             line_width: 2
+#                             points:
+#                               - 50, 120
+#                               - 190, 120
+#                         - label:
+#                             id: soc_label
+#                             text: "0AH"
+#                             height: 50
+#                             text_font: montserrat_48
+#                             text_color: label_value_color
+#               - id: voltages_tile
+#                 row: 0
+#                 column: 1
+#                 dir: [LEFT,RIGHT]
+#                 widgets:
+#                   - obj:
+#                       <<: !include lvgl-common/lvgl-tile-container.yaml
+#                       widgets:
+#               - id: current_power_tile
+#                 row: 0
+#                 column: 2
+#                 dir: [LEFT]
+#                 widgets:
+#                   - obj:
+#                       <<: !include lvgl-common/lvgl-tile-container.yaml
+#                       widgets:
+#         # Blank page
+#     - id: blank_page
+#       bg_opa: 1
+#   on_idle:
+#     timeout: !lambda return (id(display_timeout).state * 1000);
+#     then:
+#       - script.execute: lvgl_pause
+
+number:
+  - platform: template
+    name: Screen timeout
+    optimistic: true
+    id: display_timeout
+    unit_of_measurement: "s"
+    initial_value: 45
+    restore_value: true
+    min_value: 10
+    max_value: 180
+    step: 5
+    mode: box
+
+# interval:
+#   - interval: 1s
+#     id: update_labels_interval
+#     then:
+#       script.execute: lvgl_update_values
+
+ble_client:
+  - mac_address: ${mac_address}
+    id: client0
+
+jk_bms_ble:
+  - ble_client_id: client0
+    protocol_version: ${protocol_version}
+    throttle: 5s
+    id: bms0
+
+sensor:
+  - platform: jk_bms_ble
+    power_tube_temperature:
+      id: jkbms_mos_temp
+      name: "JKBMS power tube temperature"
+    temperature_sensor_1:
+      id: jkbms_bat_temp1
+      name: "JKBMS temperature sensor 1"
+    temperature_sensor_2:
+      id: jkbms_bat_temp2
+      name: "JKBMS temperature sensor 2"
+    total_voltage:
+      id: jkbms_total_voltage
+      name: "JKBMS total voltage"
+    current:
+      id: "jkbms_current"
+      name: "JKBMS current"
+    power:
+      name: "JKBMS power"
+    state_of_charge:
+      id: jkbms_soc
+      name: "JKBMS soc"
+    capacity_remaining:
+      id: jkbms_capacity
+      name: "JKBMS capacity remaining"
+    min_cell_voltage:
+      id: jkbms_min_cell_voltage
+      name: "JKBMS min cell voltage"
+    max_cell_voltage:
+      id: jkbms_max_cell_voltage
+      name: "JKBMS max cell voltage"
+    delta_cell_voltage:
+      name: "JKBMS delta cell voltage"
+    average_cell_voltage:
+      name: "JKBMS average cell voltage"
+    total_runtime:
+      name: "JKBMS total runtime"
+
+# script:
+  # - id: lvgl_pause
+  #   mode: single
+  #   then:
+  #     - component.suspend: update_labels_interval
+  #     - light.turn_off: backlight
+  #     - lvgl.page.show: blank_page
+  #     - delay: 1s
+  #     - lvgl.pause
+  # - id: lvgl_resume
+  #   mode: single
+  #   then:
+  #     - if:
+  #         condition:
+  #           lvgl.is_paused
+  #         then:
+  #           - lvgl.resume
+  #           - lvgl.page.show: main_page
+  #           - light.turn_on: backlight
+  #           - component.resume: update_labels_interval
+  # - id: lvgl_update_values
+  #   mode: single
+  #   then:
+  #     - lvgl.label.update:
+  #         id: cap_label
+  #         text:
+  #           format: "%.0fAH"
+  #           args: ['id(jkbms_capacity)->state']
+  #     - lvgl.label.update:
+  #         id: soc_label
+  #         text:
+  #           format: "%.0f%%"
+  #           args: ['id(jkbms_soc)->state']

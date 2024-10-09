@@ -23,6 +23,9 @@ esphome:
     - pc-wol-button/WakeOnLan.h
     - pc-wol-button/wol.h
     - pc-wol-button/clock.h
+  platformio_options:
+    board_upload.flash_size: 4MB
+    board_upload.maximum_size: 4194304
 
 ota:
   on_begin:
