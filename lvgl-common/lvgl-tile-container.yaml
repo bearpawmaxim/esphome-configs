@@ -9,7 +9,8 @@ height: 100%
 layout:
   type: FLEX
   flex_flow: COLUMN
-  flex_align_main: SPACE_AROUND
+  flex_align_main: CENTER
   flex_align_track: CENTER
-  flex_align_cross: SPACE_AROUND
+  flex_align_cross: CENTER
   pad_row: 0
+  pad_column: 0

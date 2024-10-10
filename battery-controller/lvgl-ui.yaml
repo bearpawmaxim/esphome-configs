@@ -125,7 +125,7 @@ lvgl:
                 dir: [ RIGHT ]
                 widgets:
                   - obj:
-                      <<: !include ..\lvgl-common\lvgl-tile-container.yaml
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
                       widgets:
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: voltage,            l_capt: Voltage,   l_unit: V  } }
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: current,            l_capt: Currrent,  l_unit: A  } }
@@ -138,7 +138,7 @@ lvgl:
                 dir: [ LEFT, RIGHT ]
                 widgets:
                   - obj:
-                      <<: !include ..\lvgl-common\lvgl-tile-container.yaml
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
                       widgets:
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t1,   l_capt: BATT Temp 1,   l_unit: C } }
                         - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t2,   l_capt: BATT Temp 2,   l_unit: C } }
@@ -151,7 +151,7 @@ lvgl:
                 dir: [ LEFT, RIGHT ]
                 widgets:
                   - obj:
-                      <<: !include ..\lvgl-common\lvgl-tile-container.yaml
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
                       widgets:
                         - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: charge,    sw_capt: Charge,    sw_readonly: true } }
                         - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: discharge, sw_capt: Discharge, sw_readonly: true } }
@@ -162,7 +162,7 @@ lvgl:
                 dir: [ LEFT ]
                 widgets:
                   - obj:
-                      <<: !include ..\lvgl-common\lvgl-tile-container.yaml
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
                       widgets:
                         - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell1voltage,  b_capt: 1, b_unit: V } }
                         - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell2voltage,  b_capt: 2, b_unit: V } }

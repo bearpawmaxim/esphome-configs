@@ -1,0 +1,91 @@
+uart:
+  - id: bms_uart
+    baud_rate: 2400
+    rx_pin: ${rx_pin}
+    debug:
+      direction: BOTH
+
+jk_bms_display:
+  - id: jkbms0
+    uart_id: bms_uart
+
+binary_sensor:
+  - platform: jk_bms_display
+    system_warning:
+      id: jkbms_system_warning
+      name: "JKBMS system warning"
+    balancing_switch:
+      id: jkbms_balancing_switch
+      name: "JKBMS balancing switch"
+    charging:
+      id: jkbms_charging
+      name: "JKBMS charging"
+    discharging:
+      id: jkbms_discharging
+      name: "JKBMS discharging"
+    cell_voltage_undervoltage_protection:
+      id: jkbms_cell_voltage_undervoltage_protection
+      name: "JKBMS cell voltage undervoltage protection"
+    cell_voltage_overvoltage_protection:
+      id: jkbms_cell_voltage_overvoltage_protection
+      name: "JKBMS cell voltage overvoltage protection"
+    overcurrent_protection:
+      id: jkbms_overcurrent_protection
+      name: "JKBMS overcurrent protection"
+    mosfet_overtemperature_protection:
+      id: jkbms_mosfet_overtemperature_protection
+      name: "JKBMS mosfet overtemperature protection"
+    battery_temperature_protection:
+      id: jkbms_battery_temperature_protection
+      name: "JKBMS battery temperature protection"
+    short_circuit_protection:
+      id: jkbms_short_circuit_protection
+      name: "JKBMS short circuit protection"
+    coprocessor_communication_error:
+      id: jkbms_coprocessor_communication_error
+      name: "JKBMS coprocessor communication error"
+    balancer_wire_resistance_too_high:
+      id: jkbms_balancer_wire_resistance_too_high
+      name: "JKBMS balancer wire resistance too high"
+    cell_count_mismatch:
+      id: jkbms_cell_count_mismatch
+      name: "JKBMS cell count mismatch"
+
+sensor:
+  - platform: jk_bms_display
+    total_voltage:
+      id: jkbms_voltage
+      name: "JKBMS total voltage"
+      on_value:
+        - globals.set:
+            id: voltage
+            value: !lambda return x;
+    current:
+      id: jkbms_current
+      name: "JKBMS current"
+    power:
+      id: jkbms_power
+      name: "JKBMS power"
+    min_cell_voltage:
+      id: jkbms_min_cell_voltage
+      name: "JKBMS min cell voltage"
+    max_cell_voltage:
+      id: jkbms_max_cell_voltage
+      name: "JKBMS max cell voltage"
+    state_of_charge:
+      id: jkbms_soc
+      name: "JKBMS state of charge"
+      on_value:
+        - globals.set:
+            id: soc
+            value: !lambda return x;
+    delta_cell_voltage:
+      id: jkbms_delta_cell_voltage
+      name: "JKBMS delta cell voltage"
+    mosfet_temperature:
+      id: jkbms_mosfet_temp
+      name: "JKBMS mosfet temperature"
+    battery_temperature:
+      id: jkbms_battery_temp
+      name: "JKBMS battery temperature"
+

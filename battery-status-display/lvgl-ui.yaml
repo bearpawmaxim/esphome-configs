@@ -1,0 +1,143 @@
+color:
+  - id: color_red
+    red: 100%
+  - id: color_green
+    green: 100%
+  - id: divider_color
+    hex: FF4F00
+  - id: upper_color
+    hex: 58D900
+  - id: lower_color
+    red_int: 145
+    green_int: 245
+    blue_int: 242
+  - id: std_cell_voltage_color
+    hex: 58D900
+  - id: min_cell_voltage_color
+    hex: FF4F00
+  - id: max_cell_voltage_color
+    hex: 00ADFF
+  - id: label_heading_color
+    hex: FFFFFF
+  - id: label_value_color
+    hex: 58D900
+
+font:
+  - file: Clickuper.ttf
+    id: value_font
+    size: 45
+    glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', ' ', '%', 'A', 'h', 'W', 'V']
+
+lvgl:
+  log_level: WARN
+  color_depth: 16
+  bg_color: 0x000000
+  text_font: unscii_8
+  touchscreens:
+    - touchscreen_id: cst816d
+  align: center
+  style_definitions:
+    - id: date_style
+      text_font: unscii_8
+      align: center
+      text_color: 0x000000
+      bg_opa: cover
+      radius: 4
+      pad_all: 2
+  pages:
+    - id: main_page
+      scrollable: false
+      widgets:
+        - tileview:
+            id: stats_tile
+            x: 0
+            y: 0
+            height: 240
+            width: 240
+            tiles:
+              - id: soc_tile
+                row: 0
+                column: 0
+                dir: [RIGHT]
+                widgets:
+                  - obj:
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                      widgets:
+                        - label:
+                            id: cap_label
+                            text: "0%"
+                            height: 50
+                            text_font: value_font
+                            text_color: upper_color
+                        - line:
+                            line_color: divider_color
+                            height: 2
+                            width: 200
+                            line_width: 2
+                            points:
+                              - 50, 120
+                              - 190, 120
+                        - label:
+                            id: soc_label
+                            text: "0AH"
+                            height: 50
+                            text_font: value_font
+                            text_color: lower_color
+              - id: voltages_tile
+                row: 0
+                column: 1
+                dir: [LEFT,RIGHT]
+                widgets:
+                  - obj:
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                      widgets:
+              - id: current_power_tile
+                row: 0
+                column: 2
+                dir: [LEFT]
+                widgets:
+                  - obj:
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                      widgets:
+        # Blank page
+    - id: blank_page
+      bg_opa: 1
+  on_idle:
+    timeout: !lambda return (id(display_timeout).state * 1000);
+    then:
+      - script.execute: lvgl_pause
+
+number:
+  - platform: template
+    name: Screen timeout
+    optimistic: true
+    id: display_timeout
+    unit_of_measurement: "s"
+    initial_value: 45
+    restore_value: true
+    min_value: 10
+    max_value: 180
+    step: 5
+    mode: box
+
+script:
+  - id: lvgl_pause
+    mode: single
+    then:
+      - component.suspend: update_labels_interval
+      - light.turn_off: backlight
+      - lvgl.page.show: blank_page
+      - delay: 1s
+      - lvgl.pause
+  - id: lvgl_resume
+    mode: single
+    then:
+      - if:
+          condition:
+            lvgl.is_paused
+          then:
+            - lvgl.resume
+            - lvgl.page.show: main_page
+            - light.turn_on: backlight
+            - component.resume: update_labels_interval
+
