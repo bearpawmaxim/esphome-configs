@@ -1,0 +1,121 @@
+# source ../esphome/bin/activate
+# python3 -m esphome run battery-controller-sdl.yaml
+
+substitutions:
+  device_name: battery-controller
+
+packages:
+  device_common: !include .sdl_device_common.yaml
+
+<<: !include battery-controller/lvgl-ui.yaml
+
+globals:
+  - id: inverter_on
+    type: bool
+    initial_value: 'false'
+  - id: current_tile_num
+    type: uint8_t
+    initial_value: '0'
+  - id: enable_auto_tile_change
+    type: bool
+    initial_value: 'true'
+  - id: is_automatic_tile_change
+    type: bool
+    initial_value: 'false'
+  - id: random_voltage_value
+    type: float
+  - id: random_cell_value
+    type: uint8_t
+  - id: lv_bg_color
+    type: lv_color_t
+  - id: lv_soc_color
+    type: lv_color_t    
+
+time:
+  - id: sntp_time
+    platform: host
+    timezone: Europe/Kievs
+
+esphome:
+  name: battery-controller-sdl
+  friendly_name: battery-controller-sdl
+  includes:
+    - includes/template_sensor.h
+    - includes/template_sensor.cpp
+  on_boot:
+    - delay: 1s
+    - script.execute:
+        id: lvgl_update_soc
+        soc: 87.6
+    - script.execute:
+        id: lvgl_update_accent_color
+        current_val: 32
+        is_balancing: true
+    - script.execute:
+        id: lvgl_update_soc_gauge_labels
+        current_val: 410
+        voltage_val: 57.58
+
+external_components:
+  # - source: github://pr#6825
+  #   components: [ sdl, touchscreen, time ]
+
+logger:
+
+touchscreen:
+  - platform: sdl
+    id: !extend touch
+    on_release:
+      - script.execute: lvgl_resume
+
+output:
+  - platform: template
+    id: backlight_out
+    type: float
+    write_action:
+      lambda: ;
+
+light:
+  - platform: monochromatic
+    id: backlight
+    output: backlight_out
+
+sensor:
+  - platform: custom
+    lambda: |-
+      auto min_voltage_cell_sensor = new esphome::template_::TemplateSensor();
+      min_voltage_cell_sensor->set_template([=]() -> esphome::optional<float> {
+        return (float)2;
+      });
+      min_voltage_cell_sensor->set_update_interval(10000);
+      App.register_component(min_voltage_cell_sensor);
+      auto max_voltage_cell_sensor = new esphome::template_::TemplateSensor();
+      max_voltage_cell_sensor->set_template([=]() -> esphome::optional<float> {
+        return (float)1;
+      });
+      max_voltage_cell_sensor->set_update_interval(10000);
+      App.register_component(max_voltage_cell_sensor);
+      return { min_voltage_cell_sensor, max_voltage_cell_sensor };
+    sensors:
+      - id: jkbms_min_voltage_cell
+      - id: jkbms_max_voltage_cell
+
+display:
+  - platform: sdl
+    id: !extend sdl_display
+    dimensions:
+      width: 480
+      height: 320
+
+number:
+  - platform: template
+    name: Screen timeout
+    optimistic: true
+    id: display_timeout
+    unit_of_measurement: "s"
+    initial_value: 45
+    restore_value: true
+    min_value: 10
+    max_value: 180
+    step: 5
+    mode: box

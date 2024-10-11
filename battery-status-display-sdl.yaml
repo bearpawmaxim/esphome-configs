@@ -1,3 +1,6 @@
+# source ../esphome/bin/activate
+# python3 -m esphome run battery-status-display-sdl.yaml
+
 substitutions:
   device_name: battery-status-display
   device_name_underscore: battery_status_display
@@ -5,95 +8,50 @@ substitutions:
 globals:
   - id: voltage
     type: float
-    initial_value: '0.0'
-  - id: current
-    type: float
-    initial_value: '0.0'
+    initial_value: '27.5'
   - id: soc
     type: float
-    initial_value: '0.0'
+    initial_value: '97'
+  - id: current
+    type: float
+    initial_value: '-3.7'
   - id: power
     type: float
-    initial_value: '0.0'
+    initial_value: '2100'
   - id: min_cell_voltage
     type: float
-    initial_value: '0.0'
+    initial_value: '3.21'
   - id: max_cell_voltage
     type: float
-    initial_value: '0.0'
+    initial_value: '3.29'
   - id: cell_temp
     type: float
-    initial_value: '0.0'
+    initial_value: '29.1'
   - id: mos_temp
     type: float
-    initial_value: '0.0'
-
-esphome:
-  name: ${device_name}
-
-esp32:
-  framework: 
-    type: arduino
-    version: recommended
-  board: esp32-c3-devkitm-1
-
-external_components:
-  - source: github://syssi/esphome-jk-bms@main
-    components: [jk_bms_display]
+    initial_value: '30.1'
 
 packages:
-  device_common: !include .device_common.yaml
-  jkbms_disp_port: !include 
-    file: battery-status-display/jkbms-display-port.yaml
-    vars:
-      rx_pin: GPIO20
+  device_common: !include .sdl_device_common.yaml
+  # device_common: !include .device_common.yaml
+  # jkbms_disp_port: !include 
+  #   file: battery-status-display/jkbms-display-port.yaml
+  #   vars:
+  #     rx_pin: GPIO20
   lvgl-ui: !include battery-status-display/lvgl-ui.yaml
 
-logger:
-  baud_rate: 0
-
-spi:
-  mosi_pin: GPIO7
-  clk_pin: GPIO6
-
-i2c:
-  sda: GPIO4
-  scl: GPIO5
-
-output:
-  - platform: ledc
-    pin: GPIO3
-    id: gpio_3_backlight_pwm
-
-light:
-  - platform: monochromatic
-    output: gpio_3_backlight_pwm
-    name: "Display Backlight"
-    id: backlight
-    restore_mode: ALWAYS_ON
+touchscreen:
+  - platform: sdl
+    id: !extend touch
+    on_release:
+      - script.execute: lvgl_resume
 
 display:
-  - platform: ili9xxx
-    id: watchface
-    model: GC9A01A
-    cs_pin: GPIO10
-    dc_pin: GPIO2
-    data_rate: 80MHz
-    pixel_mode: 16bit
+  - platform: sdl
+    id: !extend sdl_display
     dimensions:
       width: 240
       height: 240
-    update_interval: never
-    invert_colors: true
-    auto_clear_enabled: false
-
-touchscreen:
-  id: touch
-  platform: cst816
-  interrupt_pin: GPIO0
-  reset_pin: GPIO1
-  on_release:
-    - script.execute: lvgl_resume
 
 interval:
   - interval: 1s
@@ -146,16 +104,14 @@ script:
             format: "%.1fC"
             args: ['id(mos_temp)']
 
-debug:
+output:
+  - platform: template
+    id: backlight_out
+    type: float
+    write_action:
+      lambda: ;
 
-sensor:
-  - platform: debug
-    free:
-      name: "Heap Free"
-    block:
-      name: "Heap Max Block"
-    loop_time:
-      name: "Loop Time"
-  - platform: internal_temperature
-    name: ESP32 Internal temperature
-    entity_category: diagnostic
+light:
+  - platform: monochromatic
+    id: backlight
+    output: backlight_out

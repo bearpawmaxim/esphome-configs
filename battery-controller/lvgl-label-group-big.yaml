@@ -1,11 +1,13 @@
 - obj:
-    width: SIZE_CONTENT
+    width: 90%
     height: SIZE_CONTENT
     bg_opa: 0
     border_opa: 0
     radius: 0
     align: CENTER
     scrollable: false
+    pad_top: 4
+    pad_bottom: 4
     widgets:
       - label:
           id: ${l_name}_caption

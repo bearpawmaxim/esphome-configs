@@ -1,0 +1,20 @@
+esphome:
+  name: sdl
+
+external_components:
+  - source: github://esphome/esphome@dev
+    components: [ sdl, touchscreen ]
+
+host:
+
+display:
+  - platform: sdl
+    id: sdl_display
+    auto_clear_enabled: false
+    dimensions:
+      width: 450
+      height: 600
+
+touchscreen:
+  - platform: sdl
+    id: touch

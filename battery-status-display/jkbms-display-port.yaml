@@ -63,15 +63,31 @@ sensor:
     current:
       id: jkbms_current
       name: "JKBMS current"
+      on_value:
+        - globals.set:
+            id: current
+            value: !lambda return x;
     power:
       id: jkbms_power
       name: "JKBMS power"
+      on_value:
+        - globals.set:
+            id: power
+            value: !lambda return x;
     min_cell_voltage:
       id: jkbms_min_cell_voltage
       name: "JKBMS min cell voltage"
+      on_value:
+        - globals.set:
+            id: min_cell_voltage
+            value: !lambda return x;
     max_cell_voltage:
       id: jkbms_max_cell_voltage
       name: "JKBMS max cell voltage"
+      on_value:
+        - globals.set:
+            id: max_cell_voltage
+            value: !lambda return x;
     state_of_charge:
       id: jkbms_soc
       name: "JKBMS state of charge"
@@ -85,7 +101,14 @@ sensor:
     mosfet_temperature:
       id: jkbms_mosfet_temp
       name: "JKBMS mosfet temperature"
+      on_value:
+        - globals.set:
+            id: mos_temp
+            value: !lambda return x;
     battery_temperature:
       id: jkbms_battery_temp
       name: "JKBMS battery temperature"
-
+      on_value:
+        - globals.set:
+            id: cell_temp
+            value: !lambda return x;
