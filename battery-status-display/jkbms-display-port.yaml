@@ -14,6 +14,7 @@ binary_sensor:
     system_warning:
       id: jkbms_system_warning
       name: "JKBMS system warning"
+      internal: true
     balancing_switch:
       id: jkbms_balancing_switch
       name: "JKBMS balancing switch"
@@ -24,32 +25,47 @@ binary_sensor:
       id: jkbms_discharging
       name: "JKBMS discharging"
     cell_voltage_undervoltage_protection:
-      id: jkbms_cell_voltage_undervoltage_protection
+      id: jkbms_cell_uvp
       name: "JKBMS cell voltage undervoltage protection"
+      internal: true
     cell_voltage_overvoltage_protection:
-      id: jkbms_cell_voltage_overvoltage_protection
+      id: jkbms_cell_ovp
       name: "JKBMS cell voltage overvoltage protection"
+      internal: true
     overcurrent_protection:
-      id: jkbms_overcurrent_protection
+      id: jkbms_ocp
       name: "JKBMS overcurrent protection"
+      internal: true
     mosfet_overtemperature_protection:
-      id: jkbms_mosfet_overtemperature_protection
+      id: jkbms_mos_otp
       name: "JKBMS mosfet overtemperature protection"
+      internal: true
     battery_temperature_protection:
-      id: jkbms_battery_temperature_protection
+      id: jkbms_batt_tp
       name: "JKBMS battery temperature protection"
+      internal: true
     short_circuit_protection:
-      id: jkbms_short_circuit_protection
+      id: jkbms_scp
       name: "JKBMS short circuit protection"
+      internal: true
     coprocessor_communication_error:
-      id: jkbms_coprocessor_communication_error
+      id: jkbms_cocpu_comm_err
       name: "JKBMS coprocessor communication error"
+      internal: true
     balancer_wire_resistance_too_high:
-      id: jkbms_balancer_wire_resistance_too_high
+      id: jkbms_wire_res_too_high
       name: "JKBMS balancer wire resistance too high"
+      internal: true
     cell_count_mismatch:
-      id: jkbms_cell_count_mismatch
+      id: jkbms_cell_cnt_mismatch
       name: "JKBMS cell count mismatch"
+      internal: true
+  - platform: template
+    id: jkbms_has_alarms
+    name: "JKBMS has alarms"
+    update_interval: never
+    lambda: !-
+      return true; // todo
 
 sensor:
   - platform: jk_bms_display
@@ -95,9 +111,6 @@ sensor:
         - globals.set:
             id: soc
             value: !lambda return x;
-    delta_cell_voltage:
-      id: jkbms_delta_cell_voltage
-      name: "JKBMS delta cell voltage"
     mosfet_temperature:
       id: jkbms_mosfet_temp
       name: "JKBMS mosfet temperature"
