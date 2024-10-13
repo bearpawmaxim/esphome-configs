@@ -40,6 +40,7 @@ esp32:
 external_components:
   - source: github://syssi/esphome-jk-bms@main
     components: [jk_bms_display]
+    refresh: 1s
 
 packages:
   device_common: !include .device_common.yaml

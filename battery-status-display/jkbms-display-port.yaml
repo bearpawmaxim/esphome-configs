@@ -12,7 +12,7 @@ jk_bms_display:
 binary_sensor:
   - platform: jk_bms_display
     system_warning:
-      id: jkbms_system_warning
+      id: jkbms_system_warn
       name: "JKBMS system warning"
       internal: true
     balancing_switch:
@@ -53,7 +53,7 @@ binary_sensor:
       name: "JKBMS coprocessor communication error"
       internal: true
     balancer_wire_resistance_too_high:
-      id: jkbms_wire_res_too_high
+      id: jkbms_high_wire_res
       name: "JKBMS balancer wire resistance too high"
       internal: true
     cell_count_mismatch:
@@ -63,9 +63,17 @@ binary_sensor:
   - platform: template
     id: jkbms_has_alarms
     name: "JKBMS has alarms"
-    update_interval: never
-    lambda: !-
-      return true; // todo
+    lambda: |-
+      return id(jkbms_system_warn)->state ||
+        id(jkbms_cell_uvp)->state ||
+        id(jkbms_cell_ovp)->state ||
+        id(jkbms_ocp)->state ||
+        id(jkbms_mos_otp)->state ||
+        id(jkbms_batt_tp)->state ||
+        id(jkbms_scp)->state ||
+        id(jkbms_cocpu_comm_err)->state ||
+        id(jkbms_high_wire_res)->state ||
+        id(jkbms_cell_cnt_mismatch)->state;
 
 sensor:
   - platform: jk_bms_display
@@ -125,3 +133,10 @@ sensor:
         - globals.set:
             id: cell_temp
             value: !lambda return x;
+
+# text_sensor:
+ #  - platform: template
+ #    id: jkbms_alarms
+ #    update_interval: never
+ #    lambda: |-
+ #      return ""; //todo
