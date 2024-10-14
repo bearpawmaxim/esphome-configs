@@ -1,6 +1,7 @@
 logger:
 
 api:
+  id: my_api
   encryption:
     key: !secret api_key
 

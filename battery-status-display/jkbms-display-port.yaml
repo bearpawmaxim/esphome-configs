@@ -78,22 +78,25 @@ binary_sensor:
 sensor:
   - platform: jk_bms_display
     total_voltage:
-      id: jkbms_voltage
+      id: jkbms_voltage_internal
       name: "JKBMS total voltage"
+      internal: true
       on_value:
         - globals.set:
             id: voltage
             value: !lambda return x;
     current:
-      id: jkbms_current
+      id: jkbms_current_internal
       name: "JKBMS current"
+      internal: true
       on_value:
         - globals.set:
             id: current
             value: !lambda return x;
     power:
-      id: jkbms_power
+      id: jkbms_power_internal
       name: "JKBMS power"
+      internal: true
       on_value:
         - globals.set:
             id: power
@@ -112,6 +115,30 @@ sensor:
         - globals.set:
             id: max_cell_voltage
             value: !lambda return x;
+    cell_voltage_1:
+      id: jkbms_cell_voltage_1
+      name: "JKBMS cell voltage 1"
+    cell_voltage_2:
+      id: jkbms_cell_voltage_2
+      name: "JKBMS cell voltage 2"
+    cell_voltage_3:
+      id: jkbms_cell_voltage_3
+      name: "JKBMS cell voltage 3"
+    cell_voltage_4:
+      id: jkbms_cell_voltage_4
+      name: "JKBMS cell voltage 4"
+    cell_voltage_5:
+      id: jkbms_cell_voltage_5
+      name: "JKBMS cell voltage 5"
+    cell_voltage_6:
+      id: jkbms_cell_voltage_6
+      name: "JKBMS cell voltage 6"
+    cell_voltage_7:
+      id: jkbms_cell_voltage_7
+      name: "JKBMS cell voltage 7"
+    cell_voltage_8:
+      id: jkbms_cell_voltage_8
+      name: "JKBMS cell voltage 8"
     state_of_charge:
       id: jkbms_soc
       name: "JKBMS state of charge"
@@ -133,10 +160,51 @@ sensor:
         - globals.set:
             id: cell_temp
             value: !lambda return x;
+  - platform: copy
+    source_id: jkbms_voltage_internal
+    id: jkbms_voltage
+    name: "JKBMS total voltage"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_current_internal
+    id: jkbms_current
+    name: "JKBMS current"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_power_internal
+    id: jkbms_power
+    name: "JKBMS power"
+    filters:
+      throttle_average: 60s
 
-# text_sensor:
- #  - platform: template
- #    id: jkbms_alarms
- #    update_interval: never
- #    lambda: |-
- #      return ""; //todo
+text_sensor:
+  - platform: template
+    id: jkbms_alarms
+    name: "JKBMS alarms"
+    update_interval: never
+    lambda: |-
+      static const std::map<std::string, binary_sensor::BinarySensor*> alarm_sensors_map {
+        { "JKBMS system warning", id(jkbms_system_warn) },
+        { "JKBMS cell voltage undervoltage protection", id(jkbms_cell_uvp) },
+        { "JKBMS cell voltage overvoltage protection", id(jkbms_cell_ovp) },
+        { "JKBMS overcurrent protection", id(jkbms_ocp) },
+        { "JKBMS mosfet overtemperature protection", id(jkbms_mos_otp) },
+        { "JKBMS battery temperature protection", id(jkbms_batt_tp) },
+        { "JKBMS short circuit protection", id(jkbms_scp) },
+        { "JKBMS coprocessor communication error", id(jkbms_cocpu_comm_err) },
+        { "JKBMS balancer wire resistance too high", id(jkbms_high_wire_res) },
+        { "JKBMS cell count mismatch", id(jkbms_cell_cnt_mismatch) }
+      };
+      std::string values = "";
+      for (auto const& item: alarm_sensors_map) {
+        if (item.second->state) {
+          values += item.first;
+          values += ", ";
+        }
+      }
+      if (values.length() >= 2) {
+        values.erase(values.length() - 2);
+      }
+      return values;

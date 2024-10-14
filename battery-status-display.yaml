@@ -30,10 +30,12 @@ globals:
 
 esphome:
   name: ${device_name}
+  platformio_options:
+    board_build.flash_mode: dio
 
 esp32:
   framework: 
-    type: arduino
+    type: esp-idf
     version: recommended
   board: esp32-c3-devkitm-1
 
@@ -50,8 +52,21 @@ packages:
       rx_pin: GPIO20
   lvgl-ui: !include battery-status-display/lvgl-ui.yaml
 
+api:
+  id: !remove my_api
+
+mqtt:
+  broker: !secret ext_mqtt_broker_addr
+  port: !secret ext_mqtt_broker_port
+  username: !secret ext_mqtt_broker_username
+  password: !secret ext_mqtt_broker_password
+  certificate_authority: !secret ext_mqtt_broker_cert
+  skip_cert_cn_check: false
+  idf_send_async: true
+
 logger:
   baud_rate: 0
+  level: WARN
 
 spi:
   mosi_pin: GPIO7
@@ -146,17 +161,3 @@ script:
           text:
             format: "%.1fC"
             args: ['id(mos_temp)']
-
-debug:
-
-sensor:
-  - platform: debug
-    free:
-      name: "Heap Free"
-    block:
-      name: "Heap Max Block"
-    loop_time:
-      name: "Loop Time"
-  - platform: internal_temperature
-    name: ESP32 Internal temperature
-    entity_category: diagnostic

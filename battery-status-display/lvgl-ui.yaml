@@ -30,6 +30,7 @@ font:
 
 lvgl:
   log_level: WARN
+  buffer_size: 25%
   color_depth: 16
   bg_color: 0x000000
   text_font: unscii_8
@@ -91,43 +92,28 @@ lvgl:
                       widgets:
                         - <<: !include { file: lvgl-upper-value-label.yaml, vars: { l_name: cell_temp, l_capt: CELL TEMP } }
                         - <<: !include { file: lvgl-values-divider.yaml, vars: { d_color: divider_color } }
-                        - <<: !include { file: lvgl-lower-value-label.yaml, vars: { l_name: mos_temp, l_capt: MOS TEMP } }
-    - id: error_page
-      bg_color: 0x590100
-      bg_opa: 1
-      align: CENTER
-      widgets:
-        - obj:
-            bg_opa: 0
-            radius: 0
-            border_width: 0
-            scrollable: false
-            align: CENTER
-            width: 80%
-            height: 80%
-            outline_width: 1
-            outline_color: 0x0000FF
-            layout:
-              type: FLEX
-              flex_flow: COLUMN
-              flex_align_main: CENTER
-              flex_align_track: CENTER
-              flex_align_cross: CENTER
-              pad_row: 0
-              pad_column: 0
-            widgets:
-              - label:
-                  id: error_label
-                  text_font: montserrat_20
-                  text_color: 0xFFFFF
-                  width: 100%
-                  height: SIZE_CONTENT
-                  outline_width: 1
-                  outline_color: 0x00FF00
-                  align: CENTER
-                  text_align: CENTER
-                  long_mode: WRAP
-                  text: "--"
+                        - <<: !include { file: lvgl-lower-value-label.yaml, vars: { l_name: mos_temp, l_capt: BMS TEMP } }
+              - id: alarms_tile
+                row: 0
+                column: 4
+                dir: [LEFT,RIGHT]
+                widgets:
+                  - label:
+                      id: alarms_label
+                      text_font: montserrat_20
+                      text_color: 0xFFFFF
+                      width: 80%
+                      height: SIZE_CONTENT
+                      align: CENTER
+                      text_align: CENTER
+                      long_mode: WRAP
+                      text: "No alarms!"
+              - id: update_tile
+                row: 0
+                column: 5
+                dir: [LEFT,RIGHT]
+                widgets:
+                  - 
     # Blank page
     - id: blank_page
       bg_color: 0x000000
