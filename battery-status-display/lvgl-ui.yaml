@@ -1,8 +1,8 @@
 color:
-  - id: color_red
-    red: 100%
-  - id: color_green
-    green: 100%
+  - id: success_color
+    hex: 58D900
+  - id: warning_color
+    hex: FF4F00
   - id: divider_color
     hex: FF4F00
   - id: upper_color
@@ -11,22 +11,27 @@ color:
     red_int: 145
     green_int: 245
     blue_int: 242
-  - id: std_cell_voltage_color
-    hex: 58D900
-  - id: min_cell_voltage_color
-    hex: FF4F00
-  - id: max_cell_voltage_color
-    hex: 00ADFF
-  - id: label_heading_color
-    hex: FFFFFF
-  - id: label_value_color
-    hex: 58D900
 
 font:
   - file: Clickuper.ttf
     id: value_font
     size: 45
     glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', ' ', '%', 'A', 'C', 'h', 'W', 'V']
+  - file: battery-status-display/MaterialDesignIcons.ttf
+    id: mdi_font
+    bpp: 4
+    size: 18
+    glyphs: [
+      "\U000F05A9", # wifi
+      "\U000F1C9A"  # mqtt
+    ]
+  - file: battery-status-display/MaterialDesignIcons.ttf
+    id: update_font
+    bpp: 4
+    size: 48
+    glyphs: [
+      "\U000F06B0"  # update
+    ]
 
 lvgl:
   log_level: WARN
@@ -36,13 +41,14 @@ lvgl:
   text_font: unscii_8
   touchscreens:
     - touchscreen_id: touch
+      long_press_time: 2s
   align: center
   pages:
     - id: main_page
       scrollable: false
       widgets:
         - tileview:
-            id: stats_tile
+            id: stats_tileview
             x: 0
             y: 0
             height: 240
@@ -98,22 +104,48 @@ lvgl:
                 column: 4
                 dir: [LEFT,RIGHT]
                 widgets:
-                  - label:
-                      id: alarms_label
-                      text_font: montserrat_20
-                      text_color: 0xFFFFF
-                      width: 80%
-                      height: SIZE_CONTENT
-                      align: CENTER
-                      text_align: CENTER
-                      long_mode: WRAP
-                      text: "No alarms!"
+                  - obj:
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                      widgets:
+                        - label:
+                            id: alarms_label
+                            text_font: montserrat_20
+                            text_color: success_color
+                            width: 80%
+                            height: SIZE_CONTENT
+                            align: CENTER
+                            text_align: CENTER
+                            long_mode: WRAP
+                            text: "No alarms!"
               - id: update_tile
                 row: 0
                 column: 5
                 dir: [LEFT,RIGHT]
                 widgets:
-                  - 
+                  - obj:
+                      <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                      on_long_press:
+                        script.execute: update_firmware
+                      widgets:
+                        - label:
+                            id: update_icon
+                            text_font: update_font
+                            text: "\U000F06B0"
+                            text_color: warning_color
+                            width: 80%
+                            height: SIZE_CONTENT
+                            align: CENTER
+                            text_align: CENTER
+                        - label:
+                            id: update_label
+                            text_font: montserrat_20
+                            text_color: warning_color
+                            width: 80%
+                            height: SIZE_CONTENT
+                            align: CENTER
+                            text_align: CENTER
+                            long_mode: WRAP
+                            text: "Press for 5 seconds to start the update."
     # Blank page
     - id: blank_page
       bg_color: 0x000000
@@ -156,4 +188,3 @@ script:
             - lvgl.page.show: main_page
             - light.turn_on: backlight
             - component.resume: update_labels_interval
-

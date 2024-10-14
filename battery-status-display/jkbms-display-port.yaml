@@ -79,7 +79,6 @@ sensor:
   - platform: jk_bms_display
     total_voltage:
       id: jkbms_voltage_internal
-      name: "JKBMS total voltage"
       internal: true
       on_value:
         - globals.set:
@@ -87,7 +86,6 @@ sensor:
             value: !lambda return x;
     current:
       id: jkbms_current_internal
-      name: "JKBMS current"
       internal: true
       on_value:
         - globals.set:
@@ -95,67 +93,69 @@ sensor:
             value: !lambda return x;
     power:
       id: jkbms_power_internal
-      name: "JKBMS power"
       internal: true
       on_value:
         - globals.set:
             id: power
             value: !lambda return x;
     min_cell_voltage:
-      id: jkbms_min_cell_voltage
-      name: "JKBMS min cell voltage"
+      id: jkbms_min_cell_voltage_internal
+      internal: true
       on_value:
         - globals.set:
             id: min_cell_voltage
             value: !lambda return x;
     max_cell_voltage:
-      id: jkbms_max_cell_voltage
-      name: "JKBMS max cell voltage"
+      id: jkbms_max_cell_voltage_internal
+      internal: true
       on_value:
         - globals.set:
             id: max_cell_voltage
             value: !lambda return x;
+    delta_cell_voltage:
+      id: jkbms_delta_cell_voltage_internal
+      internal: true
     cell_voltage_1:
-      id: jkbms_cell_voltage_1
-      name: "JKBMS cell voltage 1"
+      id: jkbms_cell_voltage_1_internal
+      internal: true
     cell_voltage_2:
-      id: jkbms_cell_voltage_2
-      name: "JKBMS cell voltage 2"
+      id: jkbms_cell_voltage_2_internal
+      internal: true
     cell_voltage_3:
-      id: jkbms_cell_voltage_3
-      name: "JKBMS cell voltage 3"
+      id: jkbms_cell_voltage_3_internal
+      internal: true
     cell_voltage_4:
-      id: jkbms_cell_voltage_4
-      name: "JKBMS cell voltage 4"
+      id: jkbms_cell_voltage_4_internal
+      internal: true
     cell_voltage_5:
-      id: jkbms_cell_voltage_5
-      name: "JKBMS cell voltage 5"
+      id: jkbms_cell_voltage_5_internal
+      internal: true
     cell_voltage_6:
-      id: jkbms_cell_voltage_6
-      name: "JKBMS cell voltage 6"
+      id: jkbms_cell_voltage_6_internal
+      internal: true
     cell_voltage_7:
-      id: jkbms_cell_voltage_7
-      name: "JKBMS cell voltage 7"
+      id: jkbms_cell_voltage_7_internal
+      internal: true
     cell_voltage_8:
-      id: jkbms_cell_voltage_8
-      name: "JKBMS cell voltage 8"
+      id: jkbms_cell_voltage_8_internal
+      internal: true
     state_of_charge:
-      id: jkbms_soc
-      name: "JKBMS state of charge"
+      id: jkbms_soc_internal
+      internal: true
       on_value:
         - globals.set:
             id: soc
             value: !lambda return x;
     mosfet_temperature:
-      id: jkbms_mosfet_temp
-      name: "JKBMS mosfet temperature"
+      id: jkbms_mosfet_temp_internal
+      internal: true
       on_value:
         - globals.set:
             id: mos_temp
             value: !lambda return x;
     battery_temperature:
-      id: jkbms_battery_temp
-      name: "JKBMS battery temperature"
+      id: jkbms_battery_temp_internal
+      internal: true
       on_value:
         - globals.set:
             id: cell_temp
@@ -176,6 +176,90 @@ sensor:
     source_id: jkbms_power_internal
     id: jkbms_power
     name: "JKBMS power"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_min_cell_voltage_internal
+    id: jkbms_min_cell_voltage
+    name: "JKBMS min cell voltage"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_max_cell_voltage_internal
+    id: jkbms_max_cell_voltage
+    name: "JKBMS max cell voltage"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_delta_cell_voltage
+    id: jkbms_delta_cell_voltage
+    name: "JKBMS delta cell voltage"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_1_internal
+    id: jkbms_cell_voltage_1
+    name: "JKBMS cell voltage 1"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_2_internal
+    id: jkbms_cell_voltage_2
+    name: "JKBMS cell voltage 2"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_3_internal
+    id: jkbms_cell_voltage_3
+    name: "JKBMS cell voltage 3"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_4_internal
+    id: jkbms_cell_voltage_4
+    name: "JKBMS cell voltage 4"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_5_internal
+    id: jkbms_cell_voltage_5
+    name: "JKBMS cell voltage 5"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_6_internal
+    id: jkbms_cell_voltage_6
+    name: "JKBMS cell voltage 6"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_7_internal
+    id: jkbms_cell_voltage_7
+    name: "JKBMS cell voltage 7"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_cell_voltage_8_internal
+    id: jkbms_cell_voltage_8
+    name: "JKBMS cell voltage 8"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_soc_internal
+    id: jkbms_soc
+    name: "JKBMS state of charge"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_mosfet_temp_internal
+    id: jkbms_mosfet_temp
+    name: "JKBMS mosfet temperature"
+    filters:
+      throttle_average: 60s
+  - platform: copy
+    source_id: jkbms_battery_temp_internal
+    id: jkbms_battery_temp
+    name: "JKBMS battery temperature"
     filters:
       throttle_average: 60s
 

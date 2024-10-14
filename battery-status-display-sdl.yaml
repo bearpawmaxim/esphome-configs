@@ -57,7 +57,8 @@ interval:
   - interval: 1s
     id: update_labels_interval
     then:
-      script.execute: lvgl_update_values
+      - script.execute: lvgl_update_values
+      - script.execute: lvgl_show_alarms
 
 script:
   - id: lvgl_update_values
@@ -103,6 +104,25 @@ script:
           text:
             format: "%.1fC"
             args: ['id(mos_temp)']
+  - id: lvgl_show_alarms
+    mode: single
+    then:
+      if:
+        condition:
+          lambda: "return id(jkbms_has_alarms)->state;"
+        then:
+          - lvgl.label.update:
+              id: alarms_label
+              text: !lambda return id(jkbms_alarms)->state;
+              text_color: warning_color
+        else:
+          - lvgl.label.update:
+              id: alarms_label
+              text: "No alarms!"
+              text_color: success_color
+  - id: update_firmware
+    mode: single
+    then:
 
 output:
   - platform: template
@@ -115,3 +135,13 @@ light:
   - platform: monochromatic
     id: backlight
     output: backlight_out
+
+binary_sensor:
+  - platform: template
+    id: jkbms_has_alarms
+    lambda: "return true;"
+
+text_sensor:
+  - platform: template
+    id: jkbms_alarms
+    lambda: 'return std::string("fff");'

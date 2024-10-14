@@ -55,6 +55,15 @@ packages:
 api:
   id: !remove my_api
 
+http_request:
+
+ota:
+  - platform: http_request
+    id: http_ota
+  - platform: esphome
+    id: my_ota
+    password: !secret ota_password
+
 mqtt:
   broker: !secret ext_mqtt_broker_addr
   port: !secret ext_mqtt_broker_port
@@ -86,6 +95,7 @@ light:
     output: gpio_3_backlight_pwm
     name: "Display Backlight"
     id: backlight
+    internal: true
     restore_mode: ALWAYS_ON
 
 display:
@@ -115,7 +125,8 @@ interval:
   - interval: 1s
     id: update_labels_interval
     then:
-      script.execute: lvgl_update_values
+      - script.execute: lvgl_update_values
+      - script.execute: lvgl_show_alarms
 
 script:
   - id: lvgl_update_values
@@ -161,3 +172,33 @@ script:
           text:
             format: "%.1fC"
             args: ['id(mos_temp)']
+  - id: lvgl_show_alarms
+    mode: single
+    then:
+      if:
+        condition:
+          lambda: "return id(jkbms_has_alarms)->state;"
+        then:
+          - lvgl.label.update:
+              id: alarms_label
+              text: !lambda return id(jkbms_alarms)->state;
+              text_color: warning_color
+        else:
+          - lvgl.label.update:
+              id: alarms_label
+              text: "No alarms!"
+              text_color: success_color
+  - id: update_firmware
+    mode: single
+    then:
+      - ota.http_request.flash:
+          md5_url: !secret battery_status_display_ota_md5_url
+          url: !secret battery_status_display_ota_url
+
+button:
+  - id: turn_on_screen
+    name: ${device_name} turn on screen
+    platform: template
+    on_press:
+      - script.execute:
+          id: lvgl_resume
