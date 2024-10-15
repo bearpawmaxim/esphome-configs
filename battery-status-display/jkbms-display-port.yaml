@@ -2,8 +2,6 @@ uart:
   - id: bms_uart
     baud_rate: 2400
     rx_pin: ${rx_pin}
-    debug:
-      direction: BOTH
 
 jk_bms_display:
   - id: jkbms0
@@ -160,108 +158,155 @@ sensor:
         - globals.set:
             id: cell_temp
             value: !lambda return x;
-  - platform: copy
-    source_id: jkbms_voltage_internal
+  - platform: template
     id: jkbms_voltage
     name: "JKBMS total voltage"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_current_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_voltage_internal)->state;
+  - platform: template
     id: jkbms_current
     name: "JKBMS current"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_power_internal
+    unit_of_measurement: "A"
+    accuracy_decimals: 1
+    device_class: current
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_current_internal)->state;
+  - platform: template
     id: jkbms_power
     name: "JKBMS power"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_min_cell_voltage_internal
+    unit_of_measurement: "W"
+    accuracy_decimals: 1
+    device_class: power
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_power_internal)->state;
+  - platform: template
     id: jkbms_min_cell_voltage
     name: "JKBMS min cell voltage"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_max_cell_voltage_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_min_cell_voltage_internal)->state;
+  - platform: template
     id: jkbms_max_cell_voltage
     name: "JKBMS max cell voltage"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_delta_cell_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_max_cell_voltage_internal)->state;
+  - platform: template
     id: jkbms_delta_cell_voltage
     name: "JKBMS delta cell voltage"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_1_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_delta_cell_voltage)->state;
+  - platform: template
     id: jkbms_cell_voltage_1
     name: "JKBMS cell voltage 1"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_2_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_1_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_2
     name: "JKBMS cell voltage 2"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_3_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_2_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_3
     name: "JKBMS cell voltage 3"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_4_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_3_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_4
     name: "JKBMS cell voltage 4"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_5_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_4_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_5
     name: "JKBMS cell voltage 5"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_6_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_5_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_6
     name: "JKBMS cell voltage 6"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_7_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_6_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_7
     name: "JKBMS cell voltage 7"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_cell_voltage_8_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_7_internal)->state;
+  - platform: template
     id: jkbms_cell_voltage_8
     name: "JKBMS cell voltage 8"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_soc_internal
+    unit_of_measurement: "V"
+    accuracy_decimals: 3
+    device_class: voltage
+    state_class: measurement
+    update_interval: 60s
+    lambda: return (jkbms_cell_voltage_8_internal)->state;
+  - platform: template
     id: jkbms_soc
     name: "JKBMS state of charge"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_mosfet_temp_internal
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    update_interval: 60s
+    lambda: return (jkbms_soc_internal)->state;
+  - platform: template
     id: jkbms_mosfet_temp
     name: "JKBMS mosfet temperature"
-    filters:
-      throttle_average: 60s
-  - platform: copy
-    source_id: jkbms_battery_temp_internal
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: 60s
+    lambda: return (jkbms_mosfet_temp_internal)->state;
+  - platform: template
     id: jkbms_battery_temp
     name: "JKBMS battery temperature"
-    filters:
-      throttle_average: 60s
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: 60s
+    lambda: return (jkbms_battery_temp_internal)->state;
 
 text_sensor:
   - platform: template

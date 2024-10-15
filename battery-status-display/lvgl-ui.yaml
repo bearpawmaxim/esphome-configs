@@ -20,10 +20,11 @@ font:
   - file: battery-status-display/MaterialDesignIcons.ttf
     id: mdi_font
     bpp: 4
-    size: 18
+    size: 20
     glyphs: [
       "\U000F05A9", # wifi
-      "\U000F1C9A"  # mqtt
+      "\U000F1C9A", # mqtt
+      "\U000F078F"  # alarm
     ]
   - file: battery-status-display/MaterialDesignIcons.ttf
     id: update_font
@@ -145,7 +146,47 @@ lvgl:
                             align: CENTER
                             text_align: CENTER
                             long_mode: WRAP
-                            text: "Press for 5 seconds to start the update."
+                            text: "Long press here to start the update."
+        - obj:
+            x: 0
+            y: 205
+            width: 240
+            height: 35
+            radius: 0
+            border_width: 0
+            scrollable: false
+            pad_all: 0
+            bg_opa: 0
+            layout:
+              type: FLEX
+              flex_flow: ROW
+              flex_align_main: CENTER
+              flex_align_track: CENTER
+              flex_align_cross: CENTER
+              pad_row: 0
+              pad_column: 0
+            widgets:
+              - label:
+                  id: wifi_icon
+                  width: SIZE_CONTENT
+                  height: SIZE_CONTENT
+                  text: "\U000F05A9"
+                  text_color: warning_color
+                  text_font: mdi_font
+              - label:
+                  id: mqtt_icon
+                  width: SIZE_CONTENT
+                  height: SIZE_CONTENT
+                  text: "\U000F1C9A"
+                  text_color: warning_color
+                  text_font: mdi_font
+              - label:
+                  id: alarm_icon
+                  width: SIZE_CONTENT
+                  height: SIZE_CONTENT
+                  text: "\U000F078F"
+                  text_color: success_color
+                  text_font: mdi_font
     # Blank page
     - id: blank_page
       bg_color: 0x000000
@@ -188,3 +229,53 @@ script:
             - lvgl.page.show: main_page
             - light.turn_on: backlight
             - component.resume: update_labels_interval
+  - id: lvgl_update_status_icon
+    parameters:
+      name: string
+      is_on: bool
+    mode: queued
+    max_runs: 3
+    then:
+      - if:
+          condition:
+            - lambda: return name == "wifi_icon";
+          then:
+            if:
+              condition:
+                - lambda: return is_on;
+              then:
+                - lvgl.widget.update:
+                    id: wifi_icon
+                    text_color: success_color
+              else:
+                - lvgl.widget.update:
+                      id: wifi_icon
+                      text_color: warning_color
+          else:
+            - if:
+                condition:
+                  - lambda: return name == "mqtt_icon";
+                then:
+                  - if:
+                      condition:
+                        - lambda: return is_on;
+                      then:
+                        - lvgl.widget.update:
+                            id: mqtt_icon
+                            text_color: success_color
+                      else:
+                        - lvgl.widget.update:
+                            id: mqtt_icon
+                            text_color: warning_color
+                else:
+                  - if:
+                      condition:
+                        - lambda: return is_on;
+                      then:
+                        - lvgl.widget.update:
+                            id: alarm_icon
+                            text_color: success_color
+                      else:
+                        - lvgl.widget.update:
+                            id: alarm_icon
+                            text_color: warning_color

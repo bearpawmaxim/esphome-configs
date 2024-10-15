@@ -1,0 +1,25 @@
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  reboot_timeout: 0s
+  fast_connect: true
+  ap:
+    ssid: ${device_name}
+    password: !secret wifi_ap_password
+
+sensor:
+  - platform: wifi_signal
+    name: "${device_name} WiFi Signal"
+    update_interval: 120s
+    entity_category: diagnostic
+  - platform: uptime
+    id: uptime_seconds
+    name: "${device_name} uptime seconds"
+    update_interval: 120s
+    entity_category: diagnostic
+
+button:
+  - platform: restart
+    name: "${device_name} Restart"

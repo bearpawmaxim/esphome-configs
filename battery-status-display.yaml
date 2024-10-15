@@ -45,23 +45,40 @@ external_components:
     refresh: 1s
 
 packages:
-  device_common: !include .device_common.yaml
+  device_common: !include .ext_device_common.yaml
   jkbms_disp_port: !include 
     file: battery-status-display/jkbms-display-port.yaml
     vars:
       rx_pin: GPIO20
   lvgl-ui: !include battery-status-display/lvgl-ui.yaml
 
-api:
-  id: !remove my_api
+wifi:
+  on_connect:
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: wifi_icon
+        is_on: true
+  on_disconnect:
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: wifi_icon
+        is_on: false
 
 http_request:
 
 ota:
   - platform: http_request
     id: http_ota
+    on_error:
+      - lvgl.label.update:
+          id: update_label
+          text: "Failed to update. Please try again."
+      - delay: 10s
+      - lvgl.label.update:
+          id: update_label
+          text: "Long press here to start the update."
   - platform: esphome
-    id: my_ota
+    id: esphome_ota
     password: !secret ota_password
 
 mqtt:
@@ -72,6 +89,19 @@ mqtt:
   certificate_authority: !secret ext_mqtt_broker_cert
   skip_cert_cn_check: false
   idf_send_async: true
+  birth_message:
+    topic: ${device_name}/status
+    payload: "online"
+  on_connect:
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: mqtt_icon
+        is_on: true
+  on_disconnect:
+    - script.execute:
+        id: lvgl_update_status_icon
+        name: mqtt_icon
+        is_on: false
 
 logger:
   baud_rate: 0
@@ -183,14 +213,26 @@ script:
               id: alarms_label
               text: !lambda return id(jkbms_alarms)->state;
               text_color: warning_color
+          - script.execute:
+              id: lvgl_update_status_icon
+              name: alarm_icon
+              is_on: false
         else:
           - lvgl.label.update:
               id: alarms_label
               text: "No alarms!"
               text_color: success_color
+          - script.execute:
+              id: lvgl_update_status_icon
+              name: alarm_icon
+              is_on: true
   - id: update_firmware
     mode: single
     then:
+      - lvgl.label.update:
+          id: update_label
+          text: "Updating"
+      - delay: 500ms
       - ota.http_request.flash:
           md5_url: !secret battery_status_display_ota_md5_url
           url: !secret battery_status_display_ota_url
@@ -202,3 +244,9 @@ button:
     on_press:
       - script.execute:
           id: lvgl_resume
+  - id: start_http_ota
+    name: ${device_name} start http ota
+    platform: template
+    on_press:
+      - script.execute:
+          id: update_firmware
