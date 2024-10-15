@@ -89,6 +89,7 @@ mqtt:
   certificate_authority: !secret ext_mqtt_broker_cert
   skip_cert_cn_check: false
   idf_send_async: true
+  will_message:
   on_connect:
     - script.execute:
         id: lvgl_update_status_icon
