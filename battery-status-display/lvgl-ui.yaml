@@ -75,7 +75,7 @@ lvgl:
                   - obj:
                       <<: !include ../lvgl-common/lvgl-tile-container.yaml
                       widgets:
-                        - <<: !include { file: lvgl-upper-value-label.yaml, vars: { l_name: cap, l_capt: CAPACITY } }
+                        - <<: !include { file: lvgl-upper-value-label.yaml, vars: { l_name: voltage, l_capt: VOLTAGE } }
                         - <<: !include { file: lvgl-values-divider.yaml, vars: { d_color: divider_color } }
                         - <<: !include { file: lvgl-lower-value-label.yaml, vars: { l_name: current, l_capt: CURRENT } }
               - id: cells_tile

@@ -89,9 +89,6 @@ mqtt:
   certificate_authority: !secret ext_mqtt_broker_cert
   skip_cert_cn_check: false
   idf_send_async: true
-  birth_message:
-    topic: ${device_name}/status
-    payload: "online"
   on_connect:
     - script.execute:
         id: lvgl_update_status_icon
@@ -104,8 +101,9 @@ mqtt:
         is_on: false
 
 logger:
-  baud_rate: 0
+  baud_rate: 115200
   level: WARN
+  hardware_uart: USB_SERIAL_JTAG
 
 spi:
   mosi_pin: GPIO7
@@ -173,10 +171,10 @@ script:
             format: "%.0fW"
             args: ['id(power)']
       - lvgl.label.update:
-          id: cap_label
+          id: voltage_label
           text:
-            format: "%.1fAh"
-            args: ['id(soc) * 1.05']
+            format: "%.2fV"
+            args: ['id(voltage)']
       - lvgl.label.update:
           id: current_label
           text:

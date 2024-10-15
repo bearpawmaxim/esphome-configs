@@ -211,7 +211,7 @@ sensor:
     device_class: voltage
     state_class: measurement
     update_interval: 60s
-    lambda: return (jkbms_delta_cell_voltage)->state;
+    lambda: return (jkbms_delta_cell_voltage_internal)->state;
   - platform: template
     id: jkbms_cell_voltage_1
     name: "JKBMS cell voltage 1"
