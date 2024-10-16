@@ -110,7 +110,7 @@ lvgl:
                       widgets:
                         - label:
                             id: alarms_label
-                            text_font: montserrat_20
+                            text_font: montserrat_28
                             text_color: success_color
                             width: 80%
                             height: SIZE_CONTENT

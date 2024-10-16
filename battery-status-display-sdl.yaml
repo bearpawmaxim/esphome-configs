@@ -75,10 +75,10 @@ script:
             format: "%.0fW"
             args: ['id(power)']
       - lvgl.label.update:
-          id: cap_label
+          id: voltage_label
           text:
-            format: "%.1fAh"
-            args: ['id(soc) * 1.05']
+            format: "%.1fV"
+            args: ['id(voltage)']
       - lvgl.label.update:
           id: current_label
           text:
