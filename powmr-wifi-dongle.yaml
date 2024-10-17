@@ -50,6 +50,7 @@ wifi:
     - output.turn_on: net_led
   on_disconnect:
     - output.turn_off: net_led
+  output_power: 8.5dB
 
 logger:
   level: WARN
@@ -59,12 +60,6 @@ uart:
     tx_pin: ${uart_tx_pin}
     rx_pin: ${uart_rx_pin}
     baud_rate: 2400
-    # debug:
-    #   direction: BOTH
-    #   dummy_receiver: false
-    #   sequence:
-    #     - lambda: |-
-    #         UARTDebug::log_hex(direction, bytes, ':');
 
 pipsolar:
   - id: powmr_inverter
