@@ -66,6 +66,8 @@ wifi:
 
 http_request:
 
+captive_portal:
+
 ota:
   - platform: http_request
     id: http_ota
@@ -169,18 +171,22 @@ script:
       - lvgl.label.update:
           id: power_label
           text:
-            format: "%.0fW"
-            args: ['id(power)']
+            format: "%c%.0fW"
+            args:
+              - '(id(power) > 0 ? ''+'' : (id(power) < 0 ? ''-'' : 0))'
+              - 'std::abs(id(power))'
       - lvgl.label.update:
           id: voltage_label
           text:
-            format: "%.2fV"
+            format: "%.1fV"
             args: ['id(voltage)']
       - lvgl.label.update:
           id: current_label
           text:
-            format: "%.1fA"
-            args: ['id(current)']
+            format: "%c%.1fA"
+            args:
+              - '(id(current) > 0 ? ''+'' : (id(current) < 0 ? ''-'' : 0))'
+              - 'std::abs(id(current))'
       - lvgl.label.update:
           id: min_cell_v_label
           text:

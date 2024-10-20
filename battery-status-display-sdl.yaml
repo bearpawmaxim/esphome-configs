@@ -14,10 +14,10 @@ globals:
     initial_value: '97'
   - id: current
     type: float
-    initial_value: '-3.7'
+    initial_value: '3.7'
   - id: power
     type: float
-    initial_value: '2100'
+    initial_value: '-2100'
   - id: min_cell_voltage
     type: float
     initial_value: '3.21'
@@ -72,8 +72,8 @@ script:
       - lvgl.label.update:
           id: power_label
           text:
-            format: "%.0fW"
-            args: ['id(power)']
+            format: "%c%.0fW"
+            args: ['(id(power) > 0 ? ''+'' : (id(power) < 0 ? ''-'' : 0))', 'std::abs(id(power))']
       - lvgl.label.update:
           id: voltage_label
           text:
@@ -82,8 +82,8 @@ script:
       - lvgl.label.update:
           id: current_label
           text:
-            format: "%.1fA"
-            args: ['id(current)']
+            format: "%c%.1fA"
+            args: ['(id(current) > 0 ? ''+'' : (id(current) < 0 ? ''-'' : 0))', 'std::abs(id(current))']
       - lvgl.label.update:
           id: min_cell_v_label
           text:
