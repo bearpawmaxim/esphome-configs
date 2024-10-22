@@ -28,7 +28,6 @@ climate:
     name: ${climate_name} 
     uart_id: haier_uart
     wifi_signal: true
-    beeper: true
     visual:
       min_temperature: 18 °C
       max_temperature: 30 °C
@@ -44,30 +43,17 @@ sensor:
       name: ${climate_name} outdoor temperature
 
 switch:
-  - platform: template
-    id: ${climate_id}_display_switch
-    name: ${climate_name} display
-    icon: mdi:led-on
-    entity_category: config
-    lambda: |-
-      return id(${climate_id}).get_display_state();
-    turn_on_action:
-      climate.haier.display_on: ${climate_id}
-    turn_off_action:
-      climate.haier.display_off: ${climate_id}
-    restore_mode: RESTORE_DEFAULT_ON
-  - platform: template
-    id: ${climate_id}_beeper_switch
-    entity_category: config
-    name: ${climate_name} beeper
-    icon: mdi:volume-high
-    lambda: |-
-      return id(${climate_id}).get_beeper_state();
-    turn_on_action:
-      climate.haier.beeper_on: ${climate_id}
-    turn_off_action:
-      climate.haier.beeper_off: ${climate_id}
-    restore_mode: RESTORE_DEFAULT_ON
+  - platform: haier
+    beeper:
+      id: ${climate_id}_beeper_switch
+      entity_category: config
+      name: ${climate_name} beeper
+      icon: mdi:volume-high
+    display:
+      id: ${climate_id}_display_switch
+      name: ${client_name} display
+      entity_category: config
+      icon: mdi:led-on
 
 select:
   - platform: template

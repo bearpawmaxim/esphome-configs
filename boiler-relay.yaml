@@ -21,6 +21,7 @@ logger:
 uart:
   rx_pin: RX
   baud_rate: 4800
+  parity: even
 
 status_led:
   pin:
