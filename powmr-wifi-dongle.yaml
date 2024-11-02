@@ -89,6 +89,9 @@ binary_sensor:
     warning_battery_voltage_high:
       id: powmr_batt_overvoltage_warning
       name: Powmr battery overvoltage warning
+  - platform: template
+    id: powmr_grid_available
+    name: Powmr grid available
 
 sensor:
   - platform: pipsolar
@@ -127,6 +130,8 @@ text_sensor:
     device_mode:
       id: powmr_device_mode
       name: Powmr device mode
+      # on_value: 
+        
 
 interval:
   - interval: 1s
