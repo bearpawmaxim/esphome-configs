@@ -130,8 +130,10 @@ text_sensor:
     device_mode:
       id: powmr_device_mode
       name: Powmr device mode
-      # on_value: 
-        
+      on_value: 
+        lambda: |-
+          bool is_grid_available = x[0] != 'B';
+          id(powmr_grid_available).publish_state(is_grid_available);
 
 interval:
   - interval: 1s
