@@ -12,7 +12,8 @@ substitutions:
   voltage_div: "775"
 
 esp8266:
-  board: esp01_1m
+  board: esp8285
+  early_pin_init: false
 
 packages:
   device_common: !include .device_common.yaml
@@ -71,10 +72,10 @@ sensor:
     unit_of_measurement: kWh
     icon: mdi:calendar-clock
 
-  # - platform: adc
-  #   pin: VCC
-  #   name: "${device_name} - VCC Volt"
-  #   icon: mdi:flash-outline
+  - platform: adc
+    pin: VCC
+    name: "${device_name} - VCC Volt"
+    icon: mdi:flash-outline
 
   - platform: hlw8012
     sel_pin:

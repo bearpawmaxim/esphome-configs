@@ -102,6 +102,12 @@ sensor:
       on_value:
         - lambda: |-
             id(last_updated) = millis();
+    grid_rating_current: 
+      id: powmr_grid_rating_current
+      name: Powmr grid rating current
+    grid_rating_voltage: 
+      id: powmr_grid_rating_voltage
+      name: Powmr grid rating voltage
     battery_voltage:
       id: powmr_battery_voltage
       name: Powmr battery voltage
