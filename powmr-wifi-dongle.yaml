@@ -129,6 +129,50 @@ sensor:
     inverter_heat_sink_temperature:
       id: powmr_invertet_twmperature
       name: Powmr inverter temperature
+  - platform: template
+    id: powmr_battery_charging_power
+    name: "Powmr battery charging power"
+    internal: true
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 2
+    update_interval: 20s
+    lambda: |-
+      return id(powmr_battery_charging_current).state
+        * id(powmr_battery_voltage).state;
+  - platform: template
+    id: powmr_battery_discharging_power
+    name: "Powmr battery discharging power"
+    internal: true
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 2
+    update_interval: 20s
+    lambda: |-
+      return id(powmr_battery_discharging_current).state
+        * id(powmr_battery_voltage).state;
+  - platform: total_daily_energy
+    id: powmr_daily_energy_in
+    name: 'Powmr total daily energy in'
+    power_id: powmr_battery_charging_power
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+  - platform: total_daily_energy
+    id: powmr_daily_energy_out
+    name: 'Powmr total daily energy out'
+    power_id: powmr_battery_discharging_power
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
 
 text_sensor:
   - platform: pipsolar
