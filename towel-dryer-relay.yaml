@@ -7,9 +7,9 @@ substitutions:
   device_name: towel-dryer-relay
   device_name_underscore: towel_dryer_relay
   # Higher value gives lower watt readout
-  current_res: "0.00280"
+  current_res: "0.00214"
   # Lower value gives lower voltage readout
-  voltage_div: "775"
+  voltage_div: "718"
 
 esp8266:
   board: esp8285
