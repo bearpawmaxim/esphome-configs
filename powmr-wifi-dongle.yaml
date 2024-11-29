@@ -111,9 +111,6 @@ sensor:
     battery_voltage:
       id: powmr_battery_voltage
       name: Powmr battery voltage
-    battery_voltage_scc:
-      id: powmr_battery_scc_voltage
-      name: Powmr battery SCC voltage
     battery_charging_current:
       id: powmr_battery_charging_current
       name: Powmr battery charging current
