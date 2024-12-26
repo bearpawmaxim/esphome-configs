@@ -129,7 +129,6 @@ sensor:
   - platform: template
     id: powmr_battery_charging_power
     name: "Powmr battery charging power"
-    internal: true
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
@@ -141,7 +140,6 @@ sensor:
   - platform: template
     id: powmr_battery_discharging_power
     name: "Powmr battery discharging power"
-    internal: true
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
