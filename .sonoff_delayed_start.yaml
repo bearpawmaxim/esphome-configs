@@ -5,7 +5,6 @@ globals:
     initial_value: "true"
 
 esphome:
-  esp8266_restore_from_flash: true
   on_boot:
     priority: 600
     then:

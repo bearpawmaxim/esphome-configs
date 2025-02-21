@@ -73,7 +73,8 @@ packages:
 
 esphome:
   name: ${device_name}
-  platform: ESP32
+
+esp32:
   board: esp-wrover-kit
 
 http_request:

@@ -1,6 +1,7 @@
 esphome:
   name: ${device_name}
-  platform: ESP8266
+
+esp8266:
   board: esp12e
 
 packages:
@@ -51,7 +52,7 @@ switch:
       icon: mdi:volume-high
     display:
       id: ${climate_id}_display_switch
-      name: ${client_name} display
+      name: ${climate_name} display
       entity_category: config
       icon: mdi:led-on
 
