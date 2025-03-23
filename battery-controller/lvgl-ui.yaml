@@ -48,7 +48,7 @@ image:
   - id: bg_img
     file: battery-controller/hexagons-320.png
     type: RGB565
-    use_transparency: true
+    transparency: alpha_channel
 
 lvgl:
   id: lvgl0

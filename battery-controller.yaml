@@ -61,8 +61,8 @@ esp32:
   flash_size: 16MB
   framework:
     type: esp-idf
-    platform_version: 6.8.1
-    version: 5.3.0
+    #platform_version: 6.8.1
+    #version: 5.3.0
     sdkconfig_options:
       CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240: y
       CONFIG_ESP32S3_DATA_CACHE_64KB: y
@@ -75,10 +75,12 @@ psram:
   speed: 80MHZ
 
 external_components:
-  - source: github://pr#6537
-    components: [ spi, ili9xxx ]
-  - source: github://clydebarrow/esphome@i8080
-    components: [ io_bus, i80 ]
+  - source: github://pr#8383
+    components: [ spi, mipi_spi ]
+  # - source: github://pr#6537
+  #   components: [ spi, ili9xxx ]
+  # - source: github://clydebarrow/esphome@i8080
+  #   components: [ io_bus, i80 ]
   # - source: github://syssi/esphome-jk-bms@main
 
 logger:
@@ -130,12 +132,28 @@ light:
     output: backlight_pwm
     restore_mode: ALWAYS_ON
 
-i80:
-  - id: i80bus
-    dc_pin: 
-      number: GPIO0
-      ignore_strapping_warning: true
-    wr_pin: GPIO47
+# i80:
+#   - id: i80bus
+#     dc_pin: 
+#       number: GPIO0
+#       ignore_strapping_warning: true
+#     wr_pin: GPIO47
+#     data_pins:
+#       - GPIO9
+#       - number: GPIO46
+#         ignore_strapping_warning: true
+#       - number: GPIO3
+#         ignore_strapping_warning: true
+#       - GPIO8
+#       - GPIO18
+#       - GPIO17
+#       - GPIO16
+#       - GPIO15
+
+spi:
+  - id: disp_spi
+    type: octal
+    clk_pin: GPIO47
     data_pins:
       - GPIO9
       - number: GPIO46
@@ -149,17 +167,22 @@ i80:
       - GPIO15
 
 display:
-  - platform: ili9xxx
-    model: ST7796
-    bus_type: i80
+  - platform: mipi_spi #ili9xxx
+    model: wt32-sc01-plus #ST7796
+    #bus_type: i80
     reset_pin: GPIO4
-    pixel_mode: 16bit
+    #pixel_mode: 16bit
+    dc_pin: 
+      number: GPIO0
+      ignore_strapping_warning: true
     color_order: bgr
     invert_colors: true
     dimensions:
       width: 480
       height: 320
     transform:
+      mirror_y: false
+      mirror_x: false
       swap_xy: true
     auto_clear_enabled: false
 

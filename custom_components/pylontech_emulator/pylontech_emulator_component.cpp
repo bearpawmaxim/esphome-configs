@@ -3,6 +3,7 @@
 namespace esphome {
   namespace pylontech {
     using namespace pylontech_lv;
+    using esphome::esp_log_printf_;
 
     void PylontechEmulatorComponent::register_callbacks_() {
       this->protocol_->set_get_analog_info_callback([this](PylonAnalogInfo *info) {
