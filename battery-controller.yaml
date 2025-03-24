@@ -77,9 +77,6 @@ psram:
 external_components:
   - source: github://pr#8383
     components: [ spi, mipi_spi ]
-  # - source: github://pr#6537
-  #   components: [ spi, ili9xxx ]
-  # - source: github://clydebarrow/esphome@i8080
   #   components: [ io_bus, i80 ]
   # - source: github://syssi/esphome-jk-bms@main
 
@@ -115,7 +112,7 @@ touchscreen:
     transform:
       swap_xy: true
       mirror_y: false
-      mirror_x: true
+      mirror_x: false
     on_release:
       - script.execute: lvgl_resume
 
@@ -131,24 +128,6 @@ light:
     id: backlight
     output: backlight_pwm
     restore_mode: ALWAYS_ON
-
-# i80:
-#   - id: i80bus
-#     dc_pin: 
-#       number: GPIO0
-#       ignore_strapping_warning: true
-#     wr_pin: GPIO47
-#     data_pins:
-#       - GPIO9
-#       - number: GPIO46
-#         ignore_strapping_warning: true
-#       - number: GPIO3
-#         ignore_strapping_warning: true
-#       - GPIO8
-#       - GPIO18
-#       - GPIO17
-#       - GPIO16
-#       - GPIO15
 
 spi:
   - id: disp_spi
@@ -167,11 +146,9 @@ spi:
       - GPIO15
 
 display:
-  - platform: mipi_spi #ili9xxx
-    model: wt32-sc01-plus #ST7796
-    #bus_type: i80
+  - platform: mipi_spi
+    model: wt32-sc01-plus
     reset_pin: GPIO4
-    #pixel_mode: 16bit
     dc_pin: 
       number: GPIO0
       ignore_strapping_warning: true
