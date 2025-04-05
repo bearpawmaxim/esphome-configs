@@ -76,7 +76,8 @@ psram:
 
 external_components:
   - source: github://pr#8383
-    components: [ spi, mipi_spi ]
+    components: [const, mipi_spi, qspi_dbi, spi]
+    refresh: 1h
   #   components: [ io_bus, i80 ]
   # - source: github://syssi/esphome-jk-bms@main
 

@@ -5,39 +5,6 @@ uart:
     rx_buffer_size: 2000
     baud_rate: 115200
 
-    # select
-    #   x.addr,
-    #   x.cnt,
-    #   ('0x'||x.cnt)::int as cnt_dec,
-    #   count(x.state),
-    #   x.state
-    # from (
-    #     select
-    #       state,
-    #       substring(state, 5, 4) as addr,
-    #       substring(state, 9, 4) as cnt
-    #     from states
-    #     where metadata_id = 1416
-    #   ) as x
-    # group by 1,2,5
-    # order by 1
-    # debug:
-    #   direction: BOTH
-    #   dummy_receiver: false
-    #   sequence:
-    #     - lambda: |-
-    #         //UARTDebug::log_hex(direction, bytes, ':');
-    #         if (direction == UART_DIRECTION_TX) {
-    #           std::string res = "";
-    #           size_t len = bytes.size();
-    #           char buf[5];
-    #           for (size_t i = 0; i < len; i++) {
-    #             sprintf(buf, "%02X", bytes[i]);
-    #             res += buf;
-    #           }
-    #           id(jkbms_sent_bms_bytes).publish_state(res);
-    #         }
-
 modbus:
   - id: jkbms_modbus
     uart_id: jkbms_uart
@@ -51,26 +18,6 @@ modbus_controller:
     update_interval: 5s
     command_throttle: 50ms
     offline_skip_updates: 3
-
-interval:
-  # - interval: 5sec
-  #   id: update_bms_data_interval
-  #   then:
-  #     - lambda: |-
-  #         auto *controller = id(jkbms_modbus_controller);
-  #         auto get_1x_registers = esphome::modbus_controller::ModbusCommandItem::create_read_command(
-  #           controller, esphome::modbus_controller::ModbusRegisterType::HOLDING, 0x1004, 118);
-  #         controller->queue_command(get_1x_registers);
-  #         auto get_2x_registers = esphome::modbus_controller::ModbusCommandItem::create_read_command(
-  #           controller, esphome::modbus_controller::ModbusRegisterType::HOLDING, 0x1200, 122);
-  #         controller->queue_command(get_2x_registers);
-  - interval: 5sec
-    id: update_bms_state_interval
-    then:
-      - script.execute:
-          id: lvgl_update_status_icon
-          name: bms_connection
-          is_on: !lambda return !id(jkbms_modbus_controller).get_module_offline();
 
 sensor:
   - platform: modbus_controller
@@ -87,6 +34,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_cell_overvoltage_protection
@@ -100,6 +48,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_charging_overcurrent_protection
@@ -113,6 +62,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_discharging_overcurrent_protection
@@ -126,6 +76,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_charging_overtemperature_protection
@@ -138,6 +89,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_discharging_overtemperature_protection
@@ -150,6 +102,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_charging_undertemperature_protection
@@ -162,6 +115,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_mos_overtemperature_protection
@@ -197,11 +151,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 1
-          value: !lambda return x;
 
   # 0x1202    2    UINT16    2    R    CellVol1    mV
   - platform: modbus_controller
@@ -217,11 +166,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 2
-          value: !lambda return x;
 
   # 0x1204    4    UINT16    2    R    CellVol2    mV
   - platform: modbus_controller
@@ -237,11 +181,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 3
-          value: !lambda return x;
 
   # 0x1206    6    UINT16    2    R    CellVol3    mV
   - platform: modbus_controller
@@ -257,11 +196,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 4
-          value: !lambda return x;
 
   # 0x1208    8    UINT16    2    R    CellVol4    mV
   - platform: modbus_controller
@@ -277,11 +211,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 5
-          value: !lambda return x;
 
   # 0x120A   10    UINT16    2    R    CellVol5    mV
   - platform: modbus_controller
@@ -297,11 +226,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 6
-          value: !lambda return x;
 
   # 0x120C   12    UINT16    2    R    CellVol6    mV
   - platform: modbus_controller
@@ -317,11 +241,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 7
-          value: !lambda return x;
 
   # 0x120E   14    UINT16    2    R    CellVol7    mV
   - platform: modbus_controller
@@ -337,11 +256,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 8
-          value: !lambda return x;
 
   # 0x1210   16    UINT16    2    R    CellVol8    mV
   - platform: modbus_controller
@@ -357,11 +271,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 9
-          value: !lambda return x;
 
   # 0x1212   18    UINT16    2    R    CellVol9    mV
   - platform: modbus_controller
@@ -377,11 +286,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 10
-          value: !lambda return x;
 
   # 0x1214   20    UINT16    2    R    CellVol10   mV
   - platform: modbus_controller
@@ -397,11 +301,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 11
-          value: !lambda return x;
 
   # 0x1216   22    UINT16    2    R    CellVol11   mV
   - platform: modbus_controller
@@ -417,11 +316,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 12
-          value: !lambda return x;
 
   # 0x1218   24    UINT16    2    R    CellVol12   mV
   - platform: modbus_controller
@@ -437,11 +331,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 13
-          value: !lambda return x;
 
   # 0x121A   26    UINT16    2    R    CellVol13   mV
   - platform: modbus_controller
@@ -457,11 +346,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 14
-          value: !lambda return x;
 
   # 0x121C   28    UINT16    2    R    CellVol14   mV
   - platform: modbus_controller
@@ -477,11 +361,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 15
-          value: !lambda return x;
 
   # 0x121E   30    UINT16    2    R    CellVol15   mV
   - platform: modbus_controller
@@ -497,11 +376,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_cell_voltage_value
-          cell_num: 16
-          value: !lambda return x;
 
   # 0x1240   64    UINT32    4    R    CellStatus    (each bit indicates a attached cell)
   # 0x1244   68    UINT16    2    R    CellVolAverage    mV
@@ -523,6 +397,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     name: "JKBMS delta cell voltage"
+    id: jkbms_delta_cell_voltage
     address: 0x1246
     register_type: holding
     value_type: U_WORD
@@ -532,11 +407,6 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    on_value: 
-      - script.execute:
-          id: lvgl_update_label_value
-          name: delta_cell_voltage
-          value: !lambda return value_accuracy_to_string(x, 3);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -787,11 +657,6 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: tmos
-          value: !lambda return value_accuracy_to_string(x, 1);
 
   # 0x128C   140   UINT32    4    R    CellWireResSta  Bit per Cell
   # 0x1290   144   UINT32    4    R    BatVol          mV
@@ -808,14 +673,10 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: voltage
-          value: !lambda return value_accuracy_to_string(x, 2);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
+    id: jkbms_power
     name: "JKBMS power"
     address: 0x1294
     register_type: holding
@@ -830,11 +691,6 @@ sensor:
             ? x * -1
             : x;
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: power
-          value: !lambda return value_accuracy_to_string(x, 0);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -849,19 +705,6 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: current
-          value: !lambda return value_accuracy_to_string(x, 2);
-      - script.execute:
-          id: lvgl_update_accent_color
-          current_val: !lambda return x;
-          is_balancing: !lambda return id(jkbms_balancing).state;
-      - script.execute:
-          id: lvgl_update_soc_gauge_labels
-          current_val: !lambda return x;
-          voltage_val: !lambda return id(jkbms_total_voltage).state;
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -875,11 +718,6 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: t1
-          value: !lambda return value_accuracy_to_string(x, 1);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -893,11 +731,6 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: t2
-          value: !lambda return value_accuracy_to_string(x, 1);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -935,10 +768,6 @@ sensor:
     accuracy_decimals: 0
     lambda: |-
       return data[1];
-    on_value:
-      - script.execute:
-          id: lvgl_update_soc
-          soc: !lambda return x;
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -952,11 +781,6 @@ sensor:
     accuracy_decimals: 0
     filters:
       - multiply: 0.001
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: capacity
-          value: !lambda return value_accuracy_to_string(x, 0);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -1028,11 +852,6 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: t3
-          value: !lambda return value_accuracy_to_string(x, 1);
 
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
@@ -1046,11 +865,6 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-    on_value:
-      - script.execute:
-          id: lvgl_update_label_value
-          name: t4
-          value: !lambda return value_accuracy_to_string(x, 1);
 
   - platform: template
     id: jkbms_pack_overvoltage_protection
@@ -1058,12 +872,14 @@ sensor:
     update_interval: 5s
     lambda: |-
       return id(jkbms_cell_overvoltage_protection).state * id(jkbms_cell_count).state;
+
   - platform: template
     id: jkbms_pack_undervoltage_protection
     name: "JKBMS pack undervoltage protection"
     update_interval: 5s
     lambda: |-
       return id(jkbms_cell_undervoltage_protection).state * id(jkbms_cell_count).state;
+
   - platform: template
     id: jkbms_discharging_undertemperature_protection
     name: "JKBMS discharging low temperature protection"
@@ -1074,19 +890,6 @@ sensor:
       return id(jkbms_charging_undertemperature_protection).state;
 
 binary_sensor:
-#   - platform: modbus_controller
-#     modbus_controller_id: jkbms_modbus_controller
-#     id: jkbms_charging_switch
-#     name: "JKBMS charging switch"
-#     address: 0x1070
-#     register_type: holding
-#     lambda: |-
-#       return data[3] == 1;
-#     on_state:
-#       - script.execute:
-#           id: lvgl_update_switch_value
-#           name: charge_sw
-#           value: !lambda return x;
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_charging
@@ -1095,25 +898,7 @@ binary_sensor:
     register_type: holding
     lambda: |-
       return data[0] == 1;
-    on_state:
-      - script.execute:
-          id: lvgl_update_switch_value
-          name: charge_sw
-          value: !lambda return x;
 
-  # - platform: modbus_controller
-  #   modbus_controller_id: jkbms_modbus_controller
-  #   id: jkbms_discharging_switch
-  #   name: "JKBMS discharging switch"
-  #   address: 0x1074
-  #   register_type: holding
-  #   lambda: |-
-  #     return data[3] == 1;
-  #   on_state:
-  #     - script.execute:
-  #         id: lvgl_update_switch_value
-  #         name: discharge_sw
-  #         value: !lambda return x;
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_discharging
@@ -1122,25 +907,7 @@ binary_sensor:
     register_type: holding
     lambda: |-
       return data[1] == 1;
-    on_state:
-      - script.execute:
-          id: lvgl_update_switch_value
-          name: discharge_sw
-          value: !lambda return x;
 
-  # - platform: modbus_controller
-  #   modbus_controller_id: jkbms_modbus_controller
-  #   id: jkbms_balancing_switch
-  #   name: "JKBMS balancing switch"
-  #   address: 0x1078
-  #   register_type: holding
-  #   lambda: |-
-  #     return data[3] == 1;
-  #   on_state:
-  #     - script.execute:
-  #         id: lvgl_update_switch_value
-  #         name: balance_sw
-  #         value: !lambda return x;
   - platform: modbus_controller
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_balancing
@@ -1149,11 +916,6 @@ binary_sensor:
     register_type: holding
     lambda: |-
       return data[0] == 1;
-    on_state:
-      - script.execute:
-          id: lvgl_update_switch_value
-          name: balance_sw
-          value: !lambda return x;
 
 text_sensor:
   - platform: template
@@ -1174,6 +936,7 @@ text_sensor:
           (hours ? to_string(hours) + "h" : "");
       }
       return value;
+
   - platform: template
     id: jkbms_alarms
     name: "JKBMS alarms"
@@ -1224,10 +987,6 @@ text_sensor:
       - script.execute:
           id: lvgl_update_error_label
           error: !lambda return x;
-  # - platform: template
-  #   id: jkbms_sent_bms_bytes
-  #   name: JKBMS BMS bytes sent
-  #   entity_category: diagnostic
 
 switch:
   - platform: template
@@ -1240,6 +999,7 @@ switch:
       - component.resume: jkbms_modbus_controller
     restore_mode: ALWAYS_OFF
     entity_category: diagnostic
+
   - platform: modbus_controller
     id: jkbms_charging_switch
     name: "JKBMS charging switch"
@@ -1263,3 +1023,50 @@ switch:
         return {};
       }
       return (data[3] == 1);
+
+script:
+  - id: lvgl_update_bms_state
+    mode: single
+    then:
+      - script.execute:
+          id: lvgl_update_status_icon
+          name: bms_connection
+          is_on: !lambda return !id(jkbms_modbus_controller).get_module_offline();
+
+  - id: lvgl_update_bms_values
+    mode: single
+    then:
+      - script.execute:
+          id: lvgl_update_values
+          voltage: !lambda return id(jkbms_total_voltage).state;
+          current: !lambda return id(jkbms_current).state;
+          power: !lambda return id(jkbms_power).state;
+          soc: !lambda return id(jkbms_soc).state;
+          capacity: !lambda return id(jkbms_capacity_remaining_ah).state;
+          delta_cell_voltage: !lambda return id(jkbms_delta_cell_voltage).state;
+          t1: !lambda return id(jkbms_bat_temp1).state;
+          t2: !lambda return id(jkbms_bat_temp2).state;
+          t3: !lambda return id(jkbms_bat_temp3).state;
+          t4: !lambda return id(jkbms_bat_temp4).state;
+          tmos: !lambda return id(jkbms_mos_temp).state;
+          charge: !lambda return id(jkbms_charging).state;
+          discharge: !lambda return id(jkbms_discharging).state;
+          balance: !lambda return id(jkbms_balancing).state;
+          is_balancing: !lambda return id(jkbms_balancing).state;
+          cell1_voltage: !lambda return id(jkbms_cell_voltage_1).state;
+          cell2_voltage: !lambda return id(jkbms_cell_voltage_2).state;
+          cell3_voltage: !lambda return id(jkbms_cell_voltage_3).state;
+          cell4_voltage: !lambda return id(jkbms_cell_voltage_4).state;
+          cell5_voltage: !lambda return id(jkbms_cell_voltage_5).state;
+          cell6_voltage: !lambda return id(jkbms_cell_voltage_6).state;
+          cell7_voltage: !lambda return id(jkbms_cell_voltage_7).state;
+          cell8_voltage: !lambda return id(jkbms_cell_voltage_8).state;
+          cell9_voltage: !lambda return id(jkbms_cell_voltage_9).state;
+          cell10_voltage: !lambda return id(jkbms_cell_voltage_10).state;
+          cell11_voltage: !lambda return id(jkbms_cell_voltage_11).state;
+          cell12_voltage: !lambda return id(jkbms_cell_voltage_12).state;
+          cell13_voltage: !lambda return id(jkbms_cell_voltage_13).state;
+          cell14_voltage: !lambda return id(jkbms_cell_voltage_14).state;
+          cell15_voltage: !lambda return id(jkbms_cell_voltage_15).state;
+          cell16_voltage: !lambda return id(jkbms_cell_voltage_16).state;
+          alarms: !lambda return id(jkbms_alarms).state;

@@ -218,8 +218,183 @@ interval:
     startup_delay: 5sec
     then:
       - script.execute: lvgl_update_date
+  - interval: 1sec
+    id: update_bms_values_interval
+    startup_delay: 2sec
+    then:
+      - script.execute: lvgl_update_bms_values
+  - interval: 5sec
+    id: update_bms_state_interval
+    startup_delay: 2sec
+    then:
+      - script.execute: lvgl_update_bms_state
 
 script:
+  - id: lvgl_update_values
+    mode: single
+    parameters:
+      voltage: float
+      current: float
+      power: float
+      soc: float
+      capacity: float
+      delta_cell_voltage: float
+      t1: float
+      t2: float
+      t3: float
+      t4: float
+      tmos: float
+      charge: bool
+      discharge: bool
+      balance: bool
+      is_balancing: bool
+      cell1_voltage: float
+      cell2_voltage: float
+      cell3_voltage: float
+      cell4_voltage: float
+      cell5_voltage: float
+      cell6_voltage: float
+      cell7_voltage: float
+      cell8_voltage: float
+      cell9_voltage: float
+      cell10_voltage: float
+      cell11_voltage: float
+      cell12_voltage: float
+      cell13_voltage: float
+      cell14_voltage: float
+      cell15_voltage: float
+      cell16_voltage: float
+      alarms: std::string
+    then:
+      - script.execute:
+          id: lvgl_update_accent_color
+          current_val: !lambda return current;
+          is_balancing: !lambda return is_balancing;
+      - script.execute:
+          id: lvgl_update_soc_gauge_labels
+          current_val: !lambda return current;
+          voltage_val: !lambda return voltage;
+      - script.execute:
+          id: lvgl_update_soc
+          soc: !lambda return soc;
+      - lambda: |-
+          switch (id(current_tile_num)) {
+            case 0:
+              id(lvgl_update_tile_general_1)
+                ->execute(voltage, current, power, capacity, delta_cell_voltage);
+              break;
+            case 1:
+              id(lvgl_update_tile_general_2)
+                ->execute(t1, t2, t3, t4, tmos);
+              break;
+            case 2:
+              id(lvgl_update_tile_switches)
+                ->execute(charge, discharge, balance);
+              break;
+            case 3:
+              auto voltages = std::vector<float>{
+                cell1_voltage, cell2_voltage, cell3_voltage, cell4_voltage,
+                cell5_voltage, cell6_voltage, cell7_voltage, cell8_voltage,
+                cell9_voltage, cell10_voltage, cell11_voltage, cell12_voltage,
+                cell13_voltage, cell14_voltage, cell15_voltage, cell16_voltage
+              };
+              id(lvgl_update_tile_voltages)->execute({ .voltages = voltages });
+              break;
+          }
+      - script.execute:
+          id: lvgl_update_error_label
+          error: !lambda return alarms;
+
+  - id: lvgl_update_tile_general_1
+    mode: single
+    parameters:
+      voltage: float
+      current: float
+      power: float
+      capacity: float
+      delta_cell_voltage: float
+    then:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 'voltage'
+          value: !lambda return value_accuracy_to_string(voltage, 2);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 'current'
+          value: !lambda return value_accuracy_to_string(current, 2);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 'power'
+          value: !lambda return value_accuracy_to_string(power, 2);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 'capacity'
+          value: !lambda return value_accuracy_to_string(capacity, 0);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 'delta_cell_voltage'
+          value: !lambda return value_accuracy_to_string(delta_cell_voltage, 3);
+
+  - id: lvgl_update_tile_general_2
+    mode: single
+    parameters:
+      t1: float
+      t2: float
+      t3: float
+      t4: float
+      tmos: float
+    then:
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 't1'
+          value: !lambda return value_accuracy_to_string(t1, 1);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 't2'
+          value: !lambda return value_accuracy_to_string(t2, 1);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 't3'
+          value: !lambda return value_accuracy_to_string(t3, 1);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 't4'
+          value: !lambda return value_accuracy_to_string(t4, 1);
+      - script.execute:
+          id: lvgl_update_label_value
+          name: 'tmos'
+          value: !lambda return value_accuracy_to_string(tmos, 1);
+
+  - id: lvgl_update_tile_switches
+    mode: single
+    parameters:
+      charge: bool
+      discharge: bool
+      balance: bool
+    then:
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: charge_sw
+          value: !lambda return charge;
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: discharge_sw
+          value: !lambda return discharge;
+      - script.execute:
+          id: lvgl_update_switch_value
+          name: balance_sw
+          value: !lambda return balance;
+
+  - id: lvgl_update_tile_voltages
+    mode: single
+    parameters:
+      voltages: std::vector<float>
+    then:
+      - lambda: |-
+          for (size_t i = 0; i < voltages.size(); ++i) {
+            id(lvgl_update_cell_voltage_value).execute(i + 1, voltages[i]);
+          }
+
   - id: lvgl_update_accent_color
     mode: single
     parameters:
@@ -248,6 +423,7 @@ script:
       - lvgl.widget.update:
           id: soc_lower_label
           text_color: !lambda return id(lv_bg_color);
+
   - id: lvgl_change_tile
     mode: single
     then:
@@ -262,6 +438,7 @@ script:
               : 0;
       - lambda: |-
           lv_obj_set_tile_id(id(stats_tile), id(current_tile_num), 0, LV_ANIM_ON);
+
   - id: lvgl_set_active_tile_num
     mode: single
     parameters:
@@ -277,6 +454,7 @@ script:
           } else if (tile == id(tile_voltages)) {
             id(current_tile_num) = 3;
           }
+
   - id: lvgl_update_switch_value
     parameters:
       name: string
@@ -301,6 +479,7 @@ script:
             return;
           }
           ESP_LOGE("BMS", "Cannot find switch %s", name.c_str());
+
   - id: lvgl_update_status_icon
     parameters:
       name: string
@@ -351,23 +530,7 @@ script:
                         - lvgl.widget.update:
                             id: inv_connection
                             text_color: off_color
-      # - lambda: |-
-      #     static const std::map<std::string, lv_obj_t*> icons_map {
-      #       { "api_connection", id(api_connection) },
-      #       { "bms_connection", id(bms_connection) },
-      #       { "inv_connection", id(inv_connection) }
-      #     };
-      #     auto iterator = icons_map.find(name);
-      #     if (iterator != icons_map.end()) {
-      #       lv_obj_t* icon = iterator->second;
-      #       lv_obj_set_style_text_color(icon, lv_color_from(is_on
-      #           ? id(on_color)
-      #           : id(off_color)),
-      #         (int)LV_STATE_DEFAULT|(int)LV_PART_MAIN);
-      #       lv_event_send(icon, LV_EVENT_VALUE_CHANGED, nullptr);
-      #       return;
-      #     }
-      #     ESP_LOGE("BMS", "Cannot find icon %s", name.c_str());
+
   - id: lvgl_update_cell_voltage_value
     parameters:
       cell_num: uint8_t
@@ -437,6 +600,7 @@ script:
             return;
           }
           ESP_LOGE("BMS", "Cannot find cell voltage bar %d", cell_num);
+
   - id: lvgl_update_label_value
     parameters:
       name: string
@@ -482,6 +646,7 @@ script:
             return;
           }
           ESP_LOGE("BMS", "Cannot find label %s", name.c_str());
+
   - id: lvgl_update_time
     then:
       lvgl.label.update:
@@ -494,6 +659,7 @@ script:
           auto time = id(sntp_time).now();
           snprintf(time_buf, sizeof(time_buf), "%02d:%02d:%02d", time.hour, time.minute, time.second);
           return time_buf;
+
   - id: lvgl_update_date
     then:
       lvgl.label.update:
@@ -504,6 +670,7 @@ script:
           auto now = id(sntp_time).now();
           snprintf(date_buf, sizeof(date_buf), "%s %02d, %d", mon_names[now.month-1], now.day_of_month, now.year);
           return date_buf;
+
   - id: lvgl_update_error_label
     parameters:
       error: string
@@ -518,6 +685,7 @@ script:
                 text: !lambda return error.c_str();
           else:
             - lvgl.widget.hide: bms_errors_label
+
   - id: lvgl_update_soc_gauge_labels
     mode: single
     parameters:
@@ -534,6 +702,7 @@ script:
           text:
             format: "%.2fA"
             args: '(float)(isnan(current_val) ? 0 : current_val)'
+
   - id: lvgl_update_soc
     mode: single
     parameters:
@@ -559,17 +728,21 @@ script:
       - lvgl.widget.update:
           id: soc_upper_label
           text_color: !lambda return id(lv_soc_color);
+
   - id: lvgl_pause
     mode: single
     then:
       - component.suspend: change_tile_interval
       - component.suspend: update_time_interval
       - component.suspend: update_date_interval
+      - component.suspend: update_bms_values_interval
+      - component.suspend: update_bms_state_interval
       - light.turn_off: backlight
       - lvgl.page.show: blank_page
       - lvgl.widget.hide: header
       - delay: 1s
       - lvgl.pause
+
   - id: lvgl_resume
     mode: single
     then:
@@ -584,17 +757,5 @@ script:
             - component.resume: change_tile_interval
             - component.resume: update_time_interval
             - component.resume: update_date_interval
-  # - id: lvgl_update_led
-  #   mode: single
-  #   parameters:
-  #     l_text: string
-  #     l_color: esphome::Color
-  #   then:
-  #     - lvgl.label.update:
-  #         id: status_label
-  #         text: !lambda return l_text.c_str();
-  #     - lvgl.led.update:
-  #         id: status_led
-  #         color: !lambda |-
-  #           return lv_color_make(l_color.red, 
-  #             l_color.green, l_color.blue);
+            - component.resume: update_bms_values_interval
+            - component.resume: update_bms_state_interval
