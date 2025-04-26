@@ -1,0 +1,116 @@
+- id: main_page
+  bg_color: 0x606672
+  bg_grad_color: 0x33363E
+  bg_grad_dir: VER
+  bg_dither_mode: ORDERED
+  scrollable: false
+  widgets:
+    - obj:
+        id: bg_img_bottom
+        x: 0
+        y: 0
+        width: 320
+        height: 320
+        bg_color: 0x000000
+        bg_opa: 0.3
+        border_opa: 0
+        radius: 0
+        scrollable: false
+        align: TOP_LEFT
+        pad_all: 0
+        widgets:
+          - image:
+              src: bg_img
+              x: -2
+    # SOC gauge
+    - <<: !include { file: lvgl-gauge.yaml, vars: { g_name: soc } }
+    # Bms error label
+    - <<: !include lvgl-bms-error-label.yaml
+    # Contactor led and label
+    # - <<: !include lvgl-status-led.yaml
+    # Right panel
+    - tileview:
+        id: stats_tile
+        x: 320
+        y: 20
+        height: 300
+        width: 160
+        bg_color: 0x202831
+        bg_grad_color: 0x101215
+        bg_dither_mode: ORDERED
+        bg_grad_dir: VER
+        on_value:
+          - script.execute:
+              id: lvgl_set_active_tile_num
+              tile: !lambda 'return tile;'
+          - if:
+              condition:
+                - lambda: 'return id(is_automatic_tile_change);'
+              then:
+                - globals.set:
+                    id: is_automatic_tile_change
+                    value: 'false'
+              else:
+                - component.suspend: change_tile_interval
+        tiles:
+          - row: 0
+            column: 0
+            id: tile_general_1
+            dir: [ RIGHT ]
+            widgets:
+              - obj:
+                  <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                  widgets:
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: voltage,            l_capt: Voltage,   l_unit: V  } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: current,            l_capt: Currrent,  l_unit: A  } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: power,              l_capt: Power,     l_unit: W  } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: capacity,           l_capt: Capacity,  l_unit: Ah } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: delta_cell_voltage, l_capt: Cell diff, l_unit: V  } }
+          - row: 0
+            column: 1
+            id: tile_general_2
+            dir: [ LEFT, RIGHT ]
+            widgets:
+              - obj:
+                  <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                  widgets:
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t1,   l_capt: BATT Temp 1,   l_unit: C } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t2,   l_capt: BATT Temp 2,   l_unit: C } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t3,   l_capt: BATT Temp 3,   l_unit: C } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: t4,   l_capt: BATT Temp 4,   l_unit: C } }
+                    - <<: !include { file: lvgl-label-group-big.yaml, vars: { l_name: tmos, l_capt: MOS Temp, l_unit: C } }
+          - row: 0
+            column: 2
+            id: tile_switches
+            dir: [ LEFT, RIGHT ]
+            widgets:
+              - obj:
+                  <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                  widgets:
+                    - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: charge,    sw_capt: Charge,    sw_readonly: true } }
+                    - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: discharge, sw_capt: Discharge, sw_readonly: true } }
+                    - <<: !include { file: lvgl-switch-group.yaml, vars: { sw_name: balance,   sw_capt: Balance,   sw_readonly: true } }
+          - row: 0
+            column: 3
+            id: tile_voltages
+            dir: [ LEFT ]
+            widgets:
+              - obj:
+                  <<: !include ../lvgl-common/lvgl-tile-container.yaml
+                  widgets:
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell1voltage,  b_capt: 1, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell2voltage,  b_capt: 2, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell3voltage,  b_capt: 3, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell4voltage,  b_capt: 4, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell5voltage,  b_capt: 5, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell6voltage,  b_capt: 6, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell7voltage,  b_capt: 7, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell8voltage,  b_capt: 8, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell9voltage,  b_capt: 9, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell10voltage, b_capt: 10, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell11voltage, b_capt: 11, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell12voltage, b_capt: 12, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell13voltage, b_capt: 13, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell14voltage, b_capt: 14, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell15voltage, b_capt: 15, b_unit: V } }
+                    - <<: !include { file: lvgl-voltage-bar.yaml, vars: { b_name: cell16voltage, b_capt: 16, b_unit: V } }

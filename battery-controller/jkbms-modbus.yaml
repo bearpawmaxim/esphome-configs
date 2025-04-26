@@ -1032,6 +1032,11 @@ script:
           id: lvgl_update_status_icon
           name: bms_connection
           is_on: !lambda return !id(jkbms_modbus_controller).get_module_offline();
+      - if:
+          condition:
+            lambda: return id(jkbms_modbus_controller).get_module_offline();
+          then:
+            - script.execute: lvgl_set_ready
 
   - id: lvgl_update_bms_values
     mode: single
@@ -1069,4 +1074,6 @@ script:
           cell14_voltage: !lambda return id(jkbms_cell_voltage_14).state;
           cell15_voltage: !lambda return id(jkbms_cell_voltage_15).state;
           cell16_voltage: !lambda return id(jkbms_cell_voltage_16).state;
+          min_voltage_cell: !lambda return id(jkbms_min_voltage_cell).state;
+          max_voltage_cell: !lambda return id(jkbms_max_voltage_cell).state;
           alarms: !lambda return id(jkbms_alarms).state;

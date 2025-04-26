@@ -42,6 +42,7 @@ interval:
             id(pyl_emul)->set_enabled(true);
             return;
           }
+          id(lvgl_set_ready)->execute();
           id(bms_readyness_check)->stop_poller();
 
 pylontech_emulator:

@@ -1,0 +1,28 @@
+- id: boot_page
+  bg_color: 0x202831
+  bg_grad_color: 0x101215
+  bg_dither_mode: ORDERED
+  bg_grad_dir: VER
+  scrollable: false
+  widgets:
+    - obj:
+        <<: !include ../lvgl-common/lvgl-tile-container.yaml
+        widgets:
+          - label:
+              width: SIZE_CONTENT
+              height: SIZE_CONTENT
+              pad_bottom: 20px
+              text_color: label_heading_color
+              text_font: montserrat_16
+              text_align: CENTER
+              text: Battery Controller
+          - image:
+              src: boot_img
+          - label:
+              width: SIZE_CONTENT
+              height: SIZE_CONTENT
+              pad_top: 20px
+              text_color: label_heading_color
+              text_font: montserrat_16
+              text_align: CENTER
+              text: Loading...

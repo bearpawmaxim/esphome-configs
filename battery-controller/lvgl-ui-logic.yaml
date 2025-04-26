@@ -24,6 +24,12 @@ interval:
     startup_delay: 2sec
     then:
       - script.execute: lvgl_update_bms_state
+  - interval: 30sec
+    id: boot_page_timeout
+    startup_delay: 30sec
+    then:
+      - script.execute: lvgl_set_ready
+      - component.suspend: boot_page_timeout
 
 script:
   - id: lvgl_update_values
@@ -60,6 +66,8 @@ script:
       cell14_voltage: float
       cell15_voltage: float
       cell16_voltage: float
+      min_voltage_cell: uint8_t
+      max_voltage_cell: uint8_t
       alarms: std::string
     then:
       - script.execute:
@@ -94,7 +102,11 @@ script:
                 cell9_voltage, cell10_voltage, cell11_voltage, cell12_voltage,
                 cell13_voltage, cell14_voltage, cell15_voltage, cell16_voltage
               };
-              id(lvgl_update_tile_voltages)->execute({ .voltages = voltages });
+              id(lvgl_update_tile_voltages)->execute(
+                voltages,
+                min_voltage_cell,
+                max_voltage_cell
+              );
               break;
           }
       - script.execute:
@@ -185,10 +197,12 @@ script:
     mode: single
     parameters:
       voltages: std::vector<float>
+      min_voltage_cell: int
+      max_voltage_cell: int
     then:
       - lambda: |-
           for (size_t i = 0; i < voltages.size(); ++i) {
-            id(lvgl_update_cell_voltage_value).execute(i + 1, voltages[i]);
+            id(lvgl_update_cell_voltage_value).execute(i + 1, voltages[i], min_voltage_cell, max_voltage_cell);
           }
 
   - id: lvgl_update_accent_color
@@ -331,12 +345,14 @@ script:
     parameters:
       cell_num: uint8_t
       value: float
+      min_voltage_cell: uint8_t
+      max_voltage_cell: uint8_t
     mode: queued
     max_runs: 16
     then:
       - lambda: |-
-          bool is_min_voltage_cell = id(jkbms_min_voltage_cell)->state == cell_num;
-          bool is_max_voltage_cell = id(jkbms_max_voltage_cell)->state == cell_num;
+          bool is_min_voltage_cell = min_voltage_cell == cell_num;
+          bool is_max_voltage_cell = max_voltage_cell == cell_num;
           static const std::map<uint8_t, lv_obj_t*> bars_map {
             { 1,  id(cell1voltage_value_bar) },
             { 2,  id(cell2voltage_value_bar) },
@@ -555,3 +571,17 @@ script:
             - component.resume: update_date_interval
             - component.resume: update_bms_values_interval
             - component.resume: update_bms_state_interval
+
+  - id: lvgl_set_ready
+    mode: single
+    then:
+      - if:
+          condition:
+            not:
+              lvgl.page.is_showing: main_page
+          then:
+            - lvgl.page.show: 
+                id: main_page
+                animation: FADE_IN
+                time: 500ms
+            - lvgl.widget.show: header

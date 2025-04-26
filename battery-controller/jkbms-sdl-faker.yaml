@@ -1,0 +1,48 @@
+script:
+  - id: lvgl_update_bms_state
+    mode: single
+    then:
+      - script.execute:
+          id: lvgl_update_status_icon
+          name: bms_connection
+          is_on: !lambda return false;
+
+  - id: lvgl_update_bms_values
+    mode: single
+    then:
+      - script.execute:
+          id: lvgl_update_values
+          voltage: !lambda return 55.2;
+          current: !lambda return 97.5;
+          power: !lambda return 5900;
+          soc: !lambda return 54;
+          capacity: !lambda return 230;
+          delta_cell_voltage: !lambda return 0.02;
+          t1: !lambda return 32;
+          t2: !lambda return 33;
+          t3: !lambda return 31;
+          t4: !lambda return 30;
+          tmos: !lambda return 45;
+          charge: !lambda return false;
+          discharge: !lambda return true;
+          balance: !lambda return false;
+          is_balancing: !lambda return false;
+          cell1_voltage: !lambda return 3.44;
+          cell2_voltage: !lambda return 3.44;
+          cell3_voltage: !lambda return 3.44;
+          cell4_voltage: !lambda return 3.44;
+          cell5_voltage: !lambda return 3.44;
+          cell6_voltage: !lambda return 3.44;
+          cell7_voltage: !lambda return 3.44;
+          cell8_voltage: !lambda return 3.44;
+          cell9_voltage: !lambda return 3.44;
+          cell10_voltage: !lambda return 3.44;
+          cell11_voltage: !lambda return 3.44;
+          cell12_voltage: !lambda return 3.44;
+          cell13_voltage: !lambda return 3.44;
+          cell14_voltage: !lambda return 3.44;
+          cell15_voltage: !lambda return 3.44;
+          cell16_voltage: !lambda return 3.44;
+          min_voltage_cell: 14
+          max_voltage_cell: 3
+          alarms: !lambda return "";
