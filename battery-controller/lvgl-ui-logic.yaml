@@ -8,7 +8,11 @@ interval:
     id: change_tile_interval
     startup_delay: 5sec
     then:
-      - script.execute: lvgl_change_tile
+      - if:
+          condition:
+            - lvgl.page.is_showing: main_page
+          then:
+            - script.execute: lvgl_change_tile
   - interval: 1min
     id: update_date_interval
     startup_delay: 5sec

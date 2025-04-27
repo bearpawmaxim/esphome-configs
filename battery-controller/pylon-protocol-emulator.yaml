@@ -26,6 +26,7 @@ external_components:
       type: local
       path: custom_components
     refresh: 1s
+    components: ['pylontech_emulator']
 
 text_sensor:
   - platform: template
