@@ -14,7 +14,12 @@ esphome:
           then:
             - if:
                 condition:
-                  - lambda: 'return system_get_rst_info()->reason == 0;'
+                  - lambda: |-
+                      #ifdef ESP32
+                        return esp_reset_reason() == ESP_RST_POWERON;
+                      #else
+                        return system_get_rst_info()->reason == 0;
+                      #endif
                 then:
                   - delay: ${delay_time}
             - switch.turn_on: relay_phy
