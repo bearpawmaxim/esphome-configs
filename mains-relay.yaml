@@ -1,7 +1,7 @@
 substitutions:
   device_name: mains-relay
   device_name_underscore: mains_relay
-  relay_pin: GPIO8
+  relay_pin: GPIO4
   relay_hold: 'true'
   button_pin: GPIO9
   delay_time: 1min
@@ -34,8 +34,8 @@ logger:
   baud_rate: 0
 
 uart:
-  rx_pin: GPIO3
-  tx_pin: GPIO1
+  rx_pin: GPIO20
+  tx_pin: GPIO21
   baud_rate: 9600
 
 debug:
