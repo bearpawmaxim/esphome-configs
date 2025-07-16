@@ -76,6 +76,7 @@ esphome:
 
 esp32:
   board: esp-wrover-kit
+  flash_size: 4MB
 
 http_request:
   useragent: esphome/device
