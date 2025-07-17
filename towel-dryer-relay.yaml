@@ -70,7 +70,6 @@ sensor:
       # Multiplication factor from W to kW is 0.001
       - multiply: 0.001
     unit_of_measurement: kWh
-    update_interval: 3s
     icon: mdi:calendar-clock
 
   - platform: adc
