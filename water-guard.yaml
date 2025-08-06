@@ -201,3 +201,14 @@ button:
     name: Run water valve maintenance
     on_press:
       - script.execute: run_maintenance
+
+debug:
+
+sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
