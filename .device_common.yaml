@@ -5,6 +5,9 @@ api:
   encryption:
     key: !secret api_key
 
+external_components:
+  source: github://pr#10497
+
 ota:
   id: my_ota
   platform: esphome
