@@ -20,11 +20,11 @@ packages:
   #   vars:
   #     tx_pin: ${pace_tx}
   #     rx_pin: ${pace_rx}
-  pylon-bms: !include
-    file: battery-controller/pylon-protocol-emulator.yaml
-    vars:
-      tx_pin: ${pace_tx}
-      rx_pin: ${pace_rx}
+  # pylon-bms: !include
+  #   file: battery-controller/pylon-protocol-emulator.yaml
+  #   vars:
+  #     tx_pin: ${pace_tx}
+  #     rx_pin: ${pace_rx}
 
 globals:
   - id: current_tile_num
@@ -67,11 +67,6 @@ esp32:
 psram:
   mode: quad
   speed: 80MHZ
-
-external_components:
-  - source: github://pr#8383
-    components: [const, mipi_spi, qspi_dbi, spi]
-    refresh: 1h
 
 logger:
   baud_rate: 0
