@@ -18,9 +18,11 @@ class HoldingGpio
 
   public:
     HoldingGpio(gpio_num_t gpio) {
-      gpio_set_direction(gpio, GPIO_MODE_INPUT_OUTPUT);
       _gpio = gpio;
-      gpio_hold_en(gpio);
+      gpio_reset_pin(_gpio);
+      gpio_set_direction(_gpio, GPIO_MODE_INPUT_OUTPUT);
+      gpio_hold_en(_gpio);
+      gpio_deep_sleep_hold_en();
     }
 
     void set_state(bool state) {
@@ -32,7 +34,6 @@ class HoldingGpio
     bool get_state() {
       return _get_gpio_state();
     }
-
 
 };
 
