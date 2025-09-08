@@ -24,6 +24,13 @@ esphome:
     board_build.mcu: esp32c3
     board_build.variant: esp32c3
   name: ${device_name}
+  includes:
+    - includes/holding_gpio.h
+  on_boot:
+    - priority: 800
+      then:
+        - lambda: |-
+            holding_gpio = new HoldingGpio(GPIO_NUM_4);
 
 esp32:
   variant: ESP32C3
@@ -113,3 +120,24 @@ status_led:
   pin:
     number: ${led_pin}
     inverted: yes
+
+switch:
+  - platform: template
+    id: relay_phy
+    name: "${device_name} relay"
+    lambda: 'return holding_gpio->get_state();'
+    restore_mode: DISABLED
+    on_turn_on:
+      - lambda: id(relay_state) = true;
+    on_turn_off:
+      - lambda: |-
+          static bool initial = true;
+          if (initial) {
+            initial = false;
+          } else {
+            id(relay_state) = false;
+          }
+    turn_on_action:
+      - lambda: 'holding_gpio->set_state(1);'
+    turn_off_action:
+      - lambda: 'holding_gpio->set_state(0);'

@@ -34,20 +34,3 @@ binary_sensor:
     internal: true
     on_press:
       - switch.toggle: relay_phy
-
-switch:
-  - platform: gpio
-    id: relay_phy
-    name: "${device_name} relay"
-    pin: ${relay_pin}
-    restore_mode: ALWAYS_OFF
-    on_turn_on:
-      - lambda: id(relay_state) = true;
-    on_turn_off:
-      - lambda: |-
-          static bool initial = true;
-          if (initial) {
-            initial = false;
-          } else {
-            id(relay_state) = false;
-          }
