@@ -6,7 +6,7 @@ using namespace esphome::sun;
 
 class LedRectEffect {
     private:
-        static inline uint16_t compute_len(uint16_t sideALength, uint16_t triangleAngle) ALWAYS_INLINE {
+        static inline uint16_t compute_len(uint16_t sideALength, uint16_t triangleAngle) {
             return (uint16_t)(sideALength * tan(radians(triangleAngle)));
         }
 
