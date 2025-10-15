@@ -60,6 +60,13 @@ uart:
     tx_pin: ${uart_tx_pin}
     rx_pin: ${uart_rx_pin}
     baud_rate: 2400
+    debug:
+      direction: BOTH
+      dummy_receiver: false
+      after:
+        delimiter: "\n"
+      sequence:
+        - lambda: UARTDebug::log_string(direction, bytes);
 
 pipsolar:
   - id: powmr_inverter
