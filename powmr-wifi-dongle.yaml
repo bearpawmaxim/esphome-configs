@@ -35,7 +35,8 @@ packages:
 esp32:
   board: seeed_xiao_esp32c3
   framework:
-    type: arduino
+    type: esp-idf
+    version: latest
 
 globals:
   - id: last_updated
@@ -54,6 +55,7 @@ wifi:
 
 logger:
   level: WARN
+  baud_rate: 0
 
 uart:
   - id: powmr_uart
