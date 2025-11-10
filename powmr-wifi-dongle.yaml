@@ -135,6 +135,12 @@ sensor:
     inverter_heat_sink_temperature:
       id: powmr_inverter_twmperature
       name: Powmr inverter temperature
+    current_max_ac_charging_current:
+      id: powmr_max_ac_chg_current
+      name: Powmr max AC charging current
+    current_max_charging_current:
+      id: powmr_max_chg_current
+      name: Powmr max charging current
   - platform: template
     id: powmr_battery_charging_power
     name: "Powmr battery charging power"
