@@ -53,9 +53,19 @@ sensor:
     current:
       name: "Mains Current"
       id: mains_current
+      filters:
+        - clamp:
+            ignore_out_of_range: True
+            min_value: 0.0
+            max_value: 70.0
     voltage:
       name: "Mains Voltage"
       id: mains_voltage
+      filters:
+        - clamp:
+            ignore_out_of_range: True
+            min_value: 0.0
+            max_value: 300.0
       on_value:
         - lambda: |-
             id(last_update) = millis();
@@ -65,12 +75,27 @@ sensor:
     power:
       name: "Mains Power"
       id: mains_power
+      filters:
+        - clamp:
+            ignore_out_of_range: True
+            min_value: 0.0
+            max_value: 20000.0
     frequency:
       name: "Mains Frequency"
       id: mains_frequency
+      filters:
+        - clamp: 
+            ignore_out_of_range: True
+            min_value: 0.0
+            max_value: 60.0
     power_factor:
       name: "Mains Power Factor"
       id: mains_power_factor
+      filters:
+        - clamp: 
+            ignore_out_of_range: True
+            min_value: 0.0
+            max_value: 1.0
     update_interval: 60s
 
   - platform: total_daily_energy
