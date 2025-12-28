@@ -27,9 +27,9 @@ globals:
 
 substitutions:
   device_name: lobby-led-light
-  latitude: !secret gps_latitude_str
-  longitude: !secret gps_longitude_str
-  elevation: !secret gps_elevation_str
+  # latitude: !secret gps_latitude_str
+  # longitude: !secret gps_longitude_str
+  # elevation: !secret gps_elevation_str
 
 packages:
   device_common: !include .device_common.yaml
@@ -38,18 +38,16 @@ esphome:
   name: ${device_name}
   includes:
     - includes/led_rect_effect.h
-    - includes/luminary_effect.h
-  libraries:
-    - marscaper/Ephemeris
+    #- includes/luminary_effect.h
+  #libraries:
+    #- marscaper/Ephemeris
   on_boot:
     priority: 300.0
     then:
-      - script.execute: turn_on_light
-      - lambda: |-
-          //Ephemeris::setLocationOnEarth(latitude, longitude);
-          //Ephemeris::flipLongitude(true);
-          //Ephemeris::setAltitude(elevation);
-          LuminaryEffect::setup_effect(${latitude}, ${longitude}, ${elevation});
+      #- script.execute: turn_on_light
+      - light.turn_on:
+          id: lobbyledlight
+          effect: "Blue Lightning Storm"
 
 esp32:
   board: esp32doit-devkit-v1
@@ -83,10 +81,103 @@ light:
     restore_mode: ALWAYS_OFF
     default_transition_length: 1500ms
     effects:
+      - addressable_lambda:
+          name: "Blue Lightning Storm"
+          update_interval: 16ms
+          lambda: |-
+            const uint8_t BG_R = 128;
+            const uint8_t BG_G = 171;
+            const uint8_t BG_B = 255;
+
+            const int MAX_BOLTS = 3;
+
+            static int bolt_pos[MAX_BOLTS];
+            static int bolt_len[MAX_BOLTS];
+            static int bolt_time[MAX_BOLTS];
+
+            // Per-bolt color
+            static uint8_t bolt_r[MAX_BOLTS];
+            static uint8_t bolt_g[MAX_BOLTS];
+            static uint8_t bolt_b[MAX_BOLTS];
+
+            static uint8_t haze[300];  // bluish afterglow buffer
+
+            // ---------- Fade background + haze ----------
+            for (int i = 0; i < it.size(); i++) {
+              uint8_t r = it[i].get_red();
+              uint8_t g = it[i].get_green();
+              uint8_t b = it[i].get_blue();
+
+              r = (r * 210 + BG_R * 45) / 255;
+              g = (g * 210 + BG_G * 45) / 255;
+              b = (b * 210 + BG_B * 45) / 255;
+
+              haze[i] = (haze[i] * 235) / 255;
+
+              g = (g + haze[i] / 3 > 255) ? 255 : g + haze[i] / 3;
+              b = (b + haze[i] > 255) ? 255 : b + haze[i];
+
+              it[i].set_rgb(r, g, b);
+            }
+
+            // ---------- Possibly spawn new bolts ----------
+            for (int k = 0; k < MAX_BOLTS; k++) {
+              if (bolt_time[k] <= 0 && random_uint32() % 120 == 0) {
+                bolt_pos[k] = random_uint32() % it.size();
+                bolt_len[k] = 10 + (random_uint32() % 30);
+                bolt_time[k] = 3 + (random_uint32() % 6);
+
+                // --- Color randomization (70% white, 30% warm) ---
+                if (random_uint32() % 10 < 7) {
+                  bolt_r[k] = 255;
+                  bolt_g[k] = 255;
+                  bolt_b[k] = 255;
+                } else {
+                  bolt_r[k] = 255;
+                  bolt_g[k] = 220 + (random_uint32() % 20); // 220–240
+                  bolt_b[k] = 180 + (random_uint32() % 30); // 180–210
+                }
+              }
+            }
+
+            // ---------- Render bolts ----------
+            for (int k = 0; k < MAX_BOLTS; k++) {
+              if (bolt_time[k] > 0) {
+
+                // Main bolt
+                for (int i = 0; i < bolt_len[k]; i++) {
+                  int idx = bolt_pos[k] + i;
+                  if (idx >= 0 && idx < it.size()) {
+                    it[idx].set_rgb(bolt_r[k], bolt_g[k], bolt_b[k]);
+                    haze[idx] = (haze[idx] + 180 > 255) ? 255 : haze[idx] + 180;
+                  }
+                }
+
+                // Forked branches (cooler tint)
+                int forks = 1 + (random_uint32() % 2);
+                for (int f = 0; f < forks; f++) {
+                  int start = bolt_pos[k] + (random_uint32() % bolt_len[k]);
+                  int dir = (random_uint32() & 1) ? 1 : -1;
+                  int len = 4 + (random_uint32() % 8);
+
+                  for (int i = 0; i < len; i++) {
+                    int idx = start + i * dir;
+                    if (idx >= 0 && idx < it.size()) {
+                      it[idx].set_rgb(200, 220, 255);
+                      haze[idx] = (haze[idx] + 120 > 255) ? 255 : haze[idx] + 120;
+                    }
+                  }
+                }
+
+                bolt_time[k]--;
+              }
+            }
+
       - flicker:
           name: flicker
           alpha: 95%
           intensity: 1.5%
+# Red: 50%, Green: 67%, Blue: 100%
       - addressable_rainbow:
       - addressable_lambda:
           name: "LedRect auto wheel effect"
@@ -142,39 +233,39 @@ light:
 
             it.all().set(background_color);
             it[num] = Color(255, 0, 0);
-      - addressable_lambda:
-          name: "Moon/sun location"
-          update_interval: 60s
-          lambda: |-
-            uint8_t red = to_uint8_scale(id(intensity_red));
-            uint8_t green = to_uint8_scale(id(intensity_green));
-            uint8_t blue = to_uint8_scale(id(intensity_blue));
-            Color background_color = Color(red, green, blue);
+      # - addressable_lambda:
+      #     name: "Moon/sun location"
+      #     update_interval: 60s
+      #     lambda: |-
+      #       uint8_t red = to_uint8_scale(id(intensity_red));
+      #       uint8_t green = to_uint8_scale(id(intensity_green));
+      #       uint8_t blue = to_uint8_scale(id(intensity_blue));
+      #       Color background_color = Color(red, green, blue);
 
-            uint8_t effect_red = to_uint8_scale(id(luminary_red));
-            uint8_t effect_green = to_uint8_scale(id(luminary_green));
-            uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
-            Color effect_color = Color(effect_red, effect_green, effect_blue);
+      #       uint8_t effect_red = to_uint8_scale(id(luminary_red));
+      #       uint8_t effect_green = to_uint8_scale(id(luminary_green));
+      #       uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
+      #       Color effect_color = Color(effect_red, effect_green, effect_blue);
 
-            ESPTime time = id(sntp_time)->now();
-            LuminaryEffect::do_effect(time, it, background_color, effect_color);
+      #       ESPTime time = id(sntp_time)->now();
+      #       LuminaryEffect::do_effect(time, it, background_color, effect_color);
 
-time:
-  - id: !extend sntp_time
-    on_time_sync:
-      then:
-        - script.execute: set_daylight_color
+# time:
+#   - id: !extend sntp_time
+#     on_time_sync:
+#       then:
+#         - script.execute: set_daylight_color
 
 sun:
   id: sun_id
   latitude: !secret gps_latitude
   longitude: !secret gps_longitude
-  on_sunrise:
-    then:
-      - script.execute: set_daylight_color
-  on_sunset:
-    then:
-      - script.execute: set_daylight_color
+  # on_sunrise:
+  #   then:
+  #     - script.execute: set_daylight_color
+  # on_sunset:
+  #   then:
+  #     - script.execute: set_daylight_color
 
 script:
   - id: turn_on_light
