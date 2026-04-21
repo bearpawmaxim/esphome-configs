@@ -8,6 +8,9 @@ esphome:
   name: "powmr-wifi-dongle"
   friendly_name: "powmr-wifi-dongle"
 
+external_components:
+  #source: github://syssi/esphome-pipsolar
+
 output:
   - platform: gpio
     id: pwr_led
