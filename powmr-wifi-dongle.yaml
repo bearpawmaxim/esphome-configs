@@ -144,6 +144,12 @@ sensor:
     current_max_charging_current:
       id: powmr_max_chg_current
       name: Powmr max charging current
+    pv_input_voltage:
+      id: powmr_pv_input_voltage
+      name: Powmr PV input voltage
+    pv_charging_power:
+      id: powmr_pv_charging_power
+      name: Powmr PV charging power
   - platform: template
     id: powmr_battery_charging_power
     name: "Powmr battery charging power"
