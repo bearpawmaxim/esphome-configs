@@ -137,8 +137,10 @@ script:
               return id(valve_is_open);
           then:
             - script.execute: close_valve
+            - script.wait: close_valve
             - delay: 10000ms
             - script.execute: open_valve
+            - script.wait: open_valve
             - homeassistant.event:
                 event: esphome.valve_maintenance_executed
   # Turn off the boiler when valve is closed for more than 25 seconds.
