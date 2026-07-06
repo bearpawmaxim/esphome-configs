@@ -21,20 +21,20 @@ packages:
   relay_2: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_2, r_pin: GPIO19 } }
   relay_3: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_3, r_pin: GPIO18 } }
   relay_4: !include { file: water-guard/relay_template.yaml, vars: { r_id: relay_4, r_pin: GPIO05 } }
-  boiler_leak_sensor: !include
-    file: water-guard/leak_sensor_template.yaml
-    vars:
-      ls_id: boiler_leak_sensor
-      ls_mac_addr: "54:EF:44:E5:1C:23"
-      ls_bindkey: "47b658e2288541239bb8ab4b79d75039"
-      ls_name: "Boiler Leak sensor"
-  filter_leak_sensor: !include
-    file: water-guard/leak_sensor_template.yaml
-    vars:
-      ls_id: filter_leak_sensor
-      ls_mac_addr: "54:EF:44:E5:29:F6"
-      ls_bindkey: "0daf32121dbdd402144b0cf33ea70557"
-      ls_name: "Filter Leak sensor"
+#  boiler_leak_sensor: !include
+#    file: water-guard/leak_sensor_template.yaml
+#    vars:
+#      ls_id: boiler_leak_sensor
+#      ls_mac_addr: "54:EF:44:E5:1C:23"
+#      ls_bindkey: "47b658e2288541239bb8ab4b79d75039"
+#      ls_name: "Boiler Leak sensor"
+#  filter_leak_sensor: !include
+#    file: water-guard/leak_sensor_template.yaml
+#    vars:
+#      ls_id: filter_leak_sensor
+#      ls_mac_addr: "54:EF:44:E5:29:F6"
+#      ls_bindkey: "0daf32121dbdd402144b0cf33ea70557"
+#      ls_name: "Filter Leak sensor"
 #  shower_leak_sensor: !include
 #    file: water-guard/leak_sensor_template.yaml
 #    vars:
