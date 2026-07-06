@@ -49,20 +49,20 @@ packages:
       ls_mac_addr: "54:EF:44:E5:12:9A"
       ls_bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
       ls_name: "Laundry Leak sensor"
-  toilet_leak_sensor: !include
-    file: water-guard/leak_sensor_template.yaml
-    vars:
-      ls_id: toilet_leak_sensor
-      ls_mac_addr: "54:EF:44:E5:16:16"
-      ls_bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
-      ls_name: "Toilet Leak sensor"
-  kitchen_leak_sensor: !include
-    file: water-guard/leak_sensor_template.yaml
-    vars:
-      ls_id: kitchen_leak_sensor
-      ls_mac_addr: "54:EF:44:E5:18:4A"
-      ls_bindkey: "b2354449e4782b6d326858011afb0f12"
-      ls_name: "Kitchen Leak sensor"
+#  toilet_leak_sensor: !include
+#    file: water-guard/leak_sensor_template.yaml
+#    vars:
+#      ls_id: toilet_leak_sensor
+#      ls_mac_addr: "54:EF:44:E5:16:16"
+#      ls_bindkey: "f925eb3dffc36fdb721ecd8f302f8bda"
+#      ls_name: "Toilet Leak sensor"
+#  kitchen_leak_sensor: !include
+#    file: water-guard/leak_sensor_template.yaml
+#    vars:
+#      ls_id: kitchen_leak_sensor
+#      ls_mac_addr: "54:EF:44:E5:18:4A"
+#      ls_bindkey: "b2354449e4782b6d326858011afb0f12"
+#      ls_name: "Kitchen Leak sensor"
   # washstand_leak_sensor: !include
   #   file: water-guard/leak_sensor_template.yaml
   #   vars:
@@ -91,6 +91,10 @@ status_led:
   pin: GPIO25
 
 miot:
+  on_miot_advertise:
+    mac_address: "A4:C1:38:8A:67:22"
+    then:
+      lambda: //
 
 # CWX CR02 valve pinout:
 # Yellow (black) - common negative - relay_1 NO
