@@ -35,20 +35,20 @@ packages:
       ls_mac_addr: "54:EF:44:E5:29:F6"
       ls_bindkey: "0daf32121dbdd402144b0cf33ea70557"
       ls_name: "Filter Leak sensor"
-  shower_leak_sensor: !include
-    file: water-guard/leak_sensor_template.yaml
-    vars:
-      ls_id: shower_leak_sensor
-      ls_mac_addr: "54:EF:44:E5:28:CD"
-      ls_bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
-      ls_name: "Shower Leak sensor"
-  laundry_leak_sensor: !include
-    file: water-guard/leak_sensor_template.yaml
-    vars:
-      ls_id: laundry_leak_sensor
-      ls_mac_addr: "54:EF:44:E5:12:9A"
-      ls_bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
-      ls_name: "Laundry Leak sensor"
+#  shower_leak_sensor: !include
+#    file: water-guard/leak_sensor_template.yaml
+#    vars:
+#      ls_id: shower_leak_sensor
+#      ls_mac_addr: "54:EF:44:E5:28:CD"
+#      ls_bindkey: "b92ab1569a921ec21ad8519bd7ffddf3"
+#      ls_name: "Shower Leak sensor"
+#  laundry_leak_sensor: !include
+#    file: water-guard/leak_sensor_template.yaml
+#    vars:
+#      ls_id: laundry_leak_sensor
+#      ls_mac_addr: "54:EF:44:E5:12:9A"
+#      ls_bindkey: "593d53a13d86832fdf2b0fe7cab13ec9"
+#      ls_name: "Laundry Leak sensor"
 #  toilet_leak_sensor: !include
 #    file: water-guard/leak_sensor_template.yaml
 #    vars:
@@ -81,6 +81,7 @@ esp32:
     type: esp-idf
     advanced:
       minimum_chip_revision: "3.0"
+      sram1_as_iram: true
 
 http_request:
   useragent: esphome/device
