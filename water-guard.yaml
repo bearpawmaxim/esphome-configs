@@ -79,6 +79,8 @@ esp32:
   flash_size: 4MB
   framework:
     type: esp-idf
+    advanced:
+      minimum_chip_revision: "3.0"
 
 http_request:
   useragent: esphome/device
