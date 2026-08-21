@@ -80,9 +80,6 @@ pipsolar:
 binary_sensor:
   - platform: pipsolar
     pipsolar_id: powmr_inverter
-    backlight_on: 
-      id: powmr_backlight_on
-      name: Powmr backlight on
     switch_on:
       id: powmr_switch_on
       name: Powmr switch on
@@ -92,15 +89,58 @@ binary_sensor:
     faults_present:
       id: powmr_faults_present
       name: Powmr faults present
-    fault_bus_over:
-      id: powmr_bus_overvoltage_fault
-      name: Powmr bus overvoltage fault
-    fault_inverter_voltage_too_high:
-      id: powmr_inverter_overvoltage_fault
-      name: Powmr inverter overvoltage fault
+    warning_power_loss:
+      id: powmr_warning_power_loss
+      name: Powmr warning power loss
+    warning_line_fail:
+      id: powmr_warning_line_fail
+      name: Powmr warning line fail
+    warning_over_temperature:
+      id: powmr_warning_over_temperature
+      name: Powmr warning over temperature
+    warning_fan_lock:
+      id: powmr_warning_fan_lock
+      name: Powmr warning fan lock
     warning_battery_voltage_high:
-      id: powmr_batt_overvoltage_warning
-      name: Powmr battery overvoltage warning
+      id: powmr_warning_battery_voltage_high
+      name: Powmr warning battery voltage high
+    warning_battery_low_alarm:
+      id: powmr_warning_battery_low_alarm
+      name: Powmr warning battery low alarm
+    warning_battery_under_shutdown:
+      id: powmr_warning_battery_under_shutdown
+      name: Powmr warning battery under shutdown
+    warning_battery_derating:
+      id: powmr_warning_battery_derating
+      name: Powmr warning battery derating
+    warning_over_load:
+      id: powmr_warning_over_load
+      name: Powmr warning over load
+    warning_eeprom_failed:
+      id: powmr_warning_eeprom_failed
+      name: Powmr warning EEPROM failed
+    warning_power_limit:
+      id: powmr_warning_power_limit
+      name: Powmr warning power limit
+    warning_pv_voltage_high:
+      id: powmr_warning_pv_voltage_high
+      name: Powmr warning PV voltage high
+    warning_mppt_overload:
+      id: powmr_warning_mppt_overload
+      name: Powmr warning MPPT overload
+    warning_battery_too_low_to_charge:
+      id: powmr_warning_battery_too_low_to_charge
+      name: Powmr warning battery too low to charge
+    warning_low_pv_energy:
+      id: powmr_warning_low_pv_energy
+      name: Powmr warning low PV energy
+    warning_high_ac_input_during_bus_soft_start:
+      id: powmr_warning_high_ac_input_during_bus_soft_start
+      name: Powmr warning high AC input during bus soft start
+    warning_battery_equalization:
+      id: powmr_warning_battery_equalization
+      name: Powmr warning battery equalization
+    
   - platform: template
     id: powmr_grid_available
     name: Powmr grid available
