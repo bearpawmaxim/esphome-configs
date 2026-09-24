@@ -1,13 +1,17 @@
 #pragma once
 
+#include <cmath>
+
 using namespace esphome;
 using namespace esphome::light;
 using namespace esphome::sun;
 
 class LedRectEffect {
     private:
-        static inline uint16_t compute_len(uint16_t sideALength, uint16_t triangleAngle) {
-            return (uint16_t)(sideALength * tan(radians(triangleAngle)));
+
+        static uint16_t compute_len(uint16_t sideALength, uint16_t triangleAngle) {
+            constexpr double DEG_TO_RAD = 3.14159265358979323846 / 180.0;
+            return (uint16_t)(sideALength * std::tan(triangleAngle * DEG_TO_RAD));
         }
 
         static uint16_t angle_to_led_number(uint16_t angle) {

@@ -8,11 +8,12 @@ api:
 ota:
   id: my_ota
   platform: esphome
-  password: !secret ota_password
+  encryption:
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
   reboot_timeout: 0s
   fast_connect: true
   ap:
@@ -20,8 +21,8 @@ wifi:
     password: !secret wifi_ap_password
 
 time:
-  - platform: sntp
-    id: sntp_time
+  - platform: homeassistant
+    id: hass_time
     timezone: Europe/Kiev
 
 sensor:
