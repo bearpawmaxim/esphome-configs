@@ -44,11 +44,11 @@ esphome:
   on_boot:
     priority: 300
     then:
+      - lambda: |-
+          LuminaryEffect::setup_effect(id(latitude), id(longitude), id(elevation));
       - light.turn_on:
           id: lobbyledlight
           effect: "Moon/sun location"
-      - lambda: |-
-          LuminaryEffect::setup_effect(!id latitude, !id longitude, !id elevation);
 
 esp32:
   board: esp32doit-devkit-v1
