@@ -124,7 +124,7 @@ interval:
           ulong last_valid_update = id(last_update) +
             valid_update_timeout;
           if (last_valid_update < now) {
-            ESP_LOGW("PZEM", "No readings received within %d seconds. Sending state 0.",
+            ESP_LOGW("PZEM", "No readings received within %lu seconds. Sending state 0.",
               (ulong)(valid_update_timeout / 1000));
             id(mains_current)->publish_state(0.0);
             id(mains_voltage)->publish_state(0.0);
