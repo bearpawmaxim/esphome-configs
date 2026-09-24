@@ -6,6 +6,8 @@ packages:
 
 esphome:
   name: ${device_name}
+  libraries:
+    - https://github.com/akaJes/AsyncPing#95ac7e4
 
 external_components:
   - source:
