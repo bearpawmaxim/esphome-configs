@@ -38,9 +38,9 @@ esphome:
   name: ${device_name}
   includes:
     - includes/led_rect_effect.h
-    #- includes/luminary_effect.h
-  #libraries:
-    #- marscaper/Ephemeris
+    - includes/luminary_effect.h
+  libraries:
+    - marscaper/Ephemeris
   on_boot:
     priority: 300
     then:
