@@ -45,6 +45,10 @@ esphome:
     priority: 300
     then:
       - lambda: |-
+          const float latitude = std::stof("${latitude}");
+          const float longitude = std::stof("${longitude}");
+          const float elevation = std::stof("${elevation}");
+
           LuminaryEffect::setup_effect(latitude, longitude, elevation);
       - light.turn_on:
           id: lobbyledlight
