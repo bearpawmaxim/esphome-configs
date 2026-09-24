@@ -45,7 +45,7 @@ esphome:
     priority: 300
     then:
       - lambda: |-
-          LuminaryEffect::setup_effect(id(latitude), id(longitude), id(elevation));
+          LuminaryEffect::setup_effect(latitude, longitude, elevation);
       - light.turn_on:
           id: lobbyledlight
           effect: "Moon/sun location"
