@@ -17,7 +17,7 @@ uart:
   rx_pin: GPIO3
   tx_pin: GPIO1
   baud_rate: 9600
-
+  
 tuya:
   time_id: hass_time
   status_pin:
@@ -49,3 +49,25 @@ select:
       0: Internal
       1: Floor
       2: Both
+
+binary_sensor:
+  - platform: template
+    name: "Main LAN TCP Reachable"
+    id: main_lan_tcp_reachable
+
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          WiFiClient client;
+
+          bool connected = client.connect("192.168.1.84", 8765);
+
+          id(main_lan_tcp_reachable).publish_state(connected);
+
+          if (connected) {
+            client.stop();
+            ESP_LOGI("isolation_test", "TCP connection succeeded");
+          } else {
+            ESP_LOGI("isolation_test", "TCP connection failed");
+          }
