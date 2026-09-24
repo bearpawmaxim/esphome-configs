@@ -71,9 +71,9 @@ number:
     optimistic: true
 
 light:
-  - platform: fastled_clockless
+  - platform: esp32_rmt_led_strip
     id: lobbyledlight
-    chipset: WS2812B
+    chipset: WS2812
     pin: GPIO13
     num_leds: 300
     rgb_order: GRB
