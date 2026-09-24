@@ -76,7 +76,7 @@ light:
     chipset: WS2812
     pin: GPIO13
     num_leds: 300
-    rgb_order: GRB
+    channel_colors: GRB
     name: "Lobby Led Light"
     restore_mode: ALWAYS_OFF
     default_transition_length: 1500ms
