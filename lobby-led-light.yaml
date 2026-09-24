@@ -2,28 +2,28 @@ globals:
   - id: intensity_red
     type: float
     restore_value: no
-    initial_value: '0'
+    initial_value: '0.0'
   - id: intensity_green
     type: float
     restore_value: no
-    initial_value: '0'
+    initial_value: '0.0'
   - id: intensity_blue
     type: float
     restore_value: no
-    initial_value: '0'
+    initial_value: '0.08'
   # moon/sun color, 1-1-1 for sun.
   - id: luminary_red
     type: float
     restore_value: no
-    initial_value: '1'
+    initial_value: '0.9'
   - id: luminary_green
     type: float
     restore_value: no
-    initial_value: '0.88'
+    initial_value: '0.95'
   - id: luminary_blue
     type: float
     restore_value: no
-    initial_value: '0'
+    initial_value: '1.0'
 
 substitutions:
   device_name: lobby-led-light
@@ -300,32 +300,43 @@ script:
           condition:
             sun.is_above_horizon
           then:
+            # DAY: Warm daylight background, bright sun-yellow indicator
             - globals.set:
                 id: intensity_red
-                value: '1.0'
+                value: '1.0'      # Warm white background
             - globals.set:
                 id: intensity_green
-                value: '.67'
+                value: '0.9'      # Slight yellow tint
             - globals.set:
                 id: intensity_blue
-                value: '.11'
+                value: '0.7'      # Warm, not cool
             - globals.set:
                 id: luminary_red
-                value: '1.0'
+                value: '1.0'      # Bright sun: pure yellow-white
             - globals.set:
                 id: luminary_green
                 value: '1.0'
             - globals.set:
                 id: luminary_blue
-                value: '1.0'
+                value: '0.1'      # Slight warmth
           else:
+            # NIGHT: Dark navy background (near off), cool moonlight indicator
             - globals.set:
                 id: intensity_red
-                value: '.0'
+                value: '0.0'      # Dark navy / near black
             - globals.set:
                 id: intensity_green
-                value: '1.0'
+                value: '0.0'
             - globals.set:
                 id: intensity_blue
-                value: '1.0'
+                value: '0.08'     # Very dim deep blue - barely visible
+            - globals.set:
+                id: luminary_red
+                value: '0.9'      # Cool moonlight: pale yellow-white
+            - globals.set:
+                id: luminary_green
+                value: '0.95'
+            - globals.set:
+                id: luminary_blue
+                value: '1.0'      # Slight blue tint for moonlight feel
       - script.execute: set_light_color
