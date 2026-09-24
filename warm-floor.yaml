@@ -19,7 +19,7 @@ uart:
   baud_rate: 9600
 
 tuya:
-  time_id: sntp_time
+  time_id: hass_time
   status_pin:
     number: 14
     inverted: true
