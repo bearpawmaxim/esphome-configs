@@ -246,7 +246,7 @@ light:
             uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
             Color effect_color = Color(effect_red, effect_green, effect_blue);
 
-            ESPTime time = id(sntp_time)->now();
+            ESPTime time = id(hass_time)->now();
             LuminaryEffect::do_effect(time, it, background_color, effect_color);
 
 # time:
