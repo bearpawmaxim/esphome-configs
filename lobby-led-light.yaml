@@ -27,9 +27,9 @@ globals:
 
 substitutions:
   device_name: lobby-led-light
-  # latitude: !secret gps_latitude_str
-  # longitude: !secret gps_longitude_str
-  # elevation: !secret gps_elevation_str
+  latitude: !secret gps_latitude_str
+  longitude: !secret gps_longitude_str
+  elevation: !secret gps_elevation_str
 
 packages:
   device_common: !include .device_common.yaml
@@ -47,6 +47,8 @@ esphome:
       - light.turn_on:
           id: lobbyledlight
           effect: "Moon/sun location"
+      - lambda: |-
+          LuminaryEffect::setup_effect(!id latitude, !id longitude, !id elevation);
 
 esp32:
   board: esp32doit-devkit-v1
