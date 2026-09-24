@@ -42,12 +42,11 @@ esphome:
   #libraries:
     #- marscaper/Ephemeris
   on_boot:
-    priority: 300.0
+    priority: 300
     then:
-      #- script.execute: turn_on_light
       - light.turn_on:
           id: lobbyledlight
-          effect: "Blue Lightning Storm"
+          effect: "Moon/sun location"
 
 esp32:
   board: esp32doit-devkit-v1
@@ -233,22 +232,22 @@ light:
 
             it.all().set(background_color);
             it[num] = Color(255, 0, 0);
-      # - addressable_lambda:
-      #     name: "Moon/sun location"
-      #     update_interval: 60s
-      #     lambda: |-
-      #       uint8_t red = to_uint8_scale(id(intensity_red));
-      #       uint8_t green = to_uint8_scale(id(intensity_green));
-      #       uint8_t blue = to_uint8_scale(id(intensity_blue));
-      #       Color background_color = Color(red, green, blue);
+      - addressable_lambda:
+          name: "Moon/sun location"
+          update_interval: 60s
+          lambda: |-
+            uint8_t red = to_uint8_scale(id(intensity_red));
+            uint8_t green = to_uint8_scale(id(intensity_green));
+            uint8_t blue = to_uint8_scale(id(intensity_blue));
+            Color background_color = Color(red, green, blue);
 
-      #       uint8_t effect_red = to_uint8_scale(id(luminary_red));
-      #       uint8_t effect_green = to_uint8_scale(id(luminary_green));
-      #       uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
-      #       Color effect_color = Color(effect_red, effect_green, effect_blue);
+            uint8_t effect_red = to_uint8_scale(id(luminary_red));
+            uint8_t effect_green = to_uint8_scale(id(luminary_green));
+            uint8_t effect_blue = to_uint8_scale(id(luminary_blue));
+            Color effect_color = Color(effect_red, effect_green, effect_blue);
 
-      #       ESPTime time = id(sntp_time)->now();
-      #       LuminaryEffect::do_effect(time, it, background_color, effect_color);
+            ESPTime time = id(sntp_time)->now();
+            LuminaryEffect::do_effect(time, it, background_color, effect_color);
 
 # time:
 #   - id: !extend sntp_time
