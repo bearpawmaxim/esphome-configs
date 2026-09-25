@@ -14,7 +14,7 @@ class LedRectEffect {
             return (uint16_t)(sideALength * std::tan(triangleAngle * DEG_TO_RAD));
         }
 
-        static uint16_t angle_to_led_number(uint16_t angle) {
+        static uint16_t angle_to_led_number(int16_t angle) {
             uint16_t sideBLength;
             bool isNegativeLength = false;
             uint16_t maxSideBLength = 45;
@@ -75,6 +75,8 @@ class LedRectEffect {
             int16_t cw_angle = 360 - angle;
             int16_t startLedIdx = LedRectEffect::angle_to_led_number(cw_angle - 10);
             int16_t endLedIdx = LedRectEffect::angle_to_led_number(cw_angle + 10);
+            ESP_LOGD("LEDRECT", "Start led: %d", startLedIdx);
+            ESP_LOGD("LEDRECT", "End led  : %d", endLedIdx);
 
             uint16_t length = abs(endLedIdx - startLedIdx);
             if (startLedIdx > endLedIdx) {

@@ -255,22 +255,22 @@ light:
             ESPTime time = id(hass_time)->now();
             LuminaryEffect::do_effect(time, it, background_color, effect_color);
 
-# time:
-#   - id: !extend sntp_time
-#     on_time_sync:
-#       then:
-#         - script.execute: set_daylight_color
+time:
+  - id: !extend hass_time
+    on_time_sync:
+      then:
+        - script.execute: set_daylight_color
 
 sun:
   id: sun_id
   latitude: !secret gps_latitude
   longitude: !secret gps_longitude
-  # on_sunrise:
-  #   then:
-  #     - script.execute: set_daylight_color
-  # on_sunset:
-  #   then:
-  #     - script.execute: set_daylight_color
+  on_sunrise:
+    then:
+      - script.execute: set_daylight_color
+  on_sunset:
+    then:
+      - script.execute: set_daylight_color
 
 script:
   - id: turn_on_light
