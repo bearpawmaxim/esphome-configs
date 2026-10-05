@@ -45,11 +45,13 @@ color:
     hex: 58D900
 
 image:
-  - id: bg_img
+  - platform: file
+    id: bg_img
     file: battery-controller/hexagons-320.png
     type: RGB565
     transparency: alpha_channel
-  - id: boot_img
+  - platform: file
+    id: boot_img
     file: battery-controller/boot-logo-100.png
     type: RGB565
     transparency: alpha_channel

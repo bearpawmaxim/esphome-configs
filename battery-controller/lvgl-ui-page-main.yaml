@@ -2,7 +2,6 @@
   bg_color: 0x606672
   bg_grad_color: 0x33363E
   bg_grad_dir: VER
-  bg_dither_mode: ORDERED
   scrollable: false
   widgets:
     - obj:
@@ -37,7 +36,6 @@
         width: 160
         bg_color: 0x202831
         bg_grad_color: 0x101215
-        bg_dither_mode: ORDERED
         bg_grad_dir: VER
         on_value:
           - script.execute:

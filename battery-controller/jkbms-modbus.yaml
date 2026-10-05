@@ -27,7 +27,6 @@ sensor:
     address: 0x1004
     register_type: holding
     value_type: U_DWORD
-    register_count: 118
     unit_of_measurement: "V"
     device_class: voltage
     state_class: measurement
@@ -40,6 +39,7 @@ sensor:
     id: jkbms_cell_overvoltage_protection
     name: "JKBMS cell overvoltage protection"
     address: 0x100C
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "V"
@@ -54,6 +54,7 @@ sensor:
     id: jkbms_charging_overcurrent_protection
     name: "JKBMS charging overcurrent protection"
     address: 0x102C
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "A"
@@ -68,6 +69,7 @@ sensor:
     id: jkbms_discharging_overcurrent_protection
     name: "JKBMS discharging overcurrent protection"
     address: 0x1038
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "A"
@@ -82,6 +84,7 @@ sensor:
     id: jkbms_charging_overtemperature_protection
     name: "JKBMS charging overtemperature protection"
     address: 0x104C
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "°C"
@@ -95,6 +98,7 @@ sensor:
     id: jkbms_discharging_overtemperature_protection
     name: "JKBMS discharging overtemperature protection"
     address: 0x1054
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "°C"
@@ -108,6 +112,7 @@ sensor:
     id: jkbms_charging_undertemperature_protection
     name: "JKBMS charging undertemperature protection"
     address: 0x105C
+    reuse_previous_range: true
     register_type: holding
     value_type: S_DWORD
     unit_of_measurement: "°C"
@@ -121,6 +126,7 @@ sensor:
     id: jkbms_mos_overtemperature_protection
     name: "JKBMS MOS high temperature protection"
     address: 0x1064
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     unit_of_measurement: "°C"
@@ -133,6 +139,7 @@ sensor:
     modbus_controller_id: jkbms_modbus_controller
     id: jkbms_cell_count
     address: 0x106C
+    reuse_previous_range: true
     register_type: holding
     value_type: U_DWORD
     accuracy_decimals: 0
@@ -144,7 +151,6 @@ sensor:
     address: 0x1200
     register_type: holding
     value_type: U_WORD
-    register_count: 122
     unit_of_measurement: "V"
     device_class: voltage
     state_class: measurement
@@ -1003,7 +1009,7 @@ switch:
   - platform: modbus_controller
     id: jkbms_charging_switch
     name: "JKBMS charging switch"
-    custom_command: [0x01, 0x03, 0x10, 0x70, 0x00, 0x02]
+    custom_pdu: [0x03, 0x10, 0x70, 0x00, 0x02]
     write_lambda: |-
       payload.push_back(0x01);
       payload.push_back(0x10);

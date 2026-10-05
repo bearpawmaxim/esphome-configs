@@ -1,3 +1,7 @@
+esphome:
+  includes:
+    - utils.h
+
 interval:
   - interval: 1sec
     id: update_time_interval
@@ -411,7 +415,7 @@ script:
             if (label_it != bar_labels_map.end()) {
               lv_obj_t* value_label = label_it->second;
               lv_label_set_text(value_label, value_accuracy_to_string(value, 3).c_str());
-              lv_event_send(value_label, LV_EVENT_VALUE_CHANGED, nullptr);
+              lv_obj_send_event(value_label, LV_EVENT_VALUE_CHANGED, nullptr);
             }
             return;
           }
@@ -453,7 +457,7 @@ script:
           if (label_it != labels_map.end()) {
             lv_obj_t* value_label = label_it->second;
             lv_label_set_text(value_label, value.c_str());
-            lv_event_send(value_label, LV_EVENT_VALUE_CHANGED, nullptr);
+            lv_obj_send_event(value_label, LV_EVENT_VALUE_CHANGED, nullptr);
             auto units_it = unit_labels_map.find(name);
             if (units_it != labels_map.end()) {
               lv_obj_t* unit_label = units_it->second;

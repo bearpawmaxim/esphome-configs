@@ -8,8 +8,7 @@ api:
 ota:
   id: my_ota
   platform: esphome
-  password: !secret ota_password
-  #encryption:
+  encryption:
 
 wifi:
   networks:
@@ -22,9 +21,11 @@ wifi:
     password: !secret wifi_ap_password
 
 time:
-  - platform: homeassistant
-    id: hass_time
+  - platform: sntp
+    id: sntp_time
     timezone: Europe/Kiev
+    servers:
+      - !secret sntp_address
 
 sensor:
   - platform: wifi_signal
