@@ -57,7 +57,7 @@ wifi:
   output_power: 8.5dB
 
 logger:
-  level: WARN
+  level: DEBUG
   baud_rate: 0
 
 uart:
@@ -69,9 +69,20 @@ uart:
       direction: BOTH
       dummy_receiver: false
       after:
-        delimiter: "\n"
+        delimiter: '\r'
       sequence:
-        - lambda: UARTDebug::log_string(direction, bytes);
+        - lambda: |-
+            std::string frame(bytes.begin(), bytes.end());
+
+            if (frame.rfind("QPIGS:", 0) == 0) {
+              id(powmr_qpigs_raw).publish_state(frame);
+            } else if (frame.rfind("QMOD:", 0) == 0) {
+              id(powmr_qmod_raw).publish_state(frame);
+            } else if (frame.rfind("QPIWS:", 0) == 0) {
+              id(powmr_qpiws_raw).publish_state(frame);
+            }
+
+            UARTDebug::log_string(direction, bytes);
 
 pipsolar:
   - id: powmr_inverter
@@ -243,6 +254,21 @@ text_sensor:
         lambda: |-
           bool is_grid_available = x[0] != 'B';
           id(powmr_grid_available).publish_state(is_grid_available);
+
+  - platform: template
+    id: powmr_qpiws_raw
+    name: "Powmr QPIWS"
+    update_interval: never
+
+  - platform: template
+    id: powmr_qpigs_raw
+    name: "Powmr QPIGS"
+    update_interval: never
+
+  - platform: template
+    id: powmr_qmod_raw
+    name: "Powmr QMOD"
+    update_interval: never
 
 interval:
   - interval: 1s
