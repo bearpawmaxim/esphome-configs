@@ -1,0 +1,23 @@
+substitutions:
+  device_name: must-inverter-dongle
+  device_name_underscore: must_inverter_dongle
+
+esphome:
+  name: must-inverter-dongle
+  friendly_name: must-inverter-dongle
+
+bk72xx:
+  board: generic-bk7231n-qfn32-tuya
+
+logger:
+
+packages:
+  device_common: !include .ext_device_common.yaml
+
+uart:
+  - id: uart_1
+    baud_rate: 9600
+    tx_pin: TX1
+    rx_pin: RX1
+    rx_buffer_size: 512
+
