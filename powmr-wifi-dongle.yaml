@@ -151,7 +151,10 @@ binary_sensor:
     warning_battery_equalization:
       id: powmr_warning_battery_equalization
       name: Powmr warning battery equalization
-    
+    silence_buzzer_open_buzzer:
+      id: powmr_silence_buzzer
+      name: Powmr silence buzzer
+
   - platform: template
     id: powmr_grid_available
     name: Powmr grid available
