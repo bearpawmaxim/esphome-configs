@@ -26,14 +26,16 @@ web_server:
 
 captive_portal:
 
-http_request:
+api:
+  reboot_timeout: 0s
   
 mqtt:
   broker: !secret ext_mqtt_broker_addr
   port: !secret ext_mqtt_broker_port
-  username: !secret ext_mqtt_broker_username
-  password: !secret ext_mqtt_broker_password
+#  username: !secret ext_mqtt_broker_username
+#  password: !secret ext_mqtt_broker_password
   will_message:
+  topic_prefix: 'bearpawhass'
 
 ota:
   - platform: esphome
