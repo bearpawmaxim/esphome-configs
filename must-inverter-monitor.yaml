@@ -5,20 +5,11 @@ substitutions:
 esphome:
   name: must-inverter-dongle
   friendly_name: must-inverter-dongle
-  name_add_mac_suffix: false
-  platformio_options:
-    board_build.bkcrypt_coeffs: "00000000000000000000000000000000"
-    board_build.bkota.key: "0123456789ABCDEF0123456789ABCDEF"
-    board_build.bkota.iv: "0123456789ABCDEF"
-    board_flash.download: "0x132000+0xA6000"
-    board_flash.kvs: "0x1D8000+0x8000"
-    board_flash.calibration: "0x1E0000+0x1000"
-    board_flash.tlv: "0x1E1000+0x1000"
-    board_flash.net: "0x1E2000+0x1000"
-    board_flash.userdata: "0x1E3000+0x1D000"
+  includes:
+    - includes/bit_utils.h
 
-bk72xx:
-  board: generic-bk7231n-qfn32-tuya
+esp32:
+  board: esp32-c3-devkitm-1
 
 logger:
 
@@ -26,18 +17,24 @@ web_server:
 
 captive_portal:
 
-api:
-  reboot_timeout: 0s
-  
+http_request:
+
+#api:
+#  reboot_timeout: 0s
+ 
 mqtt:
   broker: !secret ext_mqtt_broker_addr
   port: !secret ext_mqtt_broker_port
-#  username: !secret ext_mqtt_broker_username
-#  password: !secret ext_mqtt_broker_password
+  username: !secret ext_mqtt_broker_username
+  password: !secret ext_mqtt_broker_password
+  certificate_authority: !secret ext_mqtt_broker_cert
+  skip_cert_cn_check: false
+  idf_send_async: true
   will_message:
-  topic_prefix: 'bearpawhass'
 
 ota:
+  - platform: http_request
+    id: http_ota
   - platform: esphome
     id: esphome_ota
     password: !secret ota_password
@@ -47,8 +44,8 @@ packages:
 
 uart:
   - id: must_uart
-    tx_pin: TX1
-    rx_pin: RX1
+    tx_pin: TX
+    rx_pin: RX
     baud_rate: 19200
     stop_bits: 1
     parity: NONE
