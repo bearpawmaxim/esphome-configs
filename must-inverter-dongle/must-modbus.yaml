@@ -1,56 +1,19 @@
-substitutions:
-  device_name: must-inverter-dongle
-  device_name_underscore: must_inverter_dongle
-
-esphome:
-  name: must-inverter-dongle
-  friendly_name: must-inverter-dongle
-  includes:
-    - includes/bit_utils.h
-
-esp32:
-  board: esp32-c3-devkitm-1
-
-logger:
-
-web_server:
-
-captive_portal:
-
-http_request:
-
-#api:
-#  reboot_timeout: 0s
- 
-mqtt:
-  broker: !secret ext_mqtt_broker_addr
-  port: !secret ext_mqtt_broker_port
-  username: !secret ext_mqtt_broker_username
-  password: !secret ext_mqtt_broker_password
-  certificate_authority: !secret ext_mqtt_broker_cert
-  skip_cert_cn_check: false
-  idf_send_async: true
-  will_message:
-
-ota:
-  - platform: http_request
-    id: http_ota
-  - platform: esphome
-    id: esphome_ota
-    password: !secret ota_password
-
-packages:
-  device_common: !include .ext_device_common.yaml
-
 uart:
   - id: must_uart
-    tx_pin: TX
-    rx_pin: RX
+    tx_pin: ${tx_pin}
+    rx_pin: ${rx_pin}
     baud_rate: 19200
     stop_bits: 1
     parity: NONE
     data_bits: 8
     rx_buffer_size: 1024
+    debug:
+      direction: BOTH
+      dummy_receiver: false
+      after:
+        delimiter: '\r'
+      sequence:
+        - lambda: UARTDebug::log_string(direction, bytes);
 
 modbus:
   id: must_mb
@@ -63,9 +26,15 @@ modbus_controller:
     modbus_id: must_mb
     setup_priority: -10
     update_interval: 20s
+    on_online:
+      then:
+        - output.turn_on: ${com_led}
+    on_offline:
+      then:
+        - output.turn_off: ${com_led}
 
 binary_sensor:
-  # CE: - Charger Errors from 15213 (id:charger_error_message))
+  # CE: - Charger Errors from 15213 (id:charger_error_message)
   - platform: template
     name: "CE: Charger hardware protection"
     lambda: uint16_t error = id(charger_error_message).state; if (bitRead(error,0)) { return true; } else { return false; }

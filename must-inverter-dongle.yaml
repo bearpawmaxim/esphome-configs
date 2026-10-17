@@ -1,0 +1,98 @@
+substitutions:
+  device_name: must-inverter-dongle
+  device_name_underscore: must_inverter_dongle
+  rx_pin: GPIO21
+  tx_pin: GPIO20
+  wdi_pin: GPIO4
+  com_led_pin: GPIO0
+  net_led_pin: GPIO1
+  srv_led_pin: GPIO3
+
+esphome:
+  name: must-inverter-dongle
+  friendly_name: must-inverter-dongle
+  includes:
+    - includes/bit_utils.h
+
+esp32:
+  board: esp32-c3-devkitm-1
+
+logger:
+
+web_server:
+
+captive_portal:
+
+http_request:
+
+mqtt:
+  broker: !secret ext_mqtt_broker_addr
+  port: !secret ext_mqtt_broker_port
+  username: !secret ext_mqtt_broker_username
+  password: !secret ext_mqtt_broker_password
+  certificate_authority: !secret ext_mqtt_broker_cert
+  skip_cert_cn_check: false
+  idf_send_async: true
+  will_message:
+  on_connect:
+    - output.turn_on: srv_led
+  on_disconnect:
+    - output.turn_off: srv_led
+
+ota:
+  - platform: http_request
+    id: http_ota
+  - platform: esphome
+    id: esphome_ota
+    password: !secret ota_password
+
+packages:
+  device_common: !include .ext_device_common.yaml
+  must_modbus: !include
+    file: must-inverter-dongle/must-modbus.yaml
+    vars:
+      tx_pin: ${tx_pin}
+      rx_pin: ${rx_pin}
+      com_led: com_led
+#  jkbms_bt: !include
+#    file: must-inverter-dongle/jkbms-ble.yaml
+#    vars:
+#      bms_mac_addr: !secret pb2a16s30pv19_mac_addr
+
+wifi:
+  output_power: 8.5dB
+  on_connect:
+    - output.turn_on: net_led   
+  on_disconnect:
+    - output.turn_off: net_led
+
+light:
+
+output:
+  - platform: gpio
+    id: net_led
+    pin:
+      number: ${net_led_pin}
+      inverted: true
+  - platform: gpio
+    id: srv_led
+    pin:
+      number: ${srv_led_pin}
+      inverted: true
+  - platform: gpio
+    id: com_led
+    pin:
+      number: ${com_led_pin}
+      inverted: true
+
+switch:
+  - platform: gpio
+    id: wdi_pulse
+    pin: ${wdi_pin}
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+interval:
+  - interval: 500ms
+    then:
+      - switch.toggle: wdi_pulse
