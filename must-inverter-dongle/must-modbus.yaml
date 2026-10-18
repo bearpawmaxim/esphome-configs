@@ -7,13 +7,6 @@ uart:
     parity: NONE
     data_bits: 8
     rx_buffer_size: 1024
-    debug:
-      direction: BOTH
-      dummy_receiver: false
-      after:
-        delimiter: '\r'
-      sequence:
-        - lambda: UARTDebug::log_string(direction, bytes);
 
 modbus:
   id: must_mb

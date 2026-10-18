@@ -19,8 +19,6 @@ esp32:
 
 logger:
 
-web_server:
-
 captive_portal:
 
 http_request:
@@ -46,6 +44,12 @@ ota:
     id: esphome_ota
     password: !secret ota_password
 
+update:
+  - platform: http_request
+    name: Firmware Update
+    source: !secret must_inverter_dongle_ota_manifest_url
+    update_interval: 6h
+
 packages:
   device_common: !include .ext_device_common.yaml
   must_modbus: !include
@@ -65,8 +69,6 @@ wifi:
     - output.turn_on: net_led   
   on_disconnect:
     - output.turn_off: net_led
-
-light:
 
 output:
   - platform: gpio
@@ -96,3 +98,22 @@ interval:
   - interval: 500ms
     then:
       - switch.toggle: wdi_pulse
+
+debug:
+  update_interval: 60s
+
+sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
+
+text_sensor:
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"

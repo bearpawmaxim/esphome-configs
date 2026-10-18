@@ -5,6 +5,7 @@ external_components:
 esp32_ble_tracker:
   scan_parameters:
     active: false
+    continuous: false
 
 ble_client:
   - mac_address: ${bms_mac_addr}
@@ -13,7 +14,7 @@ ble_client:
 jk_bms_ble:
   - ble_client_id: client0
     protocol_version: JK02_32S
-    throttle: 5s
+    throttle: 30s
     id: bms0
 
 binary_sensor:
@@ -47,96 +48,80 @@ number:
       name: "jkbms balance trigger voltage"
     total_battery_capacity:
       name: "jkbms total battery capacity"
-    cell_voltage_overvoltage_protection:
-      name: "jkbms cell voltage overvoltage protection"
-    cell_voltage_overvoltage_recovery:
-      name: "jkbms cell voltage overvoltage recovery"
-    cell_voltage_undervoltage_protection:
-      name: "jkbms cell voltage undervoltage protection"
-    cell_voltage_undervoltage_recovery:
-      name: "jkbms cell voltage undervoltage recovery"
-    balancing_start_voltage:
-      name: "jkbms balancing start voltage"
-    voltage_calibration:
-      name: "jkbms voltage calibration"
-    current_calibration:
-      name: "jkbms current calibration"
-    soc_calibration:
-      name: "jkbms soc calibration"
-    soh_calibration:
-      name: "jkbms soh calibration"
-    power_off_voltage:
-      name: "jkbms power off voltage"
+    # cell_voltage_overvoltage_protection:
+    #   name: "jkbms cell voltage overvoltage protection"
+    # cell_voltage_overvoltage_recovery:
+    #   name: "jkbms cell voltage overvoltage recovery"
+    # cell_voltage_undervoltage_protection:
+    #   name: "jkbms cell voltage undervoltage protection"
+    # cell_voltage_undervoltage_recovery:
+    #   name: "jkbms cell voltage undervoltage recovery"
+    # balancing_start_voltage:
+    #   name: "jkbms balancing start voltage"
+    # power_off_voltage:
+    #   name: "jkbms power off voltage"
     max_balance_current:
       name: "jkbms max balance current"
     max_charge_current:
       name: "jkbms max charge current"
     max_discharge_current:
       name: "jkbms max discharge current"
-    smart_sleep_voltage:
-      name: "jkbms smart sleep voltage"
-    smart_sleep_delay:
-      name: "jkbms smart sleep delay"
-    emergency_duration:
-      name: "jkbms emergency duration"
     cell_soc100_voltage:
       name: "jkbms cell soc100 voltage"
     cell_soc0_voltage:
       name: "jkbms cell soc0 voltage"
-    cell_request_charge_voltage:
-      name: "jkbms cell request charge voltage"
-    cell_request_float_voltage:
-      name: "jkbms cell request float voltage"
-    cell_request_charge_voltage_time:
-      name: "jkbms cell request charge voltage time"
-    cell_request_float_voltage_time:
-      name: "jkbms cell request float voltage time"
-    re_bulk_soc:
-      name: "jkbms re-bulk soc"
-    charge_overcurrent_protection_delay:
-      name: "jkbms charge overcurrent protection delay"
-    charge_overcurrent_protection_recovery_time:
-      name: "jkbms charge overcurrent protection recovery time"
-    discharge_overcurrent_protection_delay:
-      name: "jkbms discharge overcurrent protection delay"
-    discharge_overcurrent_protection_recovery_time:
-      name: "jkbms discharge overcurrent protection recovery time"
-    short_circuit_protection_delay:
-      name: "jkbms short circuit protection delay"
-    short_circuit_protection_recovery_time:
-      name: "jkbms short circuit protection recovery time"
-    charge_overtemperature_protection:
-      name: "jkbms charge overtemperature protection"
-    charge_overtemperature_protection_recovery:
-      name: "jkbms charge overtemperature protection recovery"
-    discharge_overtemperature_protection:
-      name: "jkbms discharge overtemperature protection"
-    discharge_overtemperature_protection_recovery:
-      name: "jkbms discharge overtemperature protection recovery"
-    charge_undertemperature_protection:
-      name: "jkbms charge undertemperature protection"
-    charge_undertemperature_protection_recovery:
-      name: "jkbms charge undertemperature protection recovery"
-    discharge_undertemperature_protection:
-      name: "jkbms discharge undertemperature protection"
-    discharge_undertemperature_protection_recovery:
-      name: "jkbms discharge undertemperature protection recovery"
-    mosfet_overtemperature_protection:
-      name: "jkbms mosfet overtemperature protection"
-    mosfet_overtemperature_protection_recovery:
-      name: "jkbms mosfet overtemperature protection recovery"
+    # cell_request_charge_voltage:
+    #   name: "jkbms cell request charge voltage"
+    # cell_request_float_voltage:
+    #   name: "jkbms cell request float voltage"
+    # cell_request_charge_voltage_time:
+    #   name: "jkbms cell request charge voltage time"
+    # cell_request_float_voltage_time:
+    #   name: "jkbms cell request float voltage time"
+    # re_bulk_soc:
+    #   name: "jkbms re-bulk soc"
+    # charge_overcurrent_protection_delay:
+    #   name: "jkbms charge overcurrent protection delay"
+    # charge_overcurrent_protection_recovery_time:
+    #   name: "jkbms charge overcurrent protection recovery time"
+    # discharge_overcurrent_protection_delay:
+    #   name: "jkbms discharge overcurrent protection delay"
+    # discharge_overcurrent_protection_recovery_time:
+    #   name: "jkbms discharge overcurrent protection recovery time"
+    # short_circuit_protection_delay:
+    #   name: "jkbms short circuit protection delay"
+    # short_circuit_protection_recovery_time:
+    #   name: "jkbms short circuit protection recovery time"
+    # charge_overtemperature_protection:
+    #   name: "jkbms charge overtemperature protection"
+    # charge_overtemperature_protection_recovery:
+    #   name: "jkbms charge overtemperature protection recovery"
+    # discharge_overtemperature_protection:
+    #   name: "jkbms discharge overtemperature protection"
+    # discharge_overtemperature_protection_recovery:
+    #   name: "jkbms discharge overtemperature protection recovery"
+    # charge_undertemperature_protection:
+    #   name: "jkbms charge undertemperature protection"
+    # charge_undertemperature_protection_recovery:
+    #   name: "jkbms charge undertemperature protection recovery"
+    # discharge_undertemperature_protection:
+    #   name: "jkbms discharge undertemperature protection"
+    # discharge_undertemperature_protection_recovery:
+    #   name: "jkbms discharge undertemperature protection recovery"
+    # mosfet_overtemperature_protection:
+    #   name: "jkbms mosfet overtemperature protection"
+    # mosfet_overtemperature_protection_recovery:
+    #   name: "jkbms mosfet overtemperature protection recovery"
     discharge_precharge_time:
       name: "jkbms discharge precharge time"
-    heating_start_temperature:
-      name: "jkbms heating start temperature"
-    heating_stop_temperature:
-      name: "jkbms heating stop temperature"
+    # heating_start_temperature:
+    #   name: "jkbms heating start temperature"
+    # heating_stop_temperature:
+    #   name: "jkbms heating stop temperature"
 
 sensor:
   - platform: jk_bms_ble
     jk_bms_ble_id: bms0
-    device_address:
-      name: "jkbms device address"
     min_cell_voltage:
       name: "jkbms min cell voltage"
     max_cell_voltage:
@@ -165,38 +150,6 @@ sensor:
       name: "jkbms cell voltage 7"
     cell_voltage_8:
       name: "jkbms cell voltage 8"
-    cell_voltage_9:
-      name: "jkbms cell voltage 9"
-    cell_voltage_10:
-      name: "jkbms cell voltage 10"
-    cell_voltage_11:
-      name: "jkbms cell voltage 11"
-    cell_voltage_12:
-      name: "jkbms cell voltage 12"
-    cell_voltage_13:
-      name: "jkbms cell voltage 13"
-    cell_voltage_14:
-      name: "jkbms cell voltage 14"
-    cell_voltage_15:
-      name: "jkbms cell voltage 15"
-    cell_voltage_16:
-      name: "jkbms cell voltage 16"
-    cell_voltage_17:
-      name: "jkbms cell voltage 17"
-    cell_voltage_18:
-      name: "jkbms cell voltage 18"
-    cell_voltage_19:
-      name: "jkbms cell voltage 19"
-    cell_voltage_20:
-      name: "jkbms cell voltage 20"
-    cell_voltage_21:
-      name: "jkbms cell voltage 21"
-    cell_voltage_22:
-      name: "jkbms cell voltage 22"
-    cell_voltage_23:
-      name: "jkbms cell voltage 23"
-    cell_voltage_24:
-      name: "jkbms cell voltage 24"
     cell_resistance_1:
       name: "jkbms cell resistance 1"
     cell_resistance_2:
@@ -213,44 +166,12 @@ sensor:
       name: "jkbms cell resistance 7"
     cell_resistance_8:
       name: "jkbms cell resistance 8"
-    cell_resistance_9:
-      name: "jkbms cell resistance 9"
-    cell_resistance_10:
-      name: "jkbms cell resistance 10"
-    cell_resistance_11:
-      name: "jkbms cell resistance 11"
-    cell_resistance_12:
-      name: "jkbms cell resistance 12"
-    cell_resistance_13:
-      name: "jkbms cell resistance 13"
-    cell_resistance_14:
-      name: "jkbms cell resistance 14"
-    cell_resistance_15:
-      name: "jkbms cell resistance 15"
-    cell_resistance_16:
-      name: "jkbms cell resistance 16"
-    cell_resistance_17:
-      name: "jkbms cell resistance 17"
-    cell_resistance_18:
-      name: "jkbms cell resistance 18"
-    cell_resistance_19:
-      name: "jkbms cell resistance 19"
-    cell_resistance_20:
-      name: "jkbms cell resistance 20"
-    cell_resistance_21:
-      name: "jkbms cell resistance 21"
-    cell_resistance_22:
-      name: "jkbms cell resistance 22"
-    cell_resistance_23:
-      name: "jkbms cell resistance 23"
-    cell_resistance_24:
-      name: "jkbms cell resistance 24"
     total_voltage:
       name: "jkbms total voltage"
     current:
       name: "jkbms current"
-    heating_current:
-      name: "jkbms heating current"
+    # heating_current:
+    #   name: "jkbms heating current"
     power:
       name: "jkbms power"
     charging_power:
@@ -285,92 +206,28 @@ sensor:
       name: "jkbms total charging cycle capacity"
     total_runtime:
       name: "jkbms total runtime"
-    power_on_count:
-      name: "jkbms power on count"
-    balancing_current:
-      name: "jkbms balancing current"
-    emergency_time_countdown:
-      name: "jkbms emergency time countdown"
-    smart_sleep_countdown:
-      name: "jkbms smart sleep countdown"
-    charge_status_id:
-      name: "jkbms charge status id"
-    charge_status_time_elapsed:
-      name: "jkbms charge status time elapsed"
-    detail_log_entry_count:
-      name: "jkbms detail log entry count"
-    battery_type_id:
-      name: "jkbms battery type id"
-    uart1_protocols_enabled_bitmask:
-      name: "jkbms uart1 protocols enabled bitmask"
-    uart2_protocols_enabled_bitmask:
-      name: "jkbms uart2 protocols enabled bitmask"
-    uart3_protocols_enabled_bitmask:
-      name: "uart3 protocols enabled bitmask"
-    can_protocols_enabled_bitmask:
-      name: "jkbms can protocols enabled bitmask"
+    # power_on_count:
+    #   name: "jkbms power on count"
+    # balancing_current:
+    #   name: "jkbms balancing current"
+    # detail_log_entry_count:
+    #   name: "jkbms detail log entry count"
+
 switch:
   - platform: jk_bms_ble
     charging:
       name: "jkbms charging"
     discharging:
       name: "jkbms discharging"
-    balancer:
-      name: "jkbms balancer"
-    emergency:
-      name: "jkbms emergency"
     heating:
       name: "jkbms heating"
-    disable_temperature_sensors:
-      name: "jkbms disable temperature sensors"
-    display_always_on:
-      name: "jkbms display always on"
-    smart_sleep:
-      name: "jkbms smart sleep"
-    disable_pcl_module:
-      name: "jkbms disable pcl module"
-    timed_stored_data:
-      name: "jkbms timed stored data"
     charging_float_mode:
       name: "jkbms charging float mode"
-    emergency_button_trigger:
-      name: "jkbms emergency button trigger"
-    dry_contact_alarm_intermittent:
-      name: "jkbms dry contact alarm intermittent"
-    discharge_overcurrent_protection_2:
-      name: "jkbms discharge overcurrent protection 2"
-    discharge_overcurrent_protection_3:
-      name: "jkbms discharge overcurrent protection 3"
-    gps_locked_charging:
-      name: "jkbms gps locked charging"
-    gps_locked_discharging:
-      name: "jkbms gps locked discharging"
 
   - platform: ble_client
     ble_client_id: client0
     name: "enable bluetooth connection"
     id: ble_client_switch0
-
-select:
-  - platform: jk_bms_ble
-    uart1_protocol:
-      name: "jkbms uart1 protocol"
-    uart2_protocol:
-      name: "jkbms uart2 protocol"
-    uart3_protocol:
-      name: "jkbms uart3 protocol"
-    can_protocol:
-      name: "jkbms can protocol"
-    lcd_buzzer_trigger:
-      name: "jkbms lcd buzzer trigger"
-    dry1_trigger:
-      name: "jkbms dry1 trigger"
-    dry2_trigger:
-      name: "jkbms dry2 trigger"
-    multiplexed_port_mode:
-      name: "jkbms protocol mode"
-    load_config_preset:
-      name: "jkbms load config preset"
 
 text_sensor:
   - platform: jk_bms_ble
@@ -384,17 +241,3 @@ text_sensor:
       name: "jkbms total runtime formatted"
     charge_status:
       name: "jkbms charge status"
-    software_version:
-      name: "jkbms software version"
-    hardware_version:
-      name: "jkbms hardware version"
-    battery_type:
-      name: "jkbms battery type"
-    device_model:
-      name: "jkbms device model"
-    manufacturing_date:
-      name: "jkbms manufacturing date"
-    serial_number:
-      name: "jkbms serial number"
-    device_name:
-      name: "jkbms device name"
