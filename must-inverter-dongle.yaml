@@ -20,7 +20,7 @@ esp32:
 logger:
 
 captive_portal:
-
+web_server:
 http_request:
 
 mqtt:
