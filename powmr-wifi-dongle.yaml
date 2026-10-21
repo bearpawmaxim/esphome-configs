@@ -250,6 +250,8 @@ sensor:
 text_sensor:
   - platform: pipsolar
     pipsolar_id: powmr_inverter
+    last_qflag:
+      name: "Powmr Raw QFLAG"
     device_mode:
       id: powmr_device_mode
       name: Powmr device mode
