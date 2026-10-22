@@ -1,12 +1,12 @@
 substitutions:
   device_name: must-inverter-dongle
   device_name_underscore: must_inverter_dongle
-  rx_pin: GPIO21
-  tx_pin: GPIO20
+  rx_pin: GPIO43
+  tx_pin: GPIO44
   wdi_pin: GPIO4
-  com_led_pin: GPIO0
-  net_led_pin: GPIO1
-  srv_led_pin: GPIO3
+  srv_led_pin: GPIO5
+  net_led_pin: GPIO6
+  com_led_pin: GPIO7
 
 esphome:
   name: must-inverter-dongle
@@ -15,10 +15,22 @@ esphome:
     - includes/bit_utils.h
 
 esp32:
-  board: esp32-c3-devkitm-1
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_SPIRAM_USE_MALLOC: y
+      CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL: "2048"
+      CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP: y
+  flash_size: 4MB
+
+psram:
+  mode: quad
+  speed: 80MHz
+  ignore_not_found: false
 
 logger:
-
 captive_portal:
 web_server:
 http_request:
@@ -58,10 +70,10 @@ packages:
       tx_pin: ${tx_pin}
       rx_pin: ${rx_pin}
       com_led: com_led
-#  jkbms_bt: !include
-#    file: must-inverter-dongle/jkbms-ble.yaml
-#    vars:
-#      bms_mac_addr: !secret pb2a16s30pv19_mac_addr
+  jkbms_bt: !include
+    file: must-inverter-dongle/jkbms-ble.yaml
+    vars:
+      bms_mac_addr: !secret ch_bms_mac_addr
 
 wifi:
   output_power: 8.5dB
@@ -69,6 +81,8 @@ wifi:
     - output.turn_on: net_led   
   on_disconnect:
     - output.turn_off: net_led
+  ssid: !secret ch_wifi_ssid
+  password: !secret ch_wifi_pass
 
 output:
   - platform: gpio
@@ -110,6 +124,8 @@ sensor:
       name: "Heap Max Block"
     loop_time:
       name: "Loop Time"
+    psram:
+      name: "PSRAM Free"
 
 text_sensor:
   - platform: debug
@@ -117,3 +133,15 @@ text_sensor:
       name: "Device Info"
     reset_reason:
       name: "Reset Reason"
+
+button:
+  - platform: template
+    name: "Update must-inverter-dongle fw"
+    on_press:
+      then:
+        - update.check:
+        - if:
+            condition:
+              update.is_available:
+            then:
+              - update.perform:
